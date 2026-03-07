@@ -27,6 +27,7 @@
     <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
+    <PackageReference Include="MahApps.Metro" Version="3.0.0-rc0529" />
   </ItemGroup>
 
   <ItemGroup>

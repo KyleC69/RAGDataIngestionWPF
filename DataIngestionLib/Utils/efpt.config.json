@@ -1,17 +1,17 @@
 ﻿{
    "CodeGenerationMode": 6,
-   "ContextClassName": "KnowledgeBaseContext",
+   "ContextClassName": "ChatContext",
    "ContextNamespace": "",
    "FilterSchemas": false,
    "IncludeConnectionString": false,
    "IrregularWords": null,
    "MinimumProductVersion": "2.6.1378",
    "ModelNamespace": null,
-   "OutputContextPath": "EFModels",
-   "OutputPath": "EFModels",
+   "OutputContextPath": "DBChatHistory",
+   "OutputPath": "DBChatHistory",
    "PluralRules": null,
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "DataIngestionLib",
+   "ProjectRootNamespace": "DBChatHistory",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,
@@ -19,24 +19,8 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[RemoteRAG]",
+         "Name": "[dbo].[ChatHistory]",
          "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[Search_FullText]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[dbo].[Search_Hybrid]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[dbo].[Search_SemanticKeyPhrases]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[dbo].[Search_Vector]",
-         "ObjectType": 1
       }
    ],
    "UiHint": null,

@@ -12,8 +12,8 @@ using System.Text.Json;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Options;
-using DataIngestionLib.ToolFunctions;
 
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -32,10 +32,7 @@ public sealed class ChatConversationService : IChatConversationService
 {
     private readonly string _localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     private readonly ChatSessionOptions _options;
-    private readonly ILoggerFactory _factory;
-    private readonly IChatClient _client;
-    private readonly IChatClient _outer;
-    private readonly ChatOptions _clioptions;
+    private readonly ISqlVectorStore _sqlVectorStore;
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = false };
 
 
@@ -48,6 +45,8 @@ public sealed class ChatConversationService : IChatConversationService
     public ChatConversationService(ChatSessionOptions options, IChatClient client, ILoggerFactory factory)
     {
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(factory);
 
         if (string.IsNullOrWhiteSpace(options.ConfigurationsFolder))
         {
@@ -64,32 +63,9 @@ public sealed class ChatConversationService : IChatConversationService
             throw new ArgumentOutOfRangeException(nameof(options), "Maximum context tokens must be a positive value.");
         }
 
-        _client = client;
-        _factory = factory;
-        _options = options;
 
 
 
-        IChatClient outer = new ChatClientBuilder(_client)
-                .UseLogging(_factory)
-                .UseFunctionInvocation()
-                .Build();
-
-
-        ChatOptions clioptions = new()
-        {
-            Tools = ToolBuilder.GetAiTools(),
-            Instructions = """
-
-                               """,
-            Temperature = 0.7f,
-            MaxOutputTokens = 8000,
-            AllowMultipleToolCalls = true,
-            ToolMode = ChatToolMode.Auto
-        };
-
-        _clioptions = clioptions;
-        _outer = outer;
 
 
 
@@ -202,9 +178,27 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-        ChatResponse response = await _outer.GetResponseAsync(userMessage, _clioptions, cancellationToken);
+        /*
 
-        return CreateAssistantMessage(response.Text);
+                var b = new AIAgentBuilder(_innerclient.AsAIAgent())
+                        .UseLogging(_factory)
+                        .UseAIContextProviders(new TextSearchProvider(), new ChatHistoryMemoryProvider(vectorStore), new MessageAIContextProvider())
+                        .Build();
+
+
+                // The AI agent is configured to use the following providers for context:
+                // - TextSearchProvider: Allows the agent to search for text.
+                // - ChatHistoryMemoryProvider: Provides access to the chat history.
+                // - MessageAIContextProvider: Provides access to the current message.
+                // The agent is also configured to use a tool invocation mechanism.
+                // The _client2 represents the actual AI model that will be used for generation.
+                // This setup is likely part of a more complex agent orchestration where
+                // _innerclient might be a builder or a different type of client.
+        */
+
+
+
+        return CreateAssistantMessage($"Echo: {userMessage}");
     }
 
 
@@ -307,6 +301,35 @@ public sealed class ChatConversationService : IChatConversationService
     private static int EstimateTokenCount(string content)
     {
         return string.IsNullOrWhiteSpace(content) ? 0 : Math.Max(1, content.Length / 4);
+    }
+
+    private Task<IEnumerable<TextSearchProvider.TextSearchResult>> SearchAsync(string query, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Task.FromResult<IEnumerable<TextSearchProvider.TextSearchResult>>([]);
+        }
+
+        ChatSessionState sessionState = LoadSession();
+        string trimmedQuery = query.Trim();
+
+        IEnumerable<TextSearchProvider.TextSearchResult> results = sessionState.ContextWindow
+                .Concat(sessionState.History)
+                .Where(message => !string.IsNullOrWhiteSpace(message.Content))
+                .OrderByDescending(message => message.TimestampUtc)
+                .DistinctBy(message => message.TimestampUtc)
+                .Where(message => message.Content.Contains(trimmedQuery, StringComparison.OrdinalIgnoreCase))
+                .Take(5)
+                .Select(message => new TextSearchProvider.TextSearchResult
+                {
+                    SourceName = "Local chat memory",
+                    SourceLink = GetSessionFilePath(),
+                    Text = message.Content
+                });
+
+        return Task.FromResult(results);
     }
 
     private static string FormatMarkdownLite(string content)
