@@ -20,13 +20,84 @@ using Microsoft.Extensions.Options;
 
 
 
-namespace DataIngestionLib.Services;
+namespace DataIngestionLib.Services.ContextInjectors;
+
+
+
+
+/// <summary>
+/// Defines methods for injecting, managing, and manipulating AI chat context history,
+/// including building context messages, storing messages, pruning conversations, 
+/// updating message content, and deleting messages.
+/// </summary>
+public interface IAIContextHistoryInjector
+{
+    ValueTask<IEnumerable<AIChatMessage>> BuildContextMessagesAsync(
+            string conversationId,
+            ChatHistory currentRequestMessages,
+            CancellationToken cancellationToken = default);
 
 
 
 
 
-public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
+
+
+
+    ValueTask StoreMessagesAsync(
+            string conversationId,
+            string sessionId,
+            string agentId,
+            string userId,
+            string applicationId,
+            ChatHistory requestMessages,
+            ChatHistory responseMessages,
+            CancellationToken cancellationToken = default);
+
+
+
+
+
+
+
+
+    ValueTask<int> PruneConversationAsync(string conversationId, CancellationToken cancellationToken = default);
+
+
+
+
+
+
+
+
+    /// <summary>
+    /// Updates the content of a specific chat message in the chat history.
+    /// </summary>
+    /// <param name="messageId">The unique identifier of the message to be updated.</param>
+    /// <param name="content">The new content to replace the existing message content.</param>
+    /// <param name="timestampUtc">The timestamp indicating when the update occurred, in UTC.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains the updated 
+    /// <see cref="PersistedChatMessage"/> if the update was successful, or <c>null</c> if the message was not found.
+    /// </returns>
+    ValueTask<PersistedChatMessage?> UpdateMessageContentAsync(Guid messageId, string content, DateTimeOffset timestampUtc, CancellationToken cancellationToken = default);
+
+
+
+
+
+
+
+
+    ValueTask<bool> DeleteMessageAsync(Guid messageId, CancellationToken cancellationToken = default);
+}
+
+
+
+
+
+public sealed class AIContextHistoryInjector :  IAIContextHistoryInjector
 {
     private readonly IChatHistoryProvider _chatHistoryProvider;
     private readonly IOptionsMonitor<ChatHistoryOptions> _optionsMonitor;
@@ -39,7 +110,7 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
 
 
 
-    public ChatHistoryMemoryProvider(IChatHistoryProvider chatHistoryProvider, IOptionsMonitor<ChatHistoryOptions> optionsMonitor, IChatHistorySummarizer? summarizer = null)
+    public AIContextHistoryInjector(IChatHistoryProvider chatHistoryProvider, IOptionsMonitor<ChatHistoryOptions> optionsMonitor, IChatHistorySummarizer? summarizer = null)
     {
         ArgumentNullException.ThrowIfNull(chatHistoryProvider);
         ArgumentNullException.ThrowIfNull(optionsMonitor);
@@ -69,11 +140,11 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
         ArgumentNullException.ThrowIfNull(currentRequestMessages);
 
         ChatHistoryOptions options = _optionsMonitor.CurrentValue;
-        var persistedMessages = await _chatHistoryProvider
+        IReadOnlyList<PersistedChatMessage> persistedMessages = await _chatHistoryProvider
                 .GetMessagesAsync(conversationId.Trim(), take: null, cancellationToken)
                 .ConfigureAwait(false);
 
-        var requestMessageKeys = BuildMessageKeySet(currentRequestMessages);
+        HashSet<string> requestMessageKeys = BuildMessageKeySet(currentRequestMessages);
 
         ChatHistory historicalMessages =
         [
@@ -124,23 +195,23 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
         }
 
         DateTimeOffset now = DateTimeOffset.UtcNow;
-        for (var index = 0; index < messagesToStore.Count; index++)
+        for (int index = 0; index < messagesToStore.Count; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             AIChatMessage message = messagesToStore[index];
 
-            PersistedChatMessage persistedMessage = new PersistedChatMessage
+            PersistedChatMessage persistedMessage = new()
             {
-                    MessageId = Guid.NewGuid(),
-                    ConversationId = conversationId.Trim(),
-                    SessionId = sessionId.Trim(),
-                    AgentId = agentId.Trim(),
-                    UserId = userId.Trim(),
-                    ApplicationId = applicationId.Trim(),
-                    Role = message.Role.Value,
-                    Content = message.Text ?? string.Empty,
-                    TimestampUtc = now.AddTicks(index),
-                    Metadata = CreateMetadata(message)
+                MessageId = Guid.NewGuid(),
+                ConversationId = conversationId.Trim(),
+                SessionId = sessionId.Trim(),
+                AgentId = agentId.Trim(),
+                UserId = userId.Trim(),
+                ApplicationId = applicationId.Trim(),
+                Role = message.Role.Value,
+                Content = message.Text ?? string.Empty,
+                TimestampUtc = now.AddTicks(index),
+                Metadata = CreateMetadata(message)
             };
 
             await _chatHistoryProvider.CreateMessageAsync(persistedMessage, cancellationToken).ConfigureAwait(false);
@@ -169,11 +240,11 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
             return 0;
         }
 
-        var persistedMessages = await _chatHistoryProvider
+        IReadOnlyList<PersistedChatMessage> persistedMessages = await _chatHistoryProvider
                 .GetMessagesAsync(conversationId.Trim(), take: null, cancellationToken)
                 .ConfigureAwait(false);
 
-        var overflow = persistedMessages.Count - options.MaxContextMessages;
+        int overflow = persistedMessages.Count - options.MaxContextMessages;
         if (overflow <= 0)
         {
             return 0;
@@ -185,11 +256,11 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
                 .Take(overflow)
                 .ToList();
 
-        var removedCount = 0;
+        int removedCount = 0;
         foreach (PersistedChatMessage message in messagesToDelete)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var removed = await _chatHistoryProvider.DeleteMessageAsync(message.MessageId, cancellationToken).ConfigureAwait(false);
+            bool removed = await _chatHistoryProvider.DeleteMessageAsync(message.MessageId, cancellationToken).ConfigureAwait(false);
             if (removed)
             {
                 removedCount++;
@@ -205,7 +276,17 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
 
 
 
-
+    /// <summary>
+    /// Updates the content of a specific chat message in the chat history.
+    /// </summary>
+    /// <param name="messageId">The unique identifier of the message to be updated.</param>
+    /// <param name="content">The new content to replace the existing message content.</param>
+    /// <param name="timestampUtc">The timestamp indicating when the update occurred, in UTC.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains the updated 
+    /// <see cref="PersistedChatMessage"/> if the update was successful, or <c>null</c> if the message was not found.
+    /// </returns>
     public ValueTask<PersistedChatMessage?> UpdateMessageContentAsync(Guid messageId, string content, DateTimeOffset timestampUtc, CancellationToken cancellationToken = default)
     {
         return _chatHistoryProvider.UpdateMessageAsync(messageId, content, timestampUtc, cancellationToken);
@@ -229,7 +310,38 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
 
 
 
-
+    /// <summary>
+    /// Applies a windowing mechanism to the provided historical chat messages, ensuring that the resulting set
+    /// adheres to the constraints defined in the <see cref="ChatHistoryOptions"/>.
+    /// </summary>
+    /// <param name="conversationId">
+    /// The unique identifier of the conversation for which the windowing mechanism is applied.
+    /// </param>
+    /// <param name="historicalMessages">
+    /// The collection of historical chat messages to be processed.
+    /// </param>
+    /// <param name="options">
+    /// The configuration options that define the constraints for the windowing mechanism, such as the maximum
+    /// number of messages and tokens.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ChatHistory"/> containing the pruned and processed set of messages that fit within the
+    /// specified constraints.
+    /// </returns>
+    /// <remarks>
+    /// If summarization is enabled in the <paramref name="options"/> and the number of pruned messages exceeds
+    /// zero, a summary may be generated and included in the resulting window. The method ensures that the
+    /// resulting set of messages adheres to the constraints even after summarization.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if <paramref name="historicalMessages"/> is <c>null</c>.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Thrown if the operation is canceled via the <paramref name="cancellationToken"/>.
+    /// </exception>
     private async ValueTask<ChatHistory> ApplyWindowAsync(
             string conversationId,
             ChatHistory historicalMessages,
@@ -241,8 +353,8 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
             return [];
         }
 
-        var maxMessages = options.MaxContextMessages <= 0 ? int.MaxValue : options.MaxContextMessages;
-        var maxTokens = options.MaxContextTokens is null or <= 0 ? int.MaxValue : options.MaxContextTokens.Value;
+        int maxMessages = options.MaxContextMessages <= 0 ? int.MaxValue : options.MaxContextMessages;
+        int maxTokens = options.MaxContextTokens is null or <= 0 ? int.MaxValue : options.MaxContextTokens.Value;
 
         ChatHistory window = [.. historicalMessages];
         ChatHistory prunedMessages = [];
@@ -304,8 +416,8 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
 
     private static string CreateMessageKey(AIChatMessage message)
     {
-        var role = message.Role.Value.Trim().ToLowerInvariant();
-        var text = message.Text?.Trim() ?? string.Empty;
+        string role = message.Role.Value.Trim().ToLowerInvariant();
+        string text = message.Text?.Trim() ?? string.Empty;
         return $"{role}\u001F{text}";
     }
 
@@ -318,11 +430,11 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
 
     private static JsonDocument CreateMetadata(AIChatMessage message)
     {
-        var sourceType = message.GetAgentRequestMessageSourceType().ToString();
+        string sourceType = message.GetAgentRequestMessageSourceType().ToString();
 
         return JsonSerializer.SerializeToDocument(new Dictionary<string, string?>
         {
-                ["sourceType"] = sourceType
+            ["sourceType"] = sourceType
         });
     }
 
@@ -352,7 +464,7 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
     {
         return messages.Sum(static message =>
         {
-            var text = message.Text ?? string.Empty;
+            string text = message.Text ?? string.Empty;
             return string.IsNullOrWhiteSpace(text) ? 0 : Math.Max(1, text.Length / 4);
         });
     }
@@ -368,10 +480,10 @@ public sealed class ChatHistoryMemoryProvider : IChatHistoryMemoryProvider
     {
         return role.Trim().ToLowerInvariant() switch
         {
-                "assistant" => ChatRole.Assistant,
-                "system" => ChatRole.System,
-                "tool" => ChatRole.Tool,
-                _ => ChatRole.User
+            "assistant" => ChatRole.Assistant,
+            "system" => ChatRole.System,
+            "tool" => ChatRole.Tool,
+            _ => ChatRole.User
         };
     }
 

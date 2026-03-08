@@ -166,8 +166,8 @@ public partial class App : Application
 
     private static string GetAppLocation()
     {
-        var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
-        var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
+        string? entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
+        string? appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
                 ? AppContext.BaseDirectory
                 : Path.GetDirectoryName(entryAssemblyLocation);
 
@@ -264,7 +264,7 @@ public partial class App : Application
         {
                 { ToastNotificationActivationHandler.ActivationArguments, string.Empty }
         };
-        var appLocation = GetAppLocation();
+        string appLocation = GetAppLocation();
 
         _host = BuildHost(e.Args ?? Array.Empty<string>(), appLocation, activationArgs);
 
@@ -305,13 +305,10 @@ public partial class App : Application
         services.AddSingleton<IOllamaApiClient>(_ => new OllamaApiClient(OllamaEndpoint, OllamaModel));
         services.AddSingleton<IChatClient>(sp => (IChatClient)sp.GetRequiredService<IOllamaApiClient>());
         services.AddSingleton(sp => sp.GetRequiredService<IChatClient>().AsAIAgent());
-        //services.AddSingleton<ISqlVectorStore, SqlVectorStore>();
-        services.AddSingleton<IChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
+
+        services.AddSingleton<ISqlChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
+        services.AddSingleton<ISQLChatHistoryProvider, SQLChatHistoryProvider>();
         services.AddSingleton<IRuntimeContextAccessor, RuntimeContextAccessor>();
-        services.AddSingleton<IChatHistoryProvider, CustomChatHistoryProvider>();
-        services.AddSingleton<IChatHistoryMemoryProvider, ChatHistoryMemoryProvider>();
-        services.AddSingleton<IRagContextSource, NullRagContextSource>();
-        services.AddSingleton<RAGAIContextProvider>();
         services.AddSingleton<IAgentFactory, AgentFactory>();
     }
 
@@ -338,9 +335,9 @@ public partial class App : Application
             AppConfig appConfig = sp.GetRequiredService<IOptions<AppConfig>>().Value;
             return new ChatSessionOptions
             {
-                    ConfigurationsFolder = appConfig.ConfigurationsFolder,
-                    ChatSessionFileName = appConfig.ChatSessionFileName,
-                    MaxContextTokens = 120000
+                ConfigurationsFolder = appConfig.ConfigurationsFolder,
+                ChatSessionFileName = appConfig.ChatSessionFileName,
+                MaxContextTokens = 120000
             };
         });
         services.AddSingleton<IChatConversationService, ChatConversationService>();

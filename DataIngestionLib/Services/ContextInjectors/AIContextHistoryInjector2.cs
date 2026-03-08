@@ -9,18 +9,19 @@
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
-using BaseMessageAIContextProvider = Microsoft.Agents.AI.MessageAIContextProvider;
-
-
-
-
-namespace DataIngestionLib.Services;
+using Microsoft.Agents.AI;
 
 
 
 
 
-public sealed class AIHistoryProvider : BaseMessageAIContextProvider
+namespace DataIngestionLib.Services.ContextInjectors;
+
+
+// Looks like this is a partial context injection provider.
+// TODO: this needs to be refactored and concerns re-analyzed
+
+public sealed class AIContextHistoryInjector2 : MessageAIContextProvider
 {
     private readonly string _applicationId;
 
@@ -42,7 +43,7 @@ public sealed class AIHistoryProvider : BaseMessageAIContextProvider
     /// </summary>
     /// <param name="chatHistoryMemoryProvider"></param>
     /// <param name="applicationId"></param>
-    public AIHistoryProvider(IChatHistoryMemoryProvider chatHistoryMemoryProvider, IRuntimeContextAccessor accessor)
+    public AIContextHistoryInjector2(IChatHistoryMemoryProvider chatHistoryMemoryProvider, IRuntimeContextAccessor accessor)
     {
         ArgumentNullException.ThrowIfNull(chatHistoryMemoryProvider);
 
@@ -77,9 +78,9 @@ public sealed class AIHistoryProvider : BaseMessageAIContextProvider
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(context);
 
-        var conversationId = ChatHistorySessionState.GetOrCreateConversationId(context.Session);
+        string conversationId = ChatHistorySessionState.GetOrCreateConversationId(context.Session);
         ChatHistory requestMessages = ToChatHistory(context.RequestMessages);
-        var historyMessages = await _chatHistoryMemoryProvider
+        IEnumerable<AIChatMessage> historyMessages = await _chatHistoryMemoryProvider
                 .BuildContextMessagesAsync(conversationId, requestMessages, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -120,11 +121,11 @@ public sealed class AIHistoryProvider : BaseMessageAIContextProvider
             return ValueTask.CompletedTask;
         }
 
-        var conversationId = ChatHistorySessionState.GetOrCreateConversationId(context.Session);
-        var sessionId = ChatHistorySessionState.GetOrCreateSessionId(context.Session);
-        var agentId = ChatHistorySessionState.GetOrCreateAgentId(context.Session, DefaultAgentId);
-        var userId = ChatHistorySessionState.GetOrCreateUserId(context.Session);
-        var applicationId = ChatHistorySessionState.GetOrCreateApplicationId(context.Session, _applicationId);
+        string conversationId = ChatHistorySessionState.GetOrCreateConversationId(context.Session);
+        string sessionId = ChatHistorySessionState.GetOrCreateSessionId(context.Session);
+        string agentId = ChatHistorySessionState.GetOrCreateAgentId(context.Session, DefaultAgentId);
+        string userId = ChatHistorySessionState.GetOrCreateUserId(context.Session);
+        string applicationId = ChatHistorySessionState.GetOrCreateApplicationId(context.Session, _applicationId);
 
         ChatHistory requestMessages = ToChatHistory(context.RequestMessages);
         ChatHistory responseMessages = ToChatHistory(context.ResponseMessages);
@@ -152,7 +153,10 @@ public sealed class AIHistoryProvider : BaseMessageAIContextProvider
         ArgumentNullException.ThrowIfNull(messages);
 
         ChatHistory chatHistory = [];
-        foreach (Microsoft.Extensions.AI.ChatMessage message in messages) chatHistory.Add(new AIChatMessage(message.Role, message.Text));
+        foreach (Microsoft.Extensions.AI.ChatMessage message in messages)
+        {
+            chatHistory.Add(new AIChatMessage(message.Role, message.Text));
+        }
 
         return chatHistory;
     }
@@ -168,6 +172,9 @@ public sealed class AIHistoryProvider : BaseMessageAIContextProvider
     {
         ArgumentNullException.ThrowIfNull(messages);
 
-        foreach (AIChatMessage message in messages) yield return new Microsoft.Extensions.AI.ChatMessage(message.Role, message.Text);
+        foreach (AIChatMessage message in messages)
+        {
+            yield return new Microsoft.Extensions.AI.ChatMessage(message.Role, message.Text);
+        }
     }
 }

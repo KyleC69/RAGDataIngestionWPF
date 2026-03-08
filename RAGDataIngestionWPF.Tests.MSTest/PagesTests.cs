@@ -8,9 +8,9 @@
 
 using System.Reflection;
 
+using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Options;
-using DataIngestionLib.Services;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

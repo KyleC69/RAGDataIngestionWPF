@@ -19,8 +19,17 @@ namespace DataIngestionLib.Services;
 
 
 
+// Is this necessary?
+public interface ISqlChatHistoryConnectionFactory
+{
+    ValueTask<SqlConnection> OpenConnectionAsync(CancellationToken cancellationToken);
+}
 
-public sealed class SqlChatHistoryConnectionFactory : IChatHistoryConnectionFactory
+
+
+
+
+public sealed class SqlChatHistoryConnectionFactory : ISqlChatHistoryConnectionFactory
 {
     private readonly IOptionsMonitor<ChatHistoryOptions> _optionsMonitor;
 
@@ -46,13 +55,13 @@ public sealed class SqlChatHistoryConnectionFactory : IChatHistoryConnectionFact
 
     public async ValueTask<SqlConnection> OpenConnectionAsync(CancellationToken cancellationToken)
     {
-        var connectionString = _optionsMonitor.CurrentValue.ConnectionString;
+        string connectionString = _optionsMonitor.CurrentValue.ConnectionString;
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new InvalidOperationException("Chat history connection string is not configured.");
         }
 
-        SqlConnection connection = new SqlConnection(connectionString);
+        SqlConnection connection = new(connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         return connection;
     }

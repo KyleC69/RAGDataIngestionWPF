@@ -8,7 +8,6 @@
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.Services;
 using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Agents.AI;
@@ -29,7 +28,6 @@ public class AgentFactory : IAgentFactory
 {
     private readonly ILoggerFactory _factory;
     private readonly IChatClient _innerClient;
-    private readonly AIHistoryProvider _memoryProvider;
 
     private readonly string _modelInstructions = """
                                                  -- Your name is Maxx, using a name helps personalize the experience and allows users to refer to you in a more natural way. It also helps establish a consistent identity for you as an AI agent.
@@ -48,7 +46,7 @@ public class AgentFactory : IAgentFactory
 
                                                  """;
 
-    private readonly RAGAIContextProvider _ragContextProvider;
+
 
 
 
@@ -60,21 +58,16 @@ public class AgentFactory : IAgentFactory
     public AgentFactory(
             IChatClient innerClient,
             ILoggerFactory factory,
-            IChatHistoryMemoryProvider chatHistoryMemoryProvider,
-            RAGAIContextProvider ragContextProvider,
             IRuntimeContextAccessor accessor
     )
     {
         ArgumentNullException.ThrowIfNull(innerClient);
         ArgumentNullException.ThrowIfNull(factory);
-        ArgumentNullException.ThrowIfNull(chatHistoryMemoryProvider);
-        ArgumentNullException.ThrowIfNull(ragContextProvider);
 
 
         _innerClient = innerClient;
         _factory = factory;
-        _memoryProvider = new AIHistoryProvider(chatHistoryMemoryProvider, accessor);
-        _ragContextProvider = ragContextProvider;
+        //   _memoryProvider = new AIContextHistoryInjector2(chatHistoryMemoryProvider, accessor);
     }
 
 
@@ -89,7 +82,7 @@ public class AgentFactory : IAgentFactory
         IChatClient outer = new ChatClientBuilder(_innerClient)
                 .UseLogging(_factory)
                 .UseFunctionInvocation()
-                .UseAIContextProviders(_memoryProvider, _ragContextProvider)
+                // .UseAIContextProviders(_memoryProvider, _ragContextProvider) // Temporarily disabled for context/chathistory isolation.
                 .ConfigureOptions(chatOptions =>
                 {
                     chatOptions.Instructions = _modelInstructions;

@@ -15,7 +15,7 @@ namespace DataIngestionLib.Services;
 
 
 
-
+// Is this necessary???????????????????
 
 internal static class ChatHistorySessionState
 {
@@ -96,7 +96,7 @@ internal static class ChatHistorySessionState
     {
         if (session is null)
         {
-            var value = factory();
+            string value = factory();
             return string.IsNullOrWhiteSpace(value) ? "unknown" : value;
         }
 
@@ -105,7 +105,7 @@ internal static class ChatHistorySessionState
             return existingValue;
         }
 
-        var newValue = factory();
+        string newValue = factory();
         if (string.IsNullOrWhiteSpace(newValue))
         {
             newValue = "unknown";

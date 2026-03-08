@@ -9,19 +9,20 @@
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
-using BaseMessageAIContextProvider = Microsoft.Agents.AI.MessageAIContextProvider;
+using Microsoft.Agents.AI;
+
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 
 
 
-namespace DataIngestionLib.Services;
+namespace DataIngestionLib.Services.ContextInjectors;
 
 
 
 
 
-public sealed class RAGAIContextProvider : BaseMessageAIContextProvider
+public sealed class AIContextRAGInjector : MessageAIContextProvider
 {
     private readonly IReadOnlyList<IRagContextSource> _sources;
 
@@ -32,7 +33,7 @@ public sealed class RAGAIContextProvider : BaseMessageAIContextProvider
 
 
 
-    public RAGAIContextProvider(IEnumerable<IRagContextSource> sources)
+    public AIContextRAGInjector(IEnumerable<IRagContextSource> sources)
     {
         ArgumentNullException.ThrowIfNull(sources);
         _sources = sources.ToArray();
@@ -45,7 +46,7 @@ public sealed class RAGAIContextProvider : BaseMessageAIContextProvider
 
 
 
-    protected override async ValueTask<IEnumerable<ChatMessage>?> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
+    protected async ValueTask<IEnumerable<ChatMessage>?> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(context);
