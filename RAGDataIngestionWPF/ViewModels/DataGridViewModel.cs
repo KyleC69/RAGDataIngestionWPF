@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         DataGridViewModel.cs
@@ -60,12 +60,9 @@ public class DataGridViewModel : ObservableObject, INavigationAware
         Source.Clear();
 
         // Replace this with your actual data
-        IEnumerable<SampleOrder> data = await _sampleDataService.GetGridDataAsync();
+        var data = await _sampleDataService.GetGridDataAsync();
 
-        foreach (SampleOrder item in data)
-        {
-            Source.Add(item);
-        }
+        foreach (SampleOrder item in data) Source.Add(item);
     }
 
 

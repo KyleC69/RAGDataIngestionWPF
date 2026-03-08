@@ -6,10 +6,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
-    xmlns:vm="clr-namespace:RAGDataIngestionWPF.ViewModels"
     mc:Ignorable="d"
     d:DesignHeight="750" d:DesignWidth="1100">
-   
+
     <Grid>
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -34,11 +33,11 @@
             Margin="{StaticResource MediumLeftRightMargin}"
             Background="{DynamicResource MahApps.Brushes.Gray60}">
             <Grid Margin="{StaticResource SmallTopBottomMargin}">
-            
+
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="733*"/>
-                    <ColumnDefinition Width="19*"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="733*" />
+                    <ColumnDefinition Width="19*" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -58,7 +57,8 @@
                          BorderThickness="0"
                          Background="Transparent"
                          ItemsSource="{Binding Messages}"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto"  IsManipulationEnabled="True" SelectionMode="Multiple">
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" IsManipulationEnabled="True"
+                         SelectionMode="Multiple">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Border
@@ -121,7 +121,7 @@
                     </TextBox>
                     <Button
                         Grid.Column="1"
-                        Margin="8,0,0,0" 
+                        Margin="8,0,0,0"
                         VerticalAlignment="Bottom"
                         Command="{Binding SendMessageCommand}"
                         Content="Send" />

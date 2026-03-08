@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         ApplicationInfoService.cs
@@ -26,8 +26,8 @@ public class ApplicationInfoService : IApplicationInfoService
     public Version GetVersion()
     {
         // Set the app version in RAGDataIngestionWPF > Properties > Package > PackageVersion
-        string assemblyLocation = Assembly.GetExecutingAssembly().Location;
-        string version = FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
+        var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+        var version = FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
         return new Version(version);
     }
 }

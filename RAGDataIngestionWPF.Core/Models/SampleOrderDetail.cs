@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF.Core
 //  File:         SampleOrderDetail.cs
@@ -35,7 +35,10 @@ public class SampleOrderDetail
 
 
 
-    public string ShortDescription => $"Product ID: {ProductID} - {ProductName}";
+    public string ShortDescription
+    {
+        get { return $"Product ID: {ProductID} - {ProductName}"; }
+    }
 
 
 

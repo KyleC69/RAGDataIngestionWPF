@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF.Core
 //  File:         FileService.cs
@@ -25,10 +25,10 @@ public class FileService : IFileService
 {
     public T Read<T>(string folderPath, string fileName)
     {
-        string path = Path.Combine(folderPath, fileName);
+        var path = Path.Combine(folderPath, fileName);
         if (File.Exists(path))
         {
-            string json = File.ReadAllText(path);
+            var json = File.ReadAllText(path);
             return JsonConvert.DeserializeObject<T>(json);
         }
 
@@ -49,7 +49,7 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         }
 
-        string fileContent = JsonConvert.SerializeObject(content);
+        var fileContent = JsonConvert.SerializeObject(content);
         File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
     }
 

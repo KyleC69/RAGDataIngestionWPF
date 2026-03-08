@@ -1,3 +1,11 @@
+// 2026/03/08
+//  Solution: RAGDataIngestionWPF
+//  Project:   DataIngestionLib
+//  File:         CustomChatHistoryProvider.cs
+//   Author: Kyle L. Crowder
+
+
+
 using System.Text.Json;
 
 using DataIngestionLib.Contracts.Services;
@@ -6,15 +14,29 @@ using DataIngestionLib.Models;
 using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
 
+
+
+
 namespace DataIngestionLib.Services;
+
+
+
+
 
 public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistoryProvider
 {
+
+    private readonly IChatHistoryConnectionFactory _connectionFactory;
     private const int ConversationKeyLength = 128;
     private const int PartitionKeyLength = 128;
     private const int RoleLength = 32;
 
-    private readonly IChatHistoryConnectionFactory _connectionFactory;
+
+
+
+
+
+
 
     public CustomChatHistoryProvider(IChatHistoryConnectionFactory connectionFactory)
     {
@@ -22,15 +44,22 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         _connectionFactory = connectionFactory;
     }
 
+
+
+
+
+
+
+
     public async ValueTask EnsureInitializedAsync(CancellationToken cancellationToken = default)
     {
         await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        foreach ((string migrationId, string migrationSql) in ChatHistoryMigrations.All)
+        foreach (var (migrationId, migrationSql) in ChatHistoryMigrations.All)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            bool isApplied = await MigrationAlreadyAppliedAsync(connection, migrationId, cancellationToken).ConfigureAwait(false);
+            var isApplied = await MigrationAlreadyAppliedAsync(connection, migrationId, cancellationToken).ConfigureAwait(false);
             if (isApplied)
             {
                 continue;
@@ -44,8 +73,8 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
 
                 SqlParameter[] insertParameters =
                 [
-                    new("@MigrationId", migrationId),
-                    new("@AppliedOnUtc", DateTimeOffset.UtcNow)
+                        new("@MigrationId", migrationId),
+                        new("@AppliedOnUtc", DateTimeOffset.UtcNow)
                 ];
 
                 const string insertMigrationSql = "INSERT INTO dbo.__ChatHistoryMigrations ([Id], [AppliedOnUtc]) VALUES (@MigrationId, @AppliedOnUtc);";
@@ -61,6 +90,13 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         }
     }
 
+
+
+
+
+
+
+
     public async ValueTask<PersistedChatMessage> CreateMessageAsync(PersistedChatMessage message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
@@ -71,25 +107,25 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         Guid messageId = message.MessageId == Guid.Empty ? Guid.NewGuid() : message.MessageId;
 
         const string insertSql =
-            """
-            INSERT INTO dbo.ChatHistoryMessages
-                ([MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata])
-            VALUES
-                (@MessageId, @ConversationId, @SessionId, @AgentId, @UserId, @ApplicationId, @Role, @Content, @TimestampUtc, @Metadata);
-            """;
+                """
+                INSERT INTO dbo.ChatHistoryMessages
+                    ([MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata])
+                VALUES
+                    (@MessageId, @ConversationId, @SessionId, @AgentId, @UserId, @ApplicationId, @Role, @Content, @TimestampUtc, @Metadata);
+                """;
 
         SqlParameter[] parameters =
         [
-            new("@MessageId", messageId),
-            new("@ConversationId", message.ConversationId),
-            new("@SessionId", message.SessionId),
-            new("@AgentId", message.AgentId),
-            new("@UserId", message.UserId),
-            new("@ApplicationId", message.ApplicationId),
-            new("@Role", message.Role),
-            new("@Content", message.Content),
-            new("@TimestampUtc", message.TimestampUtc),
-            new("@Metadata", message.Metadata?.RootElement.GetRawText() ?? (object)DBNull.Value)
+                new("@MessageId", messageId),
+                new("@ConversationId", message.ConversationId),
+                new("@SessionId", message.SessionId),
+                new("@AgentId", message.AgentId),
+                new("@UserId", message.UserId),
+                new("@ApplicationId", message.ApplicationId),
+                new("@Role", message.Role),
+                new("@Content", message.Content),
+                new("@TimestampUtc", message.TimestampUtc),
+                new("@Metadata", message.Metadata?.RootElement.GetRawText() ?? (object)DBNull.Value)
         ];
 
         await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
@@ -97,6 +133,13 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
 
         return message with { MessageId = messageId };
     }
+
+
+
+
+
+
+
 
     public async ValueTask<PersistedChatMessage?> GetMessageAsync(Guid messageId, CancellationToken cancellationToken = default)
     {
@@ -108,11 +151,11 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         const string selectSql =
-            """
-            SELECT [MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata]
-            FROM dbo.ChatHistoryMessages
-            WHERE [MessageId] = @MessageId;
-            """;
+                """
+                SELECT [MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata]
+                FROM dbo.ChatHistoryMessages
+                WHERE [MessageId] = @MessageId;
+                """;
 
         await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
         await using SqlCommand command = CreateCommand(connection, null, selectSql, [new SqlParameter("@MessageId", messageId)]);
@@ -120,6 +163,13 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
 
         return await reader.ReadAsync(cancellationToken).ConfigureAwait(false) ? MapMessage(reader) : null;
     }
+
+
+
+
+
+
+
 
     public async ValueTask<IReadOnlyList<PersistedChatMessage>> GetMessagesAsync(string conversationId, int? take, CancellationToken cancellationToken = default)
     {
@@ -135,27 +185,25 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
-        bool hasTake = take.HasValue;
-        string selectSql = hasTake
-            ?
-            """
-            SELECT [MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata]
-            FROM (
-                SELECT TOP (@Take)
-                    [MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata]
-                FROM dbo.ChatHistoryMessages
-                WHERE [ConversationId] = @ConversationId
-                ORDER BY [TimestampUtc] DESC, [MessageId] DESC
-            ) AS latest
-            ORDER BY [TimestampUtc] ASC, [MessageId] ASC;
-            """
-            :
-            """
-            SELECT [MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata]
-            FROM dbo.ChatHistoryMessages
-            WHERE [ConversationId] = @ConversationId
-            ORDER BY [TimestampUtc] ASC, [MessageId] ASC;
-            """;
+        var hasTake = take.HasValue;
+        var selectSql = hasTake
+                ? """
+                  SELECT [MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata]
+                  FROM (
+                      SELECT TOP (@Take)
+                          [MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata]
+                      FROM dbo.ChatHistoryMessages
+                      WHERE [ConversationId] = @ConversationId
+                      ORDER BY [TimestampUtc] DESC, [MessageId] DESC
+                  ) AS latest
+                  ORDER BY [TimestampUtc] ASC, [MessageId] ASC;
+                  """
+                : """
+                  SELECT [MessageId], [ConversationId], [SessionId], [AgentId], [UserId], [ApplicationId], [Role], [Content], [TimestampUtc], [Metadata]
+                  FROM dbo.ChatHistoryMessages
+                  WHERE [ConversationId] = @ConversationId
+                  ORDER BY [TimestampUtc] ASC, [MessageId] ASC;
+                  """;
 
         List<SqlParameter> parameters = [new("@ConversationId", conversationId.Trim())];
         if (hasTake)
@@ -169,13 +217,17 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         await using SqlCommand command = CreateCommand(connection, null, selectSql, [.. parameters]);
         await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
-            messages.Add(MapMessage(reader));
-        }
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false)) messages.Add(MapMessage(reader));
 
         return messages;
     }
+
+
+
+
+
+
+
 
     public async ValueTask<PersistedChatMessage?> UpdateMessageAsync(Guid messageId, string content, DateTimeOffset timestampUtc, CancellationToken cancellationToken = default)
     {
@@ -192,27 +244,34 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         const string updateSql =
-            """
-            UPDATE dbo.ChatHistoryMessages
-            SET [Content] = @Content,
-                [TimestampUtc] = @TimestampUtc
-            WHERE [MessageId] = @MessageId;
-            """;
+                """
+                UPDATE dbo.ChatHistoryMessages
+                SET [Content] = @Content,
+                    [TimestampUtc] = @TimestampUtc
+                WHERE [MessageId] = @MessageId;
+                """;
 
         SqlParameter[] updateParameters =
         [
-            new("@Content", content.Trim()),
-            new("@TimestampUtc", timestampUtc),
-            new("@MessageId", messageId)
+                new("@Content", content.Trim()),
+                new("@TimestampUtc", timestampUtc),
+                new("@MessageId", messageId)
         ];
 
         await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        int affected = await ExecuteNonQueryAsync(connection, null, updateSql, updateParameters, cancellationToken).ConfigureAwait(false);
+        var affected = await ExecuteNonQueryAsync(connection, null, updateSql, updateParameters, cancellationToken).ConfigureAwait(false);
 
         return affected == 0
-            ? null
-            : await GetMessageAsync(messageId, cancellationToken).ConfigureAwait(false);
+                ? null
+                : await GetMessageAsync(messageId, cancellationToken).ConfigureAwait(false);
     }
+
+
+
+
+
+
+
 
     public async ValueTask<bool> DeleteMessageAsync(Guid messageId, CancellationToken cancellationToken = default)
     {
@@ -226,9 +285,16 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         const string deleteSql = "DELETE FROM dbo.ChatHistoryMessages WHERE [MessageId] = @MessageId;";
         await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        int affected = await ExecuteNonQueryAsync(connection, null, deleteSql, [new SqlParameter("@MessageId", messageId)], cancellationToken).ConfigureAwait(false);
+        var affected = await ExecuteNonQueryAsync(connection, null, deleteSql, [new SqlParameter("@MessageId", messageId)], cancellationToken).ConfigureAwait(false);
         return affected > 0;
     }
+
+
+
+
+
+
+
 
     public async ValueTask<int> DeleteConversationAsync(string conversationId, CancellationToken cancellationToken = default)
     {
@@ -245,6 +311,13 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         return await ExecuteNonQueryAsync(connection, null, deleteSql, [new SqlParameter("@ConversationId", conversationId.Trim())], cancellationToken).ConfigureAwait(false);
     }
 
+
+
+
+
+
+
+
     private static SqlCommand CreateCommand(SqlConnection connection, SqlTransaction? transaction, string sql, SqlParameter[] parameters)
     {
         SqlCommand command = connection.CreateCommand();
@@ -255,11 +328,84 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         return command;
     }
 
+
+
+
+
+
+
+
     private static async ValueTask<int> ExecuteNonQueryAsync(SqlConnection connection, SqlTransaction? transaction, string sql, SqlParameter[] parameters, CancellationToken cancellationToken)
     {
         await using SqlCommand command = CreateCommand(connection, transaction, sql, parameters);
         return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
+
+
+
+
+
+
+
+
+    private static PersistedChatMessage MapMessage(SqlDataReader reader)
+    {
+        var metadataValue = reader.IsDBNull(9) ? null : reader.GetString(9);
+        JsonDocument? metadata = TryParseMetadata(metadataValue, out JsonDocument? parsedMetadata)
+                ? parsedMetadata
+                : null;
+
+        return new PersistedChatMessage
+        {
+                MessageId = reader.GetGuid(0),
+                ConversationId = reader.GetString(1),
+                SessionId = reader.GetString(2),
+                AgentId = reader.GetString(3),
+                UserId = reader.GetString(4),
+                ApplicationId = reader.GetString(5),
+                Role = reader.GetString(6),
+                Content = reader.GetString(7),
+                TimestampUtc = reader.GetDateTimeOffset(8),
+                Metadata = metadata
+        };
+    }
+
+
+
+
+
+
+
+
+    private async ValueTask<bool> MigrationAlreadyAppliedAsync(SqlConnection connection, string migrationId, CancellationToken cancellationToken)
+    {
+        const string sql =
+                """
+                IF OBJECT_ID(N'dbo.__ChatHistoryMigrations', N'U') IS NULL
+                BEGIN
+                    SELECT CAST(0 AS bit);
+                END
+                ELSE
+                BEGIN
+                    SELECT CASE WHEN EXISTS (SELECT 1 FROM dbo.__ChatHistoryMigrations WHERE [Id] = @MigrationId)
+                        THEN CAST(1 AS bit)
+                        ELSE CAST(0 AS bit)
+                    END;
+                END
+                """;
+
+        await using SqlCommand command = CreateCommand(connection, null, sql, [new SqlParameter("@MigrationId", migrationId)]);
+        var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+
+        return result is bool boolValue && boolValue;
+    }
+
+
+
+
+
+
+
 
     private static bool TryParseMetadata(string? value, out JsonDocument? document)
     {
@@ -282,27 +428,33 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         }
     }
 
-    private static PersistedChatMessage MapMessage(SqlDataReader reader)
-    {
-        string? metadataValue = reader.IsDBNull(9) ? null : reader.GetString(9);
-        JsonDocument? metadata = TryParseMetadata(metadataValue, out JsonDocument? parsedMetadata)
-            ? parsedMetadata
-            : null;
 
-        return new PersistedChatMessage
+
+
+
+
+
+
+    private static void ValidateKey(string value, int maxLength, string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(value))
         {
-            MessageId = reader.GetGuid(0),
-            ConversationId = reader.GetString(1),
-            SessionId = reader.GetString(2),
-            AgentId = reader.GetString(3),
-            UserId = reader.GetString(4),
-            ApplicationId = reader.GetString(5),
-            Role = reader.GetString(6),
-            Content = reader.GetString(7),
-            TimestampUtc = reader.GetDateTimeOffset(8),
-            Metadata = metadata
-        };
+            throw new ArgumentException("Value is required.", parameterName);
+        }
+
+        var trimmed = value.Trim();
+        if (trimmed.Length > maxLength)
+        {
+            throw new ArgumentOutOfRangeException(parameterName, $"Value exceeds maximum length of {maxLength} characters.");
+        }
     }
+
+
+
+
+
+
+
 
     private static void ValidateMessage(PersistedChatMessage message)
     {
@@ -322,42 +474,5 @@ public sealed class CustomChatHistoryProvider : ChatHistoryProvider, IChatHistor
         {
             throw new ArgumentException("Message timestamp must be set.", nameof(message));
         }
-    }
-
-    private static void ValidateKey(string value, int maxLength, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Value is required.", parameterName);
-        }
-
-        string trimmed = value.Trim();
-        if (trimmed.Length > maxLength)
-        {
-            throw new ArgumentOutOfRangeException(parameterName, $"Value exceeds maximum length of {maxLength} characters.");
-        }
-    }
-
-    private async ValueTask<bool> MigrationAlreadyAppliedAsync(SqlConnection connection, string migrationId, CancellationToken cancellationToken)
-    {
-        const string sql =
-            """
-            IF OBJECT_ID(N'dbo.__ChatHistoryMigrations', N'U') IS NULL
-            BEGIN
-                SELECT CAST(0 AS bit);
-            END
-            ELSE
-            BEGIN
-                SELECT CASE WHEN EXISTS (SELECT 1 FROM dbo.__ChatHistoryMigrations WHERE [Id] = @MigrationId)
-                    THEN CAST(1 AS bit)
-                    ELSE CAST(0 AS bit)
-                END;
-            END
-            """;
-
-        await using SqlCommand command = CreateCommand(connection, null, sql, [new SqlParameter("@MigrationId", migrationId)]);
-        object? result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-
-        return result is bool boolValue && boolValue;
     }
 }

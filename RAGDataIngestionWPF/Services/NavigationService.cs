@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         NavigationService.cs
@@ -53,7 +53,10 @@ public class NavigationService : INavigationService
 
 
 
-    public bool CanGoBack => _frame.CanGoBack;
+    public bool CanGoBack
+    {
+        get { return _frame.CanGoBack; }
+    }
 
 
 
@@ -95,7 +98,7 @@ public class NavigationService : INavigationService
     {
         if (_frame.CanGoBack)
         {
-            object vmBeforeNavigation = _frame.GetDataContext();
+            var vmBeforeNavigation = _frame.GetDataContext();
             _frame.GoBack();
             if (vmBeforeNavigation is INavigationAware navigationAware)
             {
@@ -119,11 +122,11 @@ public class NavigationService : INavigationService
         {
             _frame.Tag = clearNavigation;
             Page page = _pageService.GetPage(pageKey);
-            bool navigated = _frame.Navigate(page, parameter);
+            var navigated = _frame.Navigate(page, parameter);
             if (navigated)
             {
                 _lastParameterUsed = parameter;
-                object dataContext = _frame.GetDataContext();
+                var dataContext = _frame.GetDataContext();
                 if (dataContext is INavigationAware navigationAware)
                 {
                     navigationAware.OnNavigatedFrom();
@@ -148,17 +151,24 @@ public class NavigationService : INavigationService
         _frame.CleanNavigation();
     }
 
+
+
+
+
+
+
+
     private void OnNavigated(object sender, NavigationEventArgs e)
     {
         if (sender is Frame frame)
         {
-            bool clearNavigation = (bool)frame.Tag;
+            var clearNavigation = (bool)frame.Tag;
             if (clearNavigation)
             {
                 frame.CleanNavigation();
             }
 
-            object dataContext = frame.GetDataContext();
+            var dataContext = frame.GetDataContext();
             if (dataContext is INavigationAware navigationAware)
             {
                 navigationAware.OnNavigatedTo(e.ExtraData);

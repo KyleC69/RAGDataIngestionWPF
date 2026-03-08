@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         PageService.cs
@@ -93,7 +93,7 @@ public class PageService : IPageService
     {
         lock (_pages)
         {
-            string key = typeof(VM).FullName;
+            var key = typeof(VM).FullName;
             if (_pages.ContainsKey(key))
             {
                 throw new ArgumentException($"The key {key} is already configured in PageService");

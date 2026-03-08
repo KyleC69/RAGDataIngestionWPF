@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         ThemeSelectorService.cs
@@ -83,7 +83,7 @@ public class ThemeSelectorService : IThemeSelectorService
     {
         if (App.Current.Properties.Contains("Theme"))
         {
-            string themeName = App.Current.Properties["Theme"].ToString();
+            var themeName = App.Current.Properties["Theme"].ToString();
             Enum.TryParse(themeName, out AppTheme theme);
             return theme;
         }

@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         LogInViewModel.cs
@@ -26,6 +26,13 @@ public class LogInViewModel : ObservableObject
 {
     private readonly IIdentityService _identityService;
 
+
+
+
+
+
+
+
     public LogInViewModel(IIdentityService identityService)
     {
         _identityService = identityService;
@@ -43,7 +50,7 @@ public class LogInViewModel : ObservableObject
         get;
         set
         {
-            SetProperty(ref field, value);
+            this.SetProperty(ref field, value);
             LoginCommand.NotifyCanExecuteChanged();
         }
     }
@@ -52,7 +59,10 @@ public class LogInViewModel : ObservableObject
 
 
 
-    public RelayCommand LoginCommand => field ??= new RelayCommand(OnLogin, () => !IsBusy);
+    public RelayCommand LoginCommand
+    {
+        get { return field ??= new RelayCommand(OnLogin, () => !IsBusy); }
+    }
 
 
 
@@ -60,7 +70,8 @@ public class LogInViewModel : ObservableObject
 
     public string StatusMessage
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -74,11 +85,11 @@ public class LogInViewModel : ObservableObject
     {
         return loginResult switch
         {
-            LoginResultType.Unauthorized => Resources.StatusUnauthorized,
-            LoginResultType.NoNetworkAvailable => Resources.StatusNoNetworkAvailable,
-            LoginResultType.UnknownError => Resources.StatusLoginFails,
-            LoginResultType.Success or LoginResultType.CancelledByUser => string.Empty,
-            _ => string.Empty,
+                LoginResultType.Unauthorized => Resources.StatusUnauthorized,
+                LoginResultType.NoNetworkAvailable => Resources.StatusNoNetworkAvailable,
+                LoginResultType.UnknownError => Resources.StatusLoginFails,
+                LoginResultType.Success or LoginResultType.CancelledByUser => string.Empty,
+                _ => string.Empty
         };
     }
 

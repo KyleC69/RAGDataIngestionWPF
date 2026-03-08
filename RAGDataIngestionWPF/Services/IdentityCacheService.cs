@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         IdentityCacheService.cs
@@ -38,10 +38,10 @@ public class IdentityCacheService : IIdentityCacheService
     {
         lock (_fileLock)
         {
-            string filePath = Path.Combine(_msalCacheFilePath, _msalCacheFileName);
+            var filePath = Path.Combine(_msalCacheFilePath, _msalCacheFileName);
             if (File.Exists(filePath))
             {
-                byte[] encryptedData = File.ReadAllBytes(filePath);
+                var encryptedData = File.ReadAllBytes(filePath);
                 return ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
             }
 
@@ -65,8 +65,8 @@ public class IdentityCacheService : IIdentityCacheService
                 Directory.CreateDirectory(_msalCacheFilePath);
             }
 
-            byte[] encryptedData = ProtectedData.Protect(token, null, DataProtectionScope.CurrentUser);
-            string filePath = Path.Combine(_msalCacheFilePath, _msalCacheFileName);
+            var encryptedData = ProtectedData.Protect(token, null, DataProtectionScope.CurrentUser);
+            var filePath = Path.Combine(_msalCacheFilePath, _msalCacheFileName);
             File.WriteAllBytes(filePath, encryptedData);
         }
     }

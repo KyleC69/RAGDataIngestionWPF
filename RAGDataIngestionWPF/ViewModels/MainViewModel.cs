@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         MainViewModel.cs
@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
+
 
 
 
@@ -27,6 +28,11 @@ public sealed class MainViewModel : ObservableObject
 
 
 
+
+
+
+
+
     public MainViewModel()
     {
         Messages = [];
@@ -34,6 +40,10 @@ public sealed class MainViewModel : ObservableObject
         SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
     }
+
+
+
+
 
 
 
@@ -65,7 +75,8 @@ public sealed class MainViewModel : ObservableObject
 
     public int ContextTokenCount
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -77,7 +88,7 @@ public sealed class MainViewModel : ObservableObject
         get;
         set
         {
-            if (SetProperty(ref field, value))
+            if (this.SetProperty(ref field, value))
             {
                 SendMessageCommand.NotifyCanExecuteChanged();
                 CancelMessageCommand.NotifyCanExecuteChanged();
@@ -94,7 +105,7 @@ public sealed class MainViewModel : ObservableObject
         get;
         set
         {
-            if (SetProperty(ref field, value))
+            if (this.SetProperty(ref field, value))
             {
                 SendMessageCommand.NotifyCanExecuteChanged();
             }
@@ -138,10 +149,24 @@ public sealed class MainViewModel : ObservableObject
         return IsGenerating;
     }
 
+
+
+
+
+
+
+
     private void CancelMessage()
     {
         _responseCancellationTokenSource?.Cancel();
     }
+
+
+
+
+
+
+
 
     private bool CanSendMessage()
     {
@@ -157,11 +182,12 @@ public sealed class MainViewModel : ObservableObject
 
     private async Task SendMessageAsync()
     {
-        string content = MessageInput.Trim();
+        var content = MessageInput.Trim();
         if (string.IsNullOrWhiteSpace(content))
         {
             return;
         }
+
         //Add Users message to UI collection
         Messages.AddUserMessage(content);
 
@@ -198,10 +224,4 @@ public sealed class MainViewModel : ObservableObject
 
 
     }
-
-
-
-
-
-
 }

@@ -1,4 +1,4 @@
-﻿// 2026/03/07
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         ChatHistory.cs
@@ -28,7 +28,8 @@ namespace DataIngestionLib.Models;
 /// </summary>
 /// <remarks>
 ///     This type is intended to be directly consumed by Agent Framework and <see cref="IChatClient" /> APIs that operate
-///     on <see cref="AIChatMessage" /> sequences. Keep chat manipulation helpers here to avoid duplicating message logic in
+///     on <see cref="AIChatMessage" /> sequences. Keep chat manipulation helpers here to avoid duplicating message logic
+///     in
 ///     service layers.
 /// </remarks>
 public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMessage>, INotifyCollectionChanged, INotifyPropertyChanged
@@ -50,15 +51,21 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
         _messages = [];
     }
 
+
+
+
+
+
+
+
     public ChatHistory(IEnumerable<(ChatRole Role, string Text)> messages)
     {
         ArgumentNullException.ThrowIfNull(messages);
         _messages = [];
-        foreach ((ChatRole Role, string Text) in messages)
-        {
-            Add(new AIChatMessage(Role, Text));
-        }
+        foreach ((ChatRole Role, var Text) in messages) Add(new AIChatMessage(Role, Text));
     }
+
+
 
 
 
@@ -100,20 +107,18 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
 
 
 
-
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChatHistory"/> class with a collection of context request messages.
+    ///     Initializes a new instance of the <see cref="ChatHistory" /> class with a collection of context request messages.
     /// </summary>
     /// <param name="contextRequestMessages">
-    /// A collection of <see cref="AIChatMessage"/> instances representing the context request messages.
+    ///     A collection of <see cref="AIChatMessage" /> instances representing the context request messages.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="contextRequestMessages"/> is <c>null</c>.
+    ///     Thrown when <paramref name="contextRequestMessages" /> is <c>null</c>.
     /// </exception>
     public ChatHistory(IEnumerable<AIChatMessage> contextRequestMessages)
     {
-        ArgumentNullException.ThrowIfNull(contextRequestMessages, nameof(contextRequestMessages));
+        ArgumentNullException.ThrowIfNull(contextRequestMessages);
         _messages = contextRequestMessages.Select(msg => new AIChatMessage(msg.Role, msg.Text)).ToList();
     }
 
@@ -127,7 +132,10 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <summary>
     ///     Gets the newest message in the history, or <see langword="null" /> when history is empty.
     /// </summary>
-    public AIChatMessage? LastMessage => _messages.Count == 0 ? null : _messages[^1];
+    public AIChatMessage? LastMessage
+    {
+        get { return _messages.Count == 0 ? null : _messages[^1]; }
+    }
 
 
 
@@ -136,7 +144,10 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <summary>
     ///     Gets the number of messages in the history.
     /// </summary>
-    public int Count => _messages.Count;
+    public int Count
+    {
+        get { return _messages.Count; }
+    }
 
 
 
@@ -232,7 +243,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index" /> was not valid for this history.</exception>
     public AIChatMessage this[int index]
     {
-        get => _messages[index];
+        get { return _messages[index]; }
         set
         {
             ArgumentNullException.ThrowIfNull(value);
@@ -321,7 +332,10 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
 
 
     /// <inheritdoc />
-    bool ICollection<AIChatMessage>.IsReadOnly => false;
+    bool ICollection<AIChatMessage>.IsReadOnly
+    {
+        get { return false; }
+    }
 
 
 
@@ -347,6 +361,47 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     IEnumerator IEnumerable.GetEnumerator()
     {
         return _messages.GetEnumerator();
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
+
+
+
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+
+
+
+
+
+
+
+    public void Add(ChatRole mRole, string mText)
+    {
+        switch (mRole.Value)
+        {
+            case "user":
+                AddUserMessage(mText);
+                break;
+            case "assistant":
+                AddAssistantMessage(mText);
+                break;
+            case "system":
+                AddSystemMessage(mText);
+                break;
+        }
+
+
     }
 
 
@@ -439,10 +494,7 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     {
         ArgumentNullException.ThrowIfNull(items);
 
-        foreach (AIChatMessage item in items)
-        {
-            Add(item);
-        }
+        foreach (AIChatMessage item in items) Add(item);
     }
 
 
@@ -543,17 +595,17 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
             throw new ArgumentOutOfRangeException(nameof(maxTokens), "Maximum context tokens must be a positive value.");
         }
 
-        int tokenCount = 0;
+        var tokenCount = 0;
 
-        for (int index = _messages.Count - 1; index >= 0; index--)
+        for (var index = _messages.Count - 1; index >= 0; index--)
         {
-            string text = _messages[index].Text;
+            var text = _messages[index].Text;
             if (string.IsNullOrWhiteSpace(text))
             {
                 continue;
             }
 
-            int messageTokenCount = Math.Max(1, text.Length / 4);
+            var messageTokenCount = Math.Max(1, text.Length / 4);
             if (tokenCount + messageTokenCount > maxTokens)
             {
                 break;
@@ -578,11 +630,11 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
     /// <returns>Estimated token count for all messages.</returns>
     public int EstimateTokenCount()
     {
-        int tokenCount = 0;
+        var tokenCount = 0;
 
         foreach (AIChatMessage message in _messages)
         {
-            string text = message.Text;
+            var text = message.Text;
             if (string.IsNullOrWhiteSpace(text))
             {
                 continue;
@@ -611,6 +663,30 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
         return TryGetLastMessage(role, out AIChatMessage? message)
                 ? message.Text
                 : string.Empty;
+    }
+
+
+
+
+
+
+
+
+    private void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+    {
+        CollectionChanged?.Invoke(this, e);
+    }
+
+
+
+
+
+
+
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
 
@@ -671,77 +747,6 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
 
 
 
-    /// <summary>
-    ///     Attempts to get the most recent message matching the provided role.
-    /// </summary>
-    /// <param name="role">Role to search for.</param>
-    /// <param name="message">The latest matching message when found; otherwise <see langword="null" />.</param>
-    /// <returns><see langword="true" /> when a matching message exists; otherwise <see langword="false" />.</returns>
-    public bool TryGetLastMessage(ChatRole role, [NotNullWhen(true)] out AIChatMessage? message)
-    {
-        for (int index = _messages.Count - 1; index >= 0; index--)
-        {
-            if (_messages[index].Role == role)
-            {
-                message = _messages[index];
-                return true;
-            }
-        }
-
-        message = null;
-        return false;
-    }
-
-
-
-
-
-
-
-
-    /// <inheritdoc />
-    public event NotifyCollectionChangedEventHandler? CollectionChanged;
-
-
-
-
-
-
-
-
-    private void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-    {
-        CollectionChanged?.Invoke(this, e);
-    }
-
-
-
-
-
-
-
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-
-
-
-
-
-
-
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-
-
-
-
-
-
-
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
@@ -761,23 +766,22 @@ public sealed class ChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMess
 
 
 
-    public void Add(Microsoft.Extensions.AI.ChatRole mRole, string mText)
+    /// <summary>
+    ///     Attempts to get the most recent message matching the provided role.
+    /// </summary>
+    /// <param name="role">Role to search for.</param>
+    /// <param name="message">The latest matching message when found; otherwise <see langword="null" />.</param>
+    /// <returns><see langword="true" /> when a matching message exists; otherwise <see langword="false" />.</returns>
+    public bool TryGetLastMessage(ChatRole role, [NotNullWhen(true)] out AIChatMessage? message)
     {
-        switch (mRole.Value)
-        {
-            case "user":
-                AddUserMessage(mText);
-                break;
-            case "assistant":
-                AddAssistantMessage(mText);
-                break;
-            case "system":
-                AddSystemMessage(mText);
-                break;
-            default:
-                break;
-        }
+        for (var index = _messages.Count - 1; index >= 0; index--)
+            if (_messages[index].Role == role)
+            {
+                message = _messages[index];
+                return true;
+            }
 
-
+        message = null;
+        return false;
     }
 }

@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         UserViewModel.cs
@@ -23,7 +23,8 @@ public class UserViewModel : ObservableObject
 {
     public string Name
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -32,7 +33,8 @@ public class UserViewModel : ObservableObject
 
     public BitmapImage Photo
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -41,6 +43,7 @@ public class UserViewModel : ObservableObject
 
     public string UserPrincipalName
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 }

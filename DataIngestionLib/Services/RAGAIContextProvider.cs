@@ -1,4 +1,4 @@
-// 2026/03/07
+// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         RAGAIContextProvider.cs
@@ -50,8 +50,11 @@ public sealed class RAGAIContextProvider : BaseMessageAIContextProvider
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(context);
 
-        ChatHistory requestMessages = [.. context.RequestMessages
-            .Select(m => new AIChatMessage(m.Role, m.Text))];
+        ChatHistory requestMessages =
+        [
+                .. context.RequestMessages
+                        .Select(m => new AIChatMessage(m.Role, m.Text))
+        ];
         if (_sources.Count == 0)
         {
             return [];
@@ -74,9 +77,9 @@ public sealed class RAGAIContextProvider : BaseMessageAIContextProvider
         }
 
         return aggregatedContext
-            .Where(m => !string.IsNullOrWhiteSpace(m.Text))
-            .Select(m => new ChatMessage(m.Role, m.Text))
-            .ToArray();
+                .Where(m => !string.IsNullOrWhiteSpace(m.Text))
+                .Select(m => new ChatMessage(m.Role, m.Text))
+                .ToArray();
     }
 
 

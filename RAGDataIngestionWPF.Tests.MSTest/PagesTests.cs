@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF.Tests.MSTest
 //  File:         PagesTests.cs
@@ -16,7 +16,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Core.Contracts.Services;
@@ -49,7 +48,7 @@ public class PagesTests
 
     public PagesTests()
     {
-        string appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location);
+        var appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location);
         _host = Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c => c.SetBasePath(appLocation))
                 .ConfigureServices(ConfigureServices)
@@ -79,9 +78,9 @@ public class PagesTests
             AppConfig appConfig = sp.GetRequiredService<IOptions<AppConfig>>().Value;
             return new ChatSessionOptions
             {
-                ConfigurationsFolder = appConfig.ConfigurationsFolder,
-                ChatSessionFileName = appConfig.ChatSessionFileName,
-                MaxContextTokens = 120000
+                    ConfigurationsFolder = appConfig.ConfigurationsFolder,
+                    ChatSessionFileName = appConfig.ChatSessionFileName,
+                    MaxContextTokens = 120000
             };
         });
         services.AddSingleton<IChatConversationService, ChatConversationService>();
@@ -116,7 +115,7 @@ public class PagesTests
     [TestMethod]
     public void TestBlankViewModelCreation()
     {
-        object vm = _host.Services.GetService(typeof(BlankViewModel));
+        var vm = _host.Services.GetService(typeof(BlankViewModel));
         Assert.IsNotNull(vm);
     }
 
@@ -131,7 +130,7 @@ public class PagesTests
     [TestMethod]
     public void TestDataGridViewModelCreation()
     {
-        object vm = _host.Services.GetService(typeof(DataGridViewModel));
+        var vm = _host.Services.GetService(typeof(DataGridViewModel));
         Assert.IsNotNull(vm);
     }
 
@@ -272,7 +271,7 @@ public class PagesTests
     [TestMethod]
     public void TestListDetailsViewModelCreation()
     {
-        object vm = _host.Services.GetService(typeof(ListDetailsViewModel));
+        var vm = _host.Services.GetService(typeof(ListDetailsViewModel));
         Assert.IsNotNull(vm);
     }
 
@@ -287,7 +286,7 @@ public class PagesTests
     [TestMethod]
     public void TestMainViewModelCreation()
     {
-        object vm = _host.Services.GetService(typeof(MainViewModel));
+        var vm = _host.Services.GetService(typeof(MainViewModel));
         Assert.IsNotNull(vm);
     }
 
@@ -302,7 +301,7 @@ public class PagesTests
     [TestMethod]
     public void TestSettingsViewModelCreation()
     {
-        object vm = _host.Services.GetService(typeof(SettingsViewModel));
+        var vm = _host.Services.GetService(typeof(SettingsViewModel));
         Assert.IsNotNull(vm);
     }
 
@@ -317,7 +316,7 @@ public class PagesTests
     [TestMethod]
     public void TestWebViewViewModelCreation()
     {
-        object vm = _host.Services.GetService(typeof(WebViewViewModel));
+        var vm = _host.Services.GetService(typeof(WebViewViewModel));
         Assert.IsNotNull(vm);
     }
 }

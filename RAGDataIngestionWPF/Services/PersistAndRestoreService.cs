@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         PersistAndRestoreService.cs
@@ -54,8 +54,8 @@ public class PersistAndRestoreService : IPersistAndRestoreService
     {
         if (App.Current.Properties != null)
         {
-            string folderPath = Path.Combine(_localAppData, _appConfig.ConfigurationsFolder);
-            string fileName = _appConfig.AppPropertiesFileName;
+            var folderPath = Path.Combine(_localAppData, _appConfig.ConfigurationsFolder);
+            var fileName = _appConfig.AppPropertiesFileName;
             _fileService.Save(folderPath, fileName, App.Current.Properties);
         }
     }
@@ -69,15 +69,12 @@ public class PersistAndRestoreService : IPersistAndRestoreService
 
     public void RestoreData()
     {
-        string folderPath = Path.Combine(_localAppData, _appConfig.ConfigurationsFolder);
-        string fileName = _appConfig.AppPropertiesFileName;
+        var folderPath = Path.Combine(_localAppData, _appConfig.ConfigurationsFolder);
+        var fileName = _appConfig.AppPropertiesFileName;
         IDictionary properties = _fileService.Read<IDictionary>(folderPath, fileName);
         if (properties != null)
         {
-            foreach (DictionaryEntry property in properties)
-            {
-                App.Current.Properties.Add(property.Key, property.Value);
-            }
+            foreach (DictionaryEntry property in properties) App.Current.Properties.Add(property.Key, property.Value);
         }
     }
 }

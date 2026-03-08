@@ -1,9 +1,25 @@
-﻿namespace DataIngestionLib.Contracts.Services;
+﻿// 2026/03/08
+//  Solution: RAGDataIngestionWPF
+//  Project:   DataIngestionLib
+//  File:         IRuntimeContextAccessor.cs
+//   Author: Kyle L. Crowder
+
+
+
+namespace DataIngestionLib.Contracts.Services;
+
+
+
+
 
 public sealed record RuntimeContext(
         Guid ApplicationId,
         string? UserPrincipalName,
         string? DisplayName);
+
+
+
+
 
 public interface IRuntimeContextAccessor
 {

@@ -1,23 +1,52 @@
+// 2026/03/08
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         ApplicationIdService.cs
+//   Author: Kyle L. Crowder
+
+
+
 using System.Reflection;
 
 using Microsoft.Win32;
 
 using RAGDataIngestionWPF.Contracts.Services;
 
+
+
+
 namespace RAGDataIngestionWPF.Services;
+
+
+
+
 
 public sealed class ApplicationIdService : IApplicationIdService
 {
-    private const string ApplicationIdValueName = "ApplicationId";
     private readonly string _applicationRegistryPath;
+    private const string ApplicationIdValueName = "ApplicationId";
+
+
+
+
+
+
+
 
     public ApplicationIdService()
     {
         _applicationRegistryPath = BuildApplicationRegistryPath();
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Retrieves the application identifier from the application registry location, creating it when missing.
+    ///     Retrieves the application identifier from the application registry location, creating it when missing.
     /// </summary>
     public Guid GetApplicationId()
     {
@@ -33,8 +62,15 @@ public sealed class ApplicationIdService : IApplicationIdService
         return newApplicationId;
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Generates and persists a new application identifier in the application registry location.
+    ///     Generates and persists a new application identifier in the application registry location.
     /// </summary>
     public Guid RenewApplicationId()
     {
@@ -44,23 +80,32 @@ public sealed class ApplicationIdService : IApplicationIdService
         return renewedApplicationId;
     }
 
-    private RegistryKey OpenApplicationRegistryKey()
-    {
-        return Registry.CurrentUser.CreateSubKey(_applicationRegistryPath, writable: true)
-            ?? throw new InvalidOperationException($"Unable to open registry path '{_applicationRegistryPath}'.");
-    }
+
+
+
+
+
+
 
     private static string BuildApplicationRegistryPath()
     {
         Assembly entryAssembly = Assembly.GetEntryAssembly() ?? typeof(ApplicationIdService).Assembly;
-        string productName = entryAssembly.GetName().Name ?? "RAGDataIngestionWPF";
-        string companyName = entryAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company;
+        var productName = entryAssembly.GetName().Name ?? "RAGDataIngestionWPF";
+        var companyName = entryAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company;
 
-        if (string.IsNullOrWhiteSpace(companyName))
-        {
-            return $@"Software\\{productName}";
-        }
+        return string.IsNullOrWhiteSpace(companyName) ? $@"Software\\{productName}" : $@"Software\\{companyName}\\{productName}";
+    }
 
-        return $@"Software\\{companyName}\\{productName}";
+
+
+
+
+
+
+
+    private RegistryKey OpenApplicationRegistryKey()
+    {
+        return Registry.CurrentUser.CreateSubKey(_applicationRegistryPath, writable: true)
+               ?? throw new InvalidOperationException($"Unable to open registry path '{_applicationRegistryPath}'.");
     }
 }

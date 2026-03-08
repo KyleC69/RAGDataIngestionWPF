@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF.Core
 //  File:         IdentityService.cs
@@ -87,6 +87,13 @@ public class IdentityService : IIdentityService
         return _isLoggedIn;
     }
 
+
+
+
+
+
+
+
     public async Task<LoginResultType> LoginAsync()
     {
         _isLoggedIn = true;
@@ -106,6 +113,13 @@ public class IdentityService : IIdentityService
     {
         return true;
     }
+
+
+
+
+
+
+
 
     public string GetAccountUserName()
     {
@@ -142,6 +156,13 @@ public class IdentityService : IIdentityService
         return await GetAccessTokenAsync(Array.Empty<string>());
     }
 
+
+
+
+
+
+
+
     public async Task<string> GetAccessTokenAsync(string[] scopes)
     {
         await Task.CompletedTask;
@@ -159,6 +180,13 @@ public class IdentityService : IIdentityService
     {
         return await AcquireTokenSilentAsync(Array.Empty<string>());
     }
+
+
+
+
+
+
+
 
     private async Task<bool> AcquireTokenSilentAsync(string[] scopes)
     {

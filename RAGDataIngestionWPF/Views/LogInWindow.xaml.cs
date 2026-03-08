@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         LogInWindow.xaml.cs
@@ -37,11 +37,18 @@ public partial class LogInWindow : MetroWindow, ILogInWindow
 
     public void ShowWindow()
     {
-        Show();
+        this.Show();
     }
+
+
+
+
+
+
+
 
     public void CloseWindow()
     {
-        Close();
+        this.Close();
     }
 }

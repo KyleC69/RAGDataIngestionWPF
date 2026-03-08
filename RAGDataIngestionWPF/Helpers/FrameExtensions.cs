@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         FrameExtensions.cs
@@ -8,6 +8,9 @@
 
 using System.Windows;
 using System.Windows.Controls;
+
+
+
 
 namespace RAGDataIngestionWPF.Helpers;
 

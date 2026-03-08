@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         ImageHelper.cs
@@ -38,7 +38,7 @@ public static class ImageHelper
     public static BitmapImage ImageFromString(string data)
     {
         BitmapImage image = new();
-        byte[] binaryData = Convert.FromBase64String(data);
+        var binaryData = Convert.FromBase64String(data);
         image.BeginInit();
         image.StreamSource = new MemoryStream(binaryData);
         image.EndInit();

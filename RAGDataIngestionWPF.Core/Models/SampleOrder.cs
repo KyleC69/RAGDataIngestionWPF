@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF.Core
 //  File:         SampleOrder.cs
@@ -43,7 +43,10 @@ public class SampleOrder
 
 
 
-    public string ShortDescription => $"Order ID: {OrderID}";
+    public string ShortDescription
+    {
+        get { return $"Order ID: {OrderID}"; }
+    }
 
 
 
@@ -55,7 +58,10 @@ public class SampleOrder
 
 
 
-    public char Symbol => (char)SymbolCode;
+    public char Symbol
+    {
+        get { return (char)SymbolCode; }
+    }
 
 
 

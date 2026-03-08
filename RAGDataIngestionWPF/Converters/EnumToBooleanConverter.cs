@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         EnumToBooleanConverter.cs
@@ -35,7 +35,7 @@ public class EnumToBooleanConverter : IValueConverter
         {
             if (Enum.IsDefined(EnumType, value))
             {
-                object enumValue = Enum.Parse(EnumType, enumString);
+                var enumValue = Enum.Parse(EnumType, enumString);
 
                 return enumValue.Equals(value);
             }

@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF.Core
 //  File:         MicrosoftGraphService.cs
@@ -59,7 +59,7 @@ public class MicrosoftGraphService : IMicrosoftGraphService
         HttpContent httpContent = await GetDataAsync($"{_apiServiceMe}", accessToken);
         if (httpContent != null)
         {
-            string userData = await httpContent.ReadAsStringAsync();
+            var userData = await httpContent.ReadAsStringAsync();
             if (!string.IsNullOrEmpty(userData))
             {
                 user = JsonConvert.DeserializeObject<User>(userData);
@@ -100,7 +100,7 @@ public class MicrosoftGraphService : IMicrosoftGraphService
     {
         try
         {
-            HttpRequestMessage request = new(HttpMethod.Get, url);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Authorization = new("Bearer", accessToken);
             HttpResponseMessage response = await _client.SendAsync(request);
             if (response.IsSuccessStatusCode)

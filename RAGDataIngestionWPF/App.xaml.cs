@@ -1,4 +1,12 @@
-﻿#nullable enable
+﻿// 2026/03/08
+//  Solution: RAGDataIngestionWPF
+//  Project:   RAGDataIngestionWPF
+//  File:         App.xaml.cs
+//   Author: Kyle L. Crowder
+
+
+
+#nullable enable
 // 2026/03/05
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
@@ -59,11 +67,47 @@ namespace RAGDataIngestionWPF;
 // Tracking issue for improving this is https://github.com/dotnet/wpf/issues/1946
 public partial class App : Application
 {
-    private const string OllamaEndpoint = "http://localhost:11434";
-    private const string OllamaModel = "gpt-oss:20b-cloud";
     private readonly SemaphoreSlim _hostStartGate = new(1, 1);
     private IHost? _host;
     private bool _isHostStarted;
+    private const string OllamaEndpoint = "http://localhost:11434";
+    private const string OllamaModel = "gpt-oss:20b-cloud";
+
+
+
+
+
+
+
+
+    private IHost BuildHost(string[] args, string appLocation, IDictionary<string, string?> activationArgs)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+        ArgumentException.ThrowIfNullOrWhiteSpace(appLocation);
+        ArgumentNullException.ThrowIfNull(activationArgs);
+
+        return Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration(c =>
+                {
+                    c.SetBasePath(appLocation);
+                    c.AddInMemoryCollection(activationArgs);
+                })
+                .ConfigureServices(ConfigureServices)
+                .ConfigureLogging(logging =>
+                {
+                    logging.AddDebug();
+                    logging.AddConsole();
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                })
+                .Build();
+    }
+
+
+
+
+
+
+
 
     private void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
@@ -82,101 +126,71 @@ public partial class App : Application
         services.Configure<ChatHistoryOptions>(context.Configuration.GetSection(ChatHistoryOptions.ConfigurationSectionName));
     }
 
-    private static void RegisterHostServices(IServiceCollection services)
+
+
+
+
+
+
+
+    private async Task EnsureHostStartedAsync()
     {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.AddHostedService<ApplicationHostService>();
-        services.AddHostedService<ChatHistoryInitializationService>();
-        services.AddHttpClient("ollama", client => { client.BaseAddress = new Uri(OllamaEndpoint); });
-    }
-
-    private static void RegisterAgentServices(IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.AddSingleton<IOllamaApiClient>(_ => new OllamaApiClient(OllamaEndpoint, OllamaModel));
-        services.AddSingleton<IChatClient>(sp => (IChatClient)sp.GetRequiredService<IOllamaApiClient>());
-        services.AddSingleton(sp => sp.GetRequiredService<IChatClient>().AsAIAgent());
-        //services.AddSingleton<ISqlVectorStore, SqlVectorStore>();
-        services.AddSingleton<IChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
-        services.AddSingleton<IRuntimeContextAccessor, RuntimeContextAccessor>();
-        services.AddSingleton<IChatHistoryProvider, CustomChatHistoryProvider>();
-        services.AddSingleton<IChatHistoryMemoryProvider, ChatHistoryMemoryProvider>();
-        services.AddSingleton<IRagContextSource, NullRagContextSource>();
-        services.AddSingleton<RAGAIContextProvider>();
-        services.AddSingleton<IAgentFactory, AgentFactory>();
-    }
-
-    private static void RegisterActivationHandlers(IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.AddSingleton<IActivationHandler, ToastNotificationActivationHandler>();
-    }
-
-    private static void RegisterCoreServices(IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.AddSingleton<IIdentityService, IdentityService>();
-        services.AddSingleton<IFileService, FileService>();
-    }
-
-    private static void RegisterApplicationServices(IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.AddSingleton<IToastNotificationsService, ToastNotificationsService>();
-        services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
-        services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
-        services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-        services.AddSingleton<ISystemService, SystemService>();
-        services.AddSingleton<IApplicationIdService, ApplicationIdService>();
-        services.AddSingleton<ISampleDataService, SampleDataService>();
-        services.AddSingleton(sp =>
+        if (_host is null || _isHostStarted)
         {
-            AppConfig appConfig = sp.GetRequiredService<IOptions<AppConfig>>().Value;
-            return new ChatSessionOptions
+            return;
+        }
+
+        await _hostStartGate.WaitAsync();
+        try
+        {
+            if (_host is null || _isHostStarted)
             {
-                ConfigurationsFolder = appConfig.ConfigurationsFolder,
-                ChatSessionFileName = appConfig.ChatSessionFileName,
-                MaxContextTokens = 120000
-            };
-        });
-        services.AddSingleton<IChatConversationService, ChatConversationService>();
-        services.AddSingleton<IPageService, PageService>();
-        services.AddSingleton<INavigationService, NavigationService>();
-        services.AddSingleton<IUserDataService, UserDataService>();
+                return;
+            }
+
+            await _host.StartAsync();
+            _isHostStarted = true;
+        }
+        finally
+        {
+            _hostStartGate.Release();
+        }
     }
 
-    private static void RegisterViewsAndViewModels(IServiceCollection services)
+
+
+
+
+
+
+
+    private static string GetAppLocation()
     {
-        ArgumentNullException.ThrowIfNull(services);
+        var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
+        var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
+                ? AppContext.BaseDirectory
+                : Path.GetDirectoryName(entryAssemblyLocation);
 
-        services.AddTransient<IShellWindow, ShellWindow>();
-        services.AddTransient<ShellViewModel>();
+        return string.IsNullOrWhiteSpace(appLocation) ? AppContext.BaseDirectory : appLocation;
+    }
 
-        services.AddTransient<MainViewModel>();
-        services.AddTransient<MainPage>();
 
-        services.AddTransient<BlankViewModel>();
-        services.AddTransient<BlankPage>();
 
-        services.AddTransient<ListDetailsViewModel>();
-        services.AddTransient<ListDetailsPage>();
 
-        services.AddTransient<DataGridViewModel>();
-        services.AddTransient<DataGridPage>();
 
-        services.AddTransient<WebViewViewModel>();
-        services.AddTransient<WebViewPage>();
 
-        services.AddTransient<SettingsViewModel>();
-        services.AddTransient<SettingsPage>();
 
-        services.AddTransient<ILogInWindow, LogInWindow>();
-        services.AddTransient<LogInViewModel>();
+
+    private async Task HandleToastActivationAsync(string toastArgument)
+    {
+        if (_host is null)
+        {
+            return;
+        }
+
+        IConfiguration configuration = _host.Services.GetRequiredService<IConfiguration>();
+        configuration[ToastNotificationActivationHandler.ActivationArguments] = toastArgument;
+        await EnsureHostStartedAsync();
     }
 
 
@@ -188,7 +202,7 @@ public partial class App : Application
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        ILogger<App>? logger = _host?.Services.GetService<ILogger<App>>();
+        var logger = _host?.Services.GetService<ILogger<App>>();
         logger?.LogError(e.Exception, "Unhandled UI exception.");
         e.Handled = false;
     }
@@ -207,7 +221,7 @@ public partial class App : Application
             return;
         }
 
-        ILogger<App>? logger = _host.Services.GetService<ILogger<App>>();
+        var logger = _host.Services.GetService<ILogger<App>>();
 
         try
         {
@@ -243,17 +257,14 @@ public partial class App : Application
     private async void OnStartup(object sender, StartupEventArgs e)
     {
         // https://docs.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast?tabs=desktop
-        ToastNotificationManagerCompat.OnActivated += toastArgs =>
-        {
-            Current.Dispatcher.Invoke(() => _ = HandleToastActivationAsync(toastArgs.Argument));
-        };
+        ToastNotificationManagerCompat.OnActivated += toastArgs => { Current.Dispatcher.Invoke(() => _ = HandleToastActivationAsync(toastArgs.Argument)); };
         // For more information about .NET generic host see  https://docs.microsoft.com/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-3.0
 
         Dictionary<string, string?> activationArgs = new()
         {
                 { ToastNotificationActivationHandler.ActivationArguments, string.Empty }
         };
-        string appLocation = GetAppLocation();
+        var appLocation = GetAppLocation();
 
         _host = BuildHost(e.Args ?? Array.Empty<string>(), appLocation, activationArgs);
 
@@ -266,71 +277,142 @@ public partial class App : Application
         await EnsureHostStartedAsync();
     }
 
-    private IHost BuildHost(string[] args, string appLocation, IDictionary<string, string?> activationArgs)
-    {
-        ArgumentNullException.ThrowIfNull(args);
-        ArgumentException.ThrowIfNullOrWhiteSpace(appLocation);
-        ArgumentNullException.ThrowIfNull(activationArgs);
 
-        return Host.CreateDefaultBuilder(args)
-            .ConfigureAppConfiguration(c =>
-            {
-                c.SetBasePath(appLocation);
-                c.AddInMemoryCollection(activationArgs);
-            })
-            .ConfigureServices(ConfigureServices)
-            .ConfigureLogging(logging =>
-            {
-                logging.AddDebug();
-                logging.AddConsole();
-                logging.SetMinimumLevel(LogLevel.Trace);
-            })
-            .Build();
+
+
+
+
+
+
+    private static void RegisterActivationHandlers(IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<IActivationHandler, ToastNotificationActivationHandler>();
     }
 
-    private async Task HandleToastActivationAsync(string toastArgument)
-    {
-        if (_host is null)
-        {
-            return;
-        }
 
-        IConfiguration configuration = _host.Services.GetRequiredService<IConfiguration>();
-        configuration[ToastNotificationActivationHandler.ActivationArguments] = toastArgument;
-        await EnsureHostStartedAsync();
+
+
+
+
+
+
+    private static void RegisterAgentServices(IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<IOllamaApiClient>(_ => new OllamaApiClient(OllamaEndpoint, OllamaModel));
+        services.AddSingleton<IChatClient>(sp => (IChatClient)sp.GetRequiredService<IOllamaApiClient>());
+        services.AddSingleton(sp => sp.GetRequiredService<IChatClient>().AsAIAgent());
+        //services.AddSingleton<ISqlVectorStore, SqlVectorStore>();
+        services.AddSingleton<IChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
+        services.AddSingleton<IRuntimeContextAccessor, RuntimeContextAccessor>();
+        services.AddSingleton<IChatHistoryProvider, CustomChatHistoryProvider>();
+        services.AddSingleton<IChatHistoryMemoryProvider, ChatHistoryMemoryProvider>();
+        services.AddSingleton<IRagContextSource, NullRagContextSource>();
+        services.AddSingleton<RAGAIContextProvider>();
+        services.AddSingleton<IAgentFactory, AgentFactory>();
     }
 
-    private async Task EnsureHostStartedAsync()
-    {
-        if (_host is null || _isHostStarted)
-        {
-            return;
-        }
 
-        await _hostStartGate.WaitAsync();
-        try
+
+
+
+
+
+
+    private static void RegisterApplicationServices(IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<IToastNotificationsService, ToastNotificationsService>();
+        services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
+        services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
+        services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
+        services.AddSingleton<ISystemService, SystemService>();
+        services.AddSingleton<IApplicationIdService, ApplicationIdService>();
+        services.AddSingleton<ISampleDataService, SampleDataService>();
+        services.AddSingleton(sp =>
         {
-            if (_host is null || _isHostStarted)
+            AppConfig appConfig = sp.GetRequiredService<IOptions<AppConfig>>().Value;
+            return new ChatSessionOptions
             {
-                return;
-            }
-
-            await _host.StartAsync();
-            _isHostStarted = true;
-        }
-        finally
-        {
-            _hostStartGate.Release();
-        }
+                    ConfigurationsFolder = appConfig.ConfigurationsFolder,
+                    ChatSessionFileName = appConfig.ChatSessionFileName,
+                    MaxContextTokens = 120000
+            };
+        });
+        services.AddSingleton<IChatConversationService, ChatConversationService>();
+        services.AddSingleton<IPageService, PageService>();
+        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<IUserDataService, UserDataService>();
     }
 
-    private static string GetAppLocation()
-    {
-        string? entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
-        string? appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
-            ? AppContext.BaseDirectory
-            : Path.GetDirectoryName(entryAssemblyLocation);
 
-        return string.IsNullOrWhiteSpace(appLocation) ? AppContext.BaseDirectory : appLocation;
+
+
+
+
+
+
+    private static void RegisterCoreServices(IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<IIdentityService, IdentityService>();
+        services.AddSingleton<IFileService, FileService>();
+    }
+
+
+
+
+
+
+
+
+    private static void RegisterHostServices(IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddHostedService<ApplicationHostService>();
+        services.AddHostedService<ChatHistoryInitializationService>();
+        services.AddHttpClient("ollama", client => { client.BaseAddress = new Uri(OllamaEndpoint); });
+    }
+
+
+
+
+
+
+
+
+    private static void RegisterViewsAndViewModels(IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddTransient<IShellWindow, ShellWindow>();
+        services.AddTransient<ShellViewModel>();
+
+        services.AddTransient<MainViewModel>();
+        services.AddTransient<MainPage>();
+
+        services.AddTransient<BlankViewModel>();
+        services.AddTransient<BlankPage>();
+
+        services.AddTransient<ListDetailsViewModel>();
+        services.AddTransient<ListDetailsPage>();
+
+        services.AddTransient<DataGridViewModel>();
+        services.AddTransient<DataGridPage>();
+
+        services.AddTransient<WebViewViewModel>();
+        services.AddTransient<WebViewPage>();
+
+        services.AddTransient<SettingsViewModel>();
+        services.AddTransient<SettingsPage>();
+
+        services.AddTransient<ILogInWindow, LogInWindow>();
+        services.AddTransient<LogInViewModel>();
     }
 }

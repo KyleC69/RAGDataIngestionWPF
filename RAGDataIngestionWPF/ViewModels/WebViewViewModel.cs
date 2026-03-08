@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         WebViewViewModel.cs
@@ -55,13 +55,19 @@ public class WebViewViewModel : ObservableObject
 
 
 
-    public RelayCommand BrowserBackCommand => field ??= new RelayCommand(() => _webView?.GoBack(), () => _webView?.CanGoBack ?? false);
+    public RelayCommand BrowserBackCommand
+    {
+        get { return field ??= new RelayCommand(() => _webView?.GoBack(), () => _webView?.CanGoBack ?? false); }
+    }
 
 
 
 
 
-    public RelayCommand BrowserForwardCommand => field ??= new RelayCommand(() => _webView?.GoForward(), () => _webView?.CanGoForward ?? false);
+    public RelayCommand BrowserForwardCommand
+    {
+        get { return field ??= new RelayCommand(() => _webView?.GoForward(), () => _webView?.CanGoForward ?? false); }
+    }
 
 
 
@@ -69,7 +75,8 @@ public class WebViewViewModel : ObservableObject
 
     public Visibility FailedMesageVisibility
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     } = Visibility.Collapsed;
 
 
@@ -81,7 +88,7 @@ public class WebViewViewModel : ObservableObject
         get;
         set
         {
-            SetProperty(ref field, value);
+            this.SetProperty(ref field, value);
             IsLoadingVisibility = value ? Visibility.Visible : Visibility.Collapsed;
         }
     } = true;
@@ -92,7 +99,8 @@ public class WebViewViewModel : ObservableObject
 
     public Visibility IsLoadingVisibility
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     } = Visibility.Visible;
 
 
@@ -104,7 +112,7 @@ public class WebViewViewModel : ObservableObject
         get;
         set
         {
-            SetProperty(ref field, value);
+            this.SetProperty(ref field, value);
             FailedMesageVisibility = value ? Visibility.Visible : Visibility.Collapsed;
         }
     }
@@ -113,13 +121,19 @@ public class WebViewViewModel : ObservableObject
 
 
 
-    public ICommand OpenInBrowserCommand => field ??= new RelayCommand(OnOpenInBrowser);
+    public ICommand OpenInBrowserCommand
+    {
+        get { return field ??= new RelayCommand(OnOpenInBrowser); }
+    }
 
 
 
 
 
-    public ICommand RefreshCommand => field ??= new RelayCommand(OnRefresh);
+    public ICommand RefreshCommand
+    {
+        get { return field ??= new RelayCommand(OnRefresh); }
+    }
 
 
 
@@ -127,7 +141,8 @@ public class WebViewViewModel : ObservableObject
 
     public string Source
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -173,6 +188,13 @@ public class WebViewViewModel : ObservableObject
     {
         _systemService.OpenInWebBrowser(Source);
     }
+
+
+
+
+
+
+
 
     private void OnRefresh()
     {

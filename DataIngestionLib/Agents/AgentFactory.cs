@@ -1,4 +1,4 @@
-﻿// 2026/03/07
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         AgentFactory.cs
@@ -30,7 +30,6 @@ public class AgentFactory : IAgentFactory
     private readonly ILoggerFactory _factory;
     private readonly IChatClient _innerClient;
     private readonly AIHistoryProvider _memoryProvider;
-    private readonly RAGAIContextProvider _ragContextProvider;
 
     private readonly string _modelInstructions = """
                                                  -- Your name is Maxx, using a name helps personalize the experience and allows users to refer to you in a more natural way. It also helps establish a consistent identity for you as an AI agent.
@@ -48,6 +47,15 @@ public class AgentFactory : IAgentFactory
                                                  - This end-user will often write code that is simplistic and lacks proper design and structure, you must make suggestions on how to improve the design and structure of the code, and provide specific examples on how to improve or correct the code. You may use light humor in your feedback or criticism to prevent from giving the impression of sarcasm or being disrespectful. 
 
                                                  """;
+
+    private readonly RAGAIContextProvider _ragContextProvider;
+
+
+
+
+
+
+
 
     public AgentFactory(
             IChatClient innerClient,
@@ -72,24 +80,26 @@ public class AgentFactory : IAgentFactory
 
 
 
+
+
+
+
     public AIAgent GetCodingAssistantAgent()
     {
-        IChatClient outer = new ChatClientBuilder(_innerClient).UseLogging(_factory)
+        IChatClient outer = new ChatClientBuilder(_innerClient)
+                .UseLogging(_factory)
                 .UseFunctionInvocation()
+                .UseAIContextProviders(_memoryProvider, _ragContextProvider)
                 .ConfigureOptions(chatOptions =>
                 {
                     chatOptions.Instructions = _modelInstructions;
-                    chatOptions.Tools = ToolBuilder.GetAiTools();
                     chatOptions.Temperature = 0.7f;
 
                 })
                 .Build();
 
-        outer = outer.AsBuilder()
-                .UseAIContextProviders(_memoryProvider, _ragContextProvider)
-                .Build();
 
-        return outer.AsAIAgent();
+        return outer.AsAIAgent(tools: ToolBuilder.GetAiTools());
 
     }
 }

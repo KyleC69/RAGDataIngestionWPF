@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         MenuItemTemplateSelector.cs
@@ -36,7 +36,9 @@ public class MenuItemTemplateSelector : DataTemplateSelector
     public override DataTemplate SelectTemplate(object item, DependencyObject container)
     {
         return item is HamburgerMenuGlyphItem
-            ? GlyphDataTemplate
-            : item is HamburgerMenuImageItem ? ImageDataTemplate : base.SelectTemplate(item, container);
+                ? GlyphDataTemplate
+                : item is HamburgerMenuImageItem
+                        ? ImageDataTemplate
+                        : base.SelectTemplate(item, container);
     }
 }

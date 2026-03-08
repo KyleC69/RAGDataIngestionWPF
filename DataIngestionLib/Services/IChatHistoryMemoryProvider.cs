@@ -1,4 +1,4 @@
-// 2026/03/07
+// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         IChatHistoryMemoryProvider.cs
@@ -31,6 +31,21 @@ public interface IChatHistoryMemoryProvider
 
 
 
+    ValueTask<bool> DeleteMessageAsync(Guid messageId, CancellationToken cancellationToken = default);
+
+
+
+
+
+    ValueTask<int> PruneConversationAsync(string conversationId, CancellationToken cancellationToken = default);
+
+
+
+
+
+
+
+
     ValueTask StoreMessagesAsync(
             string conversationId,
             string sessionId,
@@ -48,11 +63,5 @@ public interface IChatHistoryMemoryProvider
 
 
 
-    ValueTask<int> PruneConversationAsync(string conversationId, CancellationToken cancellationToken = default);
-
-
     ValueTask<PersistedChatMessage?> UpdateMessageContentAsync(Guid messageId, string content, DateTimeOffset timestampUtc, CancellationToken cancellationToken = default);
-
-
-    ValueTask<bool> DeleteMessageAsync(Guid messageId, CancellationToken cancellationToken = default);
 }

@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF.Core
 //  File:         SampleDataService.cs
@@ -529,7 +529,7 @@ public class SampleDataService : ISampleDataService
     private static IEnumerable<SampleOrder> AllOrders()
     {
         // The following is order summary data
-        IEnumerable<SampleCompany> companies = AllCompanies();
+        var companies = AllCompanies();
         return companies.SelectMany(c => c.Orders);
     }
 }

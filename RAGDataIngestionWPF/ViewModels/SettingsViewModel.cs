@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         SettingsViewModel.cs
@@ -36,6 +36,13 @@ public class SettingsViewModel : ObservableObject, INavigationAware
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IUserDataService _userDataService;
 
+
+
+
+
+
+
+
     public SettingsViewModel(IOptions<AppConfig> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IApplicationIdService applicationIdService)
     {
         _appConfig = appConfig.Value;
@@ -53,19 +60,38 @@ public class SettingsViewModel : ObservableObject, INavigationAware
 
 
 
-    public ICommand PrivacyStatementCommand => field ??= new RelayCommand(OnPrivacyStatement);
+    public Guid ApplicationId
+    {
+        get;
+        set { this.SetProperty(ref field, value); }
+    }
 
 
 
 
 
-    public ICommand SetThemeCommand => field ??= new RelayCommand<string>(OnSetTheme);
+    public ICommand PrivacyStatementCommand
+    {
+        get { return field ??= new RelayCommand(OnPrivacyStatement); }
+    }
 
 
 
 
 
-    public ICommand RenewApplicationIdCommand => field ??= new RelayCommand(OnRenewApplicationId);
+    public ICommand RenewApplicationIdCommand
+    {
+        get { return field ??= new RelayCommand(OnRenewApplicationId); }
+    }
+
+
+
+
+
+    public ICommand SetThemeCommand
+    {
+        get { return field ??= new RelayCommand<string>(OnSetTheme); }
+    }
 
 
 
@@ -73,7 +99,8 @@ public class SettingsViewModel : ObservableObject, INavigationAware
 
     public AppTheme Theme
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -82,7 +109,8 @@ public class SettingsViewModel : ObservableObject, INavigationAware
 
     public UserViewModel User
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -91,16 +119,8 @@ public class SettingsViewModel : ObservableObject, INavigationAware
 
     public string VersionDescription
     {
-        get; set => SetProperty(ref field, value);
-    }
-
-
-
-
-
-    public Guid ApplicationId
-    {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -149,15 +169,29 @@ public class SettingsViewModel : ObservableObject, INavigationAware
         _systemService.OpenInWebBrowser(_appConfig.PrivacyStatement);
     }
 
-    private void OnSetTheme(string themeName)
-    {
-        AppTheme theme = (AppTheme)Enum.Parse(typeof(AppTheme), themeName);
-        _themeSelectorService.SetTheme(theme);
-    }
+
+
+
+
+
+
 
     private void OnRenewApplicationId()
     {
         ApplicationId = _applicationIdService.RenewApplicationId();
+    }
+
+
+
+
+
+
+
+
+    private void OnSetTheme(string themeName)
+    {
+        AppTheme theme = (AppTheme)Enum.Parse(typeof(AppTheme), themeName);
+        _themeSelectorService.SetTheme(theme);
     }
 
 

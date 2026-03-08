@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         SystemService.cs
@@ -27,8 +27,8 @@ public class SystemService : ISystemService
         // For more info see https://github.com/dotnet/corefx/issues/10361
         ProcessStartInfo psi = new()
         {
-            FileName = url,
-            UseShellExecute = true
+                FileName = url,
+                UseShellExecute = true
         };
         Process.Start(psi);
     }

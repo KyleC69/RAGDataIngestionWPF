@@ -1,4 +1,9 @@
-﻿
+﻿// 2026/03/08
+//  Solution: RAGDataIngestionWPF
+//  Project:   DataIngestionLib
+//  File:         ChatMessageExtensions.cs
+//   Author: Kyle L. Crowder
+
 
 
 
@@ -11,32 +16,14 @@ using Microsoft.Extensions.AI;
 namespace DataIngestionLib.Models.Extensions;
 
 
+
+
+
 //
 // Summary:
 //     Contains extension methods for Microsoft.Extensions.AI.ChatMessage
 public static class ChatMessageExtensions
 {
-    //
-    // Summary:
-    //     Gets the source type of the provided Microsoft.Extensions.AI.ChatMessage in the
-    //     context of messages passed into an agent run.
-    //
-    // Parameters:
-    //   message:
-    //     The Microsoft.Extensions.AI.ChatMessage for which we need the source type.
-    //
-    // Returns:
-    //     An Microsoft.Agents.AI.AgentRequestMessageSourceType value indicating the source
-    //     type of the Microsoft.Extensions.AI.ChatMessage. Defaults to Microsoft.Agents.AI.AgentRequestMessageSourceType.External
-    //     if no explicit source is defined.
-    public static AgentRequestMessageSourceType GetAgentRequestMessageSourceType(this AIChatMessage message)
-    {
-        object? value = default;
-        bool? flag = message.AdditionalProperties?.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out value);
-        return flag.HasValue && flag == true && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution
-            ? agentRequestMessageSourceAttribution.SourceType
-            : AgentRequestMessageSourceType.External;
-    }
 
     //
     // Summary:
@@ -53,11 +40,47 @@ public static class ChatMessageExtensions
     public static string? GetAgentRequestMessageSourceId(this AIChatMessage message)
     {
         object? value = default;
-        bool? flag = message.AdditionalProperties?.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out value);
+        var flag = message.AdditionalProperties?.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out value);
         return flag.HasValue && flag == true && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution
-            ? agentRequestMessageSourceAttribution.SourceId
-            : null;
+                ? agentRequestMessageSourceAttribution.SourceId
+                : null;
     }
+
+
+
+
+
+
+
+
+    //
+    // Summary:
+    //     Gets the source type of the provided Microsoft.Extensions.AI.ChatMessage in the
+    //     context of messages passed into an agent run.
+    //
+    // Parameters:
+    //   message:
+    //     The Microsoft.Extensions.AI.ChatMessage for which we need the source type.
+    //
+    // Returns:
+    //     An Microsoft.Agents.AI.AgentRequestMessageSourceType value indicating the source
+    //     type of the Microsoft.Extensions.AI.ChatMessage. Defaults to Microsoft.Agents.AI.AgentRequestMessageSourceType.External
+    //     if no explicit source is defined.
+    public static AgentRequestMessageSourceType GetAgentRequestMessageSourceType(this AIChatMessage message)
+    {
+        object? value = default;
+        var flag = message.AdditionalProperties?.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out value);
+        return flag.HasValue && flag == true && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution
+                ? agentRequestMessageSourceAttribution.SourceType
+                : AgentRequestMessageSourceType.External;
+    }
+
+
+
+
+
+
+
 
     //
     // Summary:
@@ -83,7 +106,7 @@ public static class ChatMessageExtensions
     //     tagging in the AdditionalProperties.
     public static AIChatMessage WithAgentRequestMessageSource(this AIChatMessage message, AgentRequestMessageSourceType sourceType, string? sourceId = null)
     {
-        if (message.AdditionalProperties != null && message.AdditionalProperties.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out object value) && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution && agentRequestMessageSourceAttribution.SourceType == sourceType && agentRequestMessageSourceAttribution.SourceId == sourceId)
+        if (message.AdditionalProperties != null && message.AdditionalProperties.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out var value) && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution && agentRequestMessageSourceAttribution.SourceType == sourceType && agentRequestMessageSourceAttribution.SourceId == sourceId)
         {
             return message;
         }

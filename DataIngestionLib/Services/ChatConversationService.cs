@@ -1,4 +1,4 @@
-// 2026/03/07
+// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   DataIngestionLib
 //  File:         ChatConversationService.cs
@@ -28,8 +28,8 @@ public sealed class ChatConversationService : IChatConversationService
 {
     private readonly AIAgent _agent;
     private readonly AgentSession _agentSession;
-    private readonly ChatSessionOptions _options;
     private readonly IRuntimeContextAccessor _contextAccessor;
+    private readonly ChatSessionOptions _options;
 
 
 
@@ -62,8 +62,25 @@ public sealed class ChatConversationService : IChatConversationService
     }
 
 
-    public string ApplicationId => _contextAccessor.GetCurrent().ApplicationId.ToString();
-    public string UserId => _contextAccessor.GetCurrent().UserPrincipalName.ToString();
+
+
+
+
+
+
+    public string ApplicationId
+    {
+        get { return _contextAccessor.GetCurrent().ApplicationId.ToString(); }
+    }
+
+
+
+
+
+    public string UserId
+    {
+        get { return _contextAccessor.GetCurrent().UserPrincipalName.ToString(); }
+    }
 
 
 
@@ -75,7 +92,10 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public int ContextTokenCount => CalculateContextTokenCount();
+    public int ContextTokenCount
+    {
+        get { return CalculateContextTokenCount(); }
+    }
 
 
 
@@ -100,18 +120,18 @@ public sealed class ChatConversationService : IChatConversationService
         //Add user message to ChatHistory
         ChatHistory.AddUserMessage(userMessage);
         AgentResponse response = await _agent.RunAsync(userMessage, _agentSession, null, cancellationToken);
-        string assistantText = response.Text?.Trim() ?? string.Empty;
+        var assistantText = response.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(assistantText))
         {
             assistantText = string.Join(
-                Environment.NewLine,
-                response.Messages
-                    .Where(static message => message.Role == ChatRole.Assistant)
-                    .Select(static message => message.Text?.Trim())
-                    .Where(static text => !string.IsNullOrWhiteSpace(text)));
+                    Environment.NewLine,
+                    response.Messages
+                            .Where(static message => message.Role == ChatRole.Assistant)
+                            .Select(static message => message.Text?.Trim())
+                            .Where(static text => !string.IsNullOrWhiteSpace(text)));
         }
 
-        AIChatMessage assistantMessage = new(ChatRole.Assistant, assistantText);
+        AIChatMessage assistantMessage = new AIChatMessage(ChatRole.Assistant, assistantText);
         if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
         {
             ChatHistory.Add(assistantMessage);
@@ -129,12 +149,12 @@ public sealed class ChatConversationService : IChatConversationService
 
     private int CalculateContextTokenCount()
     {
-        int tokenCount = 0;
+        var tokenCount = 0;
 
-        for (int index = ChatHistory.Count - 1; index >= 0; index--)
+        for (var index = ChatHistory.Count - 1; index >= 0; index--)
         {
-            string content = ChatHistory[index].Text ?? string.Empty;
-            int messageTokenCount = EstimateTokenCount(content);
+            var content = ChatHistory[index].Text ?? string.Empty;
+            var messageTokenCount = EstimateTokenCount(content);
             if (tokenCount + messageTokenCount > _options.MaxContextTokens)
             {
                 break;
@@ -167,15 +187,15 @@ public sealed class ChatConversationService : IChatConversationService
 
     private static string FormatMarkdownLite(string content)
     {
-        string normalized = content.Replace("\r\n", "\n", StringComparison.Ordinal)
+        var normalized = content.Replace("\r\n", "\n", StringComparison.Ordinal)
                 .Replace("**", string.Empty, StringComparison.Ordinal)
                 .Replace("__", string.Empty, StringComparison.Ordinal)
                 .Replace("`", string.Empty, StringComparison.Ordinal);
 
-        string[] lines = normalized.Split('\n');
-        for (int i = 0; i < lines.Length; i++)
+        var lines = normalized.Split('\n');
+        for (var i = 0; i < lines.Length; i++)
         {
-            string line = lines[i].TrimEnd();
+            var line = lines[i].TrimEnd();
             if (line.StartsWith("### ", StringComparison.Ordinal))
             {
                 lines[i] = line[4..];

@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         ListDetailsViewModel.cs
@@ -27,6 +27,13 @@ public class ListDetailsViewModel : ObservableObject, INavigationAware
 {
     private readonly ISampleDataService _sampleDataService;
 
+
+
+
+
+
+
+
     public ListDetailsViewModel(ISampleDataService sampleDataService)
     {
         _sampleDataService = sampleDataService;
@@ -47,7 +54,8 @@ public class ListDetailsViewModel : ObservableObject, INavigationAware
 
     public SampleOrder Selected
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -61,12 +69,9 @@ public class ListDetailsViewModel : ObservableObject, INavigationAware
     {
         SampleItems.Clear();
 
-        IEnumerable<SampleOrder> data = await _sampleDataService.GetListDetailsDataAsync();
+        var data = await _sampleDataService.GetListDetailsDataAsync();
 
-        foreach (SampleOrder item in data)
-        {
-            SampleItems.Add(item);
-        }
+        foreach (SampleOrder item in data) SampleItems.Add(item);
 
         Selected = SampleItems.First();
     }

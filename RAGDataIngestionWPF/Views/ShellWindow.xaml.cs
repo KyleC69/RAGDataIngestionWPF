@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         ShellWindow.xaml.cs
@@ -42,13 +42,27 @@ public partial class ShellWindow : MetroWindow, IShellWindow
         return shellFrame;
     }
 
+
+
+
+
+
+
+
     public void ShowWindow()
     {
-        Show();
+        this.Show();
     }
+
+
+
+
+
+
+
 
     public void CloseWindow()
     {
-        Close();
+        this.Close();
     }
 }

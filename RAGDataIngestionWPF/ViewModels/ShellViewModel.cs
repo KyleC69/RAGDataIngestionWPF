@@ -1,4 +1,4 @@
-﻿// 2026/03/05
+﻿// 2026/03/08
 //  Solution: RAGDataIngestionWPF
 //  Project:   RAGDataIngestionWPF
 //  File:         ShellViewModel.cs
@@ -31,6 +31,13 @@ public class ShellViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IUserDataService _userDataService;
 
+
+
+
+
+
+
+
     public ShellViewModel(INavigationService navigationService, IUserDataService userDataService)
     {
         _navigationService = navigationService;
@@ -44,19 +51,28 @@ public class ShellViewModel : ObservableObject
 
 
 
-    public RelayCommand GoBackCommand => field ??= new RelayCommand(OnGoBack, CanGoBack);
+    public RelayCommand GoBackCommand
+    {
+        get { return field ??= new RelayCommand(OnGoBack, CanGoBack); }
+    }
 
 
 
 
 
-    public ICommand LoadedCommand => field ??= new RelayCommand(OnLoaded);
+    public ICommand LoadedCommand
+    {
+        get { return field ??= new RelayCommand(OnLoaded); }
+    }
 
 
 
 
 
-    public ICommand MenuItemInvokedCommand => field ??= new RelayCommand(OnMenuItemInvoked);
+    public ICommand MenuItemInvokedCommand
+    {
+        get { return field ??= new RelayCommand(OnMenuItemInvoked); }
+    }
 
 
 
@@ -81,7 +97,10 @@ public class ShellViewModel : ObservableObject
 
 
 
-    public ICommand OptionsMenuItemInvokedCommand => field ??= new RelayCommand(OnOptionsMenuItemInvoked);
+    public ICommand OptionsMenuItemInvokedCommand
+    {
+        get { return field ??= new RelayCommand(OnOptionsMenuItemInvoked); }
+    }
 
 
 
@@ -89,7 +108,8 @@ public class ShellViewModel : ObservableObject
 
     public HamburgerMenuItem SelectedMenuItem
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
@@ -98,14 +118,18 @@ public class ShellViewModel : ObservableObject
 
     public HamburgerMenuItem SelectedOptionsMenuItem
     {
-        get; set => SetProperty(ref field, value);
+        get;
+        set { this.SetProperty(ref field, value); }
     }
 
 
 
 
 
-    public ICommand UnloadedCommand => field ??= new RelayCommand(OnUnloaded);
+    public ICommand UnloadedCommand
+    {
+        get { return field ??= new RelayCommand(OnUnloaded); }
+    }
 
 
 
@@ -118,6 +142,13 @@ public class ShellViewModel : ObservableObject
     {
         return _navigationService.CanGoBack;
     }
+
+
+
+
+
+
+
 
     private void NavigateTo(Type targetViewModel)
     {
@@ -139,6 +170,13 @@ public class ShellViewModel : ObservableObject
         _navigationService.GoBack();
     }
 
+
+
+
+
+
+
+
     private void OnLoaded()
     {
         _navigationService.Navigated += OnNavigated;
@@ -146,9 +184,9 @@ public class ShellViewModel : ObservableObject
         UserViewModel user = _userDataService.GetUser();
         HamburgerMenuImageItem userMenuItem = new()
         {
-            Thumbnail = user.Photo,
-            Label = user.Name,
-            Command = new RelayCommand(OnUserItemSelected)
+                Thumbnail = user.Photo,
+                Label = user.Name,
+                Command = new RelayCommand(OnUserItemSelected)
         };
 
         OptionMenuItems.Insert(0, userMenuItem);
@@ -165,6 +203,13 @@ public class ShellViewModel : ObservableObject
     {
         NavigateTo(SelectedMenuItem.TargetPageType);
     }
+
+
+
+
+
+
+
 
     private void OnNavigated(object sender, string viewModelName)
     {
@@ -196,6 +241,13 @@ public class ShellViewModel : ObservableObject
     {
         NavigateTo(SelectedOptionsMenuItem.TargetPageType);
     }
+
+
+
+
+
+
+
 
     private void OnUnloaded()
     {
