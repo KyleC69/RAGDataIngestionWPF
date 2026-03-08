@@ -28,7 +28,7 @@ public class ApplicationHostService : IHostedService
 {
 
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
-    private readonly AppConfig _appConfig;
+    private readonly AppConf _appConfig;
     private readonly INavigationService _navigationService;
     private readonly IPersistAndRestoreService _persistAndRestoreService;
     private readonly IServiceProvider _serviceProvider;
@@ -45,7 +45,7 @@ public class ApplicationHostService : IHostedService
 
 
 
-    public ApplicationHostService(IServiceProvider serviceProvider, IEnumerable<IActivationHandler> activationHandlers, INavigationService navigationService, IThemeSelectorService themeSelectorService, IPersistAndRestoreService persistAndRestoreService, IToastNotificationsService toastNotificationsService, IUserDataService userDataService, IOptions<AppConfig> config)
+    public ApplicationHostService(IServiceProvider serviceProvider, IEnumerable<IActivationHandler> activationHandlers, INavigationService navigationService, IThemeSelectorService themeSelectorService, IPersistAndRestoreService persistAndRestoreService, IToastNotificationsService toastNotificationsService, IUserDataService userDataService, IOptions<AppConf> config)
     {
         _serviceProvider = serviceProvider;
         _activationHandlers = activationHandlers;

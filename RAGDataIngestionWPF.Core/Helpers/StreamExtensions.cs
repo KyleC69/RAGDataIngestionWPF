@@ -16,10 +16,8 @@ public static class StreamExtensions
 {
     public static string ToBase64String(this Stream stream)
     {
-        using (MemoryStream memoryStream = new())
-        {
-            stream.CopyTo(memoryStream);
-            return Convert.ToBase64String(memoryStream.ToArray());
-        }
+        using MemoryStream memoryStream = new();
+        stream.CopyTo(memoryStream);
+        return Convert.ToBase64String(memoryStream.ToArray());
     }
 }

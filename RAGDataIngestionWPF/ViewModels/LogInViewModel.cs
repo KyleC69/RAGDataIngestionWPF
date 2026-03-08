@@ -22,35 +22,16 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 
-public class LogInViewModel : ObservableObject
+public class LogInViewModel(IIdentityService identityService) : ObservableObject
 {
-    private readonly IIdentityService _identityService;
-
-
-
-
-
-
-
-
-    public LogInViewModel(IIdentityService identityService)
-    {
-        _identityService = identityService;
-    }
-
-
-
-
-
-
-
+    private readonly IIdentityService _identityService = identityService;
 
     public bool IsBusy
     {
         get;
         set
         {
-            this.SetProperty(ref field, value);
+            _ = SetProperty(ref field, value);
             LoginCommand.NotifyCanExecuteChanged();
         }
     }
@@ -59,10 +40,7 @@ public class LogInViewModel : ObservableObject
 
 
 
-    public RelayCommand LoginCommand
-    {
-        get { return field ??= new RelayCommand(OnLogin, () => !IsBusy); }
-    }
+    public RelayCommand LoginCommand => field ??= new RelayCommand(OnLogin, () => !IsBusy);
 
 
 
@@ -70,8 +48,7 @@ public class LogInViewModel : ObservableObject
 
     public string StatusMessage
     {
-        get;
-        set { this.SetProperty(ref field, value); }
+        get; set => SetProperty(ref field, value);
     }
 
 
@@ -81,15 +58,15 @@ public class LogInViewModel : ObservableObject
 
 
 
-    private string GetStatusMessage(LoginResultType loginResult)
+    private static string GetStatusMessage(LoginResultType loginResult)
     {
         return loginResult switch
         {
-                LoginResultType.Unauthorized => Resources.StatusUnauthorized,
-                LoginResultType.NoNetworkAvailable => Resources.StatusNoNetworkAvailable,
-                LoginResultType.UnknownError => Resources.StatusLoginFails,
-                LoginResultType.Success or LoginResultType.CancelledByUser => string.Empty,
-                _ => string.Empty
+            LoginResultType.Unauthorized => Resources.StatusUnauthorized,
+            LoginResultType.NoNetworkAvailable => Resources.StatusNoNetworkAvailable,
+            LoginResultType.UnknownError => Resources.StatusLoginFails,
+            LoginResultType.Success or LoginResultType.CancelledByUser => string.Empty,
+            _ => string.Empty
         };
     }
 

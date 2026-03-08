@@ -75,7 +75,7 @@ public class PagesTests
         services.AddSingleton<ISampleDataService, SampleDataService>();
         services.AddSingleton(sp =>
         {
-            AppConfig appConfig = sp.GetRequiredService<IOptions<AppConfig>>().Value;
+            AppConf appConfig = sp.GetRequiredService<IOptions<AppConf>>().Value;
             return new ChatSessionOptions
             {
                     ConfigurationsFolder = appConfig.ConfigurationsFolder,
@@ -101,7 +101,7 @@ public class PagesTests
         services.AddTransient<BlankViewModel>();
 
         // Configuration
-        services.Configure<AppConfig>(context.Configuration.GetSection(nameof(AppConfig)));
+        services.Configure<AppConf>(context.Configuration.GetSection(nameof(AppConf)));
     }
 
 

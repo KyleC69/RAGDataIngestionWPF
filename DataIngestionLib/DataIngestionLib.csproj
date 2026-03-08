@@ -5,14 +5,16 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AnalysisLevel>preview-all</AnalysisLevel>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Services\ContextInjectors\**" />
-    <EmbeddedResource Remove="Services\ContextInjectors\**" />
-    <None Remove="Services\ContextInjectors\**" />
-    <Page Remove="Services\ContextInjectors\**" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>8</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>8</WarningLevel>
+  </PropertyGroup>
 
 
 

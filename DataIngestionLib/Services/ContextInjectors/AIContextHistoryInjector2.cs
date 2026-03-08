@@ -21,36 +21,20 @@ namespace DataIngestionLib.Services.ContextInjectors;
 // Looks like this is a partial context injection provider.
 // TODO: this needs to be refactored and concerns re-analyzed
 
-public sealed class AIContextHistoryInjector2 : MessageAIContextProvider
+/// <summary>
+/// </summary>
+/// <param name="chatHistoryMemoryProvider"></param>
+/// <param name="applicationId"></param>
+public sealed class AIContextHistoryInjector2(IChatHistoryMemoryProvider chatHistoryMemoryProvider, IRuntimeContextAccessor accessor) : MessageAIContextProvider
 {
-    private readonly string _applicationId;
+    private readonly string _applicationId = accessor.GetCurrent().ApplicationId.ToString();
 
-    private readonly IChatHistoryMemoryProvider _chatHistoryMemoryProvider;
+    private readonly IChatHistoryMemoryProvider _chatHistoryMemoryProvider = chatHistoryMemoryProvider;
 
-    private readonly IRuntimeContextAccessor _runtimeAccessor;
+    private readonly IRuntimeContextAccessor _runtimeAccessor = accessor;
 
     //We need get the actual Agent id. Where can we get it from???
     private string DefaultAgentId = "default-agent";
-
-
-
-
-
-
-
-
-    /// <summary>
-    /// </summary>
-    /// <param name="chatHistoryMemoryProvider"></param>
-    /// <param name="applicationId"></param>
-    public AIContextHistoryInjector2(IChatHistoryMemoryProvider chatHistoryMemoryProvider, IRuntimeContextAccessor accessor)
-    {
-        ArgumentNullException.ThrowIfNull(chatHistoryMemoryProvider);
-
-        _chatHistoryMemoryProvider = chatHistoryMemoryProvider;
-        _runtimeAccessor = accessor;
-        _applicationId = accessor.GetCurrent().ApplicationId.ToString();
-    }
 
 
 

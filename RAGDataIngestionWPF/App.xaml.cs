@@ -122,7 +122,7 @@ public partial class App : Application
         RegisterViewsAndViewModels(services);
 
         // Configuration
-        services.Configure<AppConfig>(context.Configuration.GetSection(nameof(AppConfig)));
+        services.Configure<AppConf>(context.Configuration.GetSection(nameof(AppConf)));
         services.Configure<ChatHistoryOptions>(context.Configuration.GetSection(ChatHistoryOptions.ConfigurationSectionName));
     }
 
@@ -143,7 +143,7 @@ public partial class App : Application
         await _hostStartGate.WaitAsync();
         try
         {
-            if (_host is null || _isHostStarted)
+            if (_isHostStarted)
             {
                 return;
             }
@@ -166,8 +166,8 @@ public partial class App : Application
 
     private static string GetAppLocation()
     {
-        string? entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
-        string? appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
+        var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
+        var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
                 ? AppContext.BaseDirectory
                 : Path.GetDirectoryName(entryAssemblyLocation);
 
@@ -203,7 +203,7 @@ public partial class App : Application
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         var logger = _host?.Services.GetService<ILogger<App>>();
-        logger?.LogError(e.Exception, "Unhandled UI exception.");
+        LogUnhandledUiException(logger, e.Exception);
         e.Handled = false;
     }
 
@@ -232,11 +232,11 @@ public partial class App : Application
         }
         catch (InvalidOperationException ex)
         {
-            logger?.LogWarning(ex, "Host stop was requested in an invalid state.");
+            LogUnhandledUiException(logger, ex);
         }
         catch (OperationCanceledException ex)
         {
-            logger?.LogWarning(ex, "Host stop was canceled.");
+            LogUnhandledUiException(logger, ex);
         }
         finally
         {
@@ -264,7 +264,7 @@ public partial class App : Application
         {
                 { ToastNotificationActivationHandler.ActivationArguments, string.Empty }
         };
-        string appLocation = GetAppLocation();
+        var appLocation = GetAppLocation();
 
         _host = BuildHost(e.Args ?? Array.Empty<string>(), appLocation, activationArgs);
 
@@ -332,12 +332,12 @@ public partial class App : Application
         services.AddSingleton<ISampleDataService, SampleDataService>();
         services.AddSingleton(sp =>
         {
-            AppConfig appConfig = sp.GetRequiredService<IOptions<AppConfig>>().Value;
+            AppConf appConfig = sp.GetRequiredService<IOptions<AppConf>>().Value;
             return new ChatSessionOptions
             {
-                ConfigurationsFolder = appConfig.ConfigurationsFolder,
-                ChatSessionFileName = appConfig.ChatSessionFileName,
-                MaxContextTokens = 120000
+                    ConfigurationsFolder = appConfig.ConfigurationsFolder,
+                    ChatSessionFileName = appConfig.ChatSessionFileName,
+                    MaxContextTokens = 120000
             };
         });
         services.AddSingleton<IChatConversationService, ChatConversationService>();
@@ -412,4 +412,14 @@ public partial class App : Application
         services.AddTransient<ILogInWindow, LogInWindow>();
         services.AddTransient<LogInViewModel>();
     }
+
+
+
+
+
+
+
+
+    [LoggerMessage(LogLevel.Error, "Unhandled UI exception.")]
+    static partial void LogUnhandledUiException(ILogger<App> logger, Exception exception);
 }

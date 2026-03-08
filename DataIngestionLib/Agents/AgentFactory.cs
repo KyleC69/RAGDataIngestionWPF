@@ -53,8 +53,6 @@ public class AgentFactory : IAgentFactory
 
 
 
-
-
     public AgentFactory(
             IChatClient innerClient,
             ILoggerFactory factory,

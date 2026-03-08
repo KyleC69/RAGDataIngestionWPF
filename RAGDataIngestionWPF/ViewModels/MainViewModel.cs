@@ -21,7 +21,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 
-public sealed class MainViewModel : ObservableObject
+public sealed class MainViewModel : ObservableObject, IDisposable
 {
     private readonly IChatConversationService _chatConversationService;
     private CancellationTokenSource _responseCancellationTokenSource;
@@ -75,8 +75,7 @@ public sealed class MainViewModel : ObservableObject
 
     public int ContextTokenCount
     {
-        get;
-        set { this.SetProperty(ref field, value); }
+        get; set => SetProperty(ref field, value);
     }
 
 
@@ -88,7 +87,7 @@ public sealed class MainViewModel : ObservableObject
         get;
         set
         {
-            if (this.SetProperty(ref field, value))
+            if (SetProperty(ref field, value))
             {
                 SendMessageCommand.NotifyCanExecuteChanged();
                 CancelMessageCommand.NotifyCanExecuteChanged();
@@ -105,7 +104,7 @@ public sealed class MainViewModel : ObservableObject
         get;
         set
         {
-            if (this.SetProperty(ref field, value))
+            if (SetProperty(ref field, value))
             {
                 SendMessageCommand.NotifyCanExecuteChanged();
             }
@@ -123,26 +122,6 @@ public sealed class MainViewModel : ObservableObject
 
 
     public IAsyncRelayCommand SendMessageCommand { get; }
-
-
-
-
-
-
-
-
-    private void AppendMessage(AIChatMessage message)
-    {
-        Messages.Add(message);
-
-    }
-
-
-
-
-
-
-
 
     private bool CanCancelMessage()
     {
@@ -182,7 +161,7 @@ public sealed class MainViewModel : ObservableObject
 
     private async Task SendMessageAsync()
     {
-        var content = MessageInput.Trim();
+        string content = MessageInput.Trim();
         if (string.IsNullOrWhiteSpace(content))
         {
             return;
@@ -223,5 +202,18 @@ public sealed class MainViewModel : ObservableObject
 
 
 
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        throw new NotImplementedException();
     }
 }

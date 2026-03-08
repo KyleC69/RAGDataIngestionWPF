@@ -12,7 +12,7 @@ namespace RAGDataIngestionWPF.Models;
 
 
 
-public class AppConfig
+public class AppConf
 {
 
     public string AppPropertiesFileName { get; set; }

@@ -27,71 +27,37 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 // TODO: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
-public class SettingsViewModel : ObservableObject, INavigationAware
+public class SettingsViewModel(IOptions<AppConf> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IApplicationIdService applicationIdService) : ObservableObject, INavigationAware
 {
-    private readonly AppConfig _appConfig;
-    private readonly IApplicationIdService _applicationIdService;
-    private readonly IApplicationInfoService _applicationInfoService;
-    private readonly ISystemService _systemService;
-    private readonly IThemeSelectorService _themeSelectorService;
-    private readonly IUserDataService _userDataService;
-
-
-
-
-
-
-
-
-    public SettingsViewModel(IOptions<AppConfig> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IApplicationIdService applicationIdService)
-    {
-        _appConfig = appConfig.Value;
-        _themeSelectorService = themeSelectorService;
-        _systemService = systemService;
-        _applicationInfoService = applicationInfoService;
-        _userDataService = userDataService;
-        _applicationIdService = applicationIdService;
-    }
-
-
-
-
-
-
-
+    private readonly AppConf _appConfig = appConfig.Value;
+    private readonly IApplicationIdService _applicationIdService = applicationIdService;
+    private readonly IApplicationInfoService _applicationInfoService = applicationInfoService;
+    private readonly ISystemService _systemService = systemService;
+    private readonly IThemeSelectorService _themeSelectorService = themeSelectorService;
+    private readonly IUserDataService _userDataService = userDataService;
 
     public Guid ApplicationId
     {
-        get;
-        set { this.SetProperty(ref field, value); }
+        get; set => SetProperty(ref field, value);
     }
 
 
 
 
 
-    public ICommand PrivacyStatementCommand
-    {
-        get { return field ??= new RelayCommand(OnPrivacyStatement); }
-    }
+    public ICommand PrivacyStatementCommand => field ??= new RelayCommand(OnPrivacyStatement);
 
 
 
 
 
-    public ICommand RenewApplicationIdCommand
-    {
-        get { return field ??= new RelayCommand(OnRenewApplicationId); }
-    }
+    public ICommand RenewApplicationIdCommand => field ??= new RelayCommand(OnRenewApplicationId);
 
 
 
 
 
-    public ICommand SetThemeCommand
-    {
-        get { return field ??= new RelayCommand<string>(OnSetTheme); }
-    }
+    public ICommand SetThemeCommand => field ??= new RelayCommand<string>(OnSetTheme);
 
 
 
@@ -99,8 +65,7 @@ public class SettingsViewModel : ObservableObject, INavigationAware
 
     public AppTheme Theme
     {
-        get;
-        set { this.SetProperty(ref field, value); }
+        get; set => SetProperty(ref field, value);
     }
 
 
@@ -109,8 +74,7 @@ public class SettingsViewModel : ObservableObject, INavigationAware
 
     public UserViewModel User
     {
-        get;
-        set { this.SetProperty(ref field, value); }
+        get; set => SetProperty(ref field, value);
     }
 
 
@@ -119,8 +83,7 @@ public class SettingsViewModel : ObservableObject, INavigationAware
 
     public string VersionDescription
     {
-        get;
-        set { this.SetProperty(ref field, value); }
+        get; set => SetProperty(ref field, value);
     }
 
 
@@ -190,7 +153,7 @@ public class SettingsViewModel : ObservableObject, INavigationAware
 
     private void OnSetTheme(string themeName)
     {
-        AppTheme theme = (AppTheme)Enum.Parse(typeof(AppTheme), themeName);
+        AppTheme theme = Enum.Parse<AppTheme>(themeName);
         _themeSelectorService.SetTheme(theme);
     }
 
