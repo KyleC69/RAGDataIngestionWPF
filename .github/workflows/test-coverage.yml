@@ -3,18 +3,22 @@
 #
 # Triggers on every push/merge to master and on pull-requests targeting master.
 #
+# Scope: coverage is measured for DataIngestionLib only ([DataIngestionLib]*).
+#        Tests are executed from RAGDataIngestionWPF.Tests.MSTest but coverlet
+#        filters out all other assemblies so the threshold applies solely to
+#        the DataIngestionLib project.
+#
 # Behaviour:
 #   • Builds the test project and collects line coverage via coverlet (Cobertura).
 #   • Publishes a rich Markdown summary directly to the workflow run.
 #   • Uploads the HTML report as a downloadable artifact.
-#   • If line coverage < 80 %:
+#   • If DataIngestionLib line coverage < 80 %:
 #       - Creates a GitHub Issue (Copilot agent task) and invokes the custom
 #         `testing` agent (`.github/agents/testing.agent.md`) with a coverage
 #         breakdown, artifact link, and pointer to all project conventions.
 #       - If an issue already exists it posts a progress comment instead of
 #         opening a duplicate.
-#   • If 80 % cannot be reached for structural reasons the issue body explains
-#     why and offers concrete architectural suggestions.
+#   • Auto-closes the issue once coverage recovers.
 # ──────────────────────────────────────────────────────────────────────────────
 name: Test Coverage
 
@@ -30,6 +34,8 @@ permissions:
 
 env:
   COVERAGE_THRESHOLD: 80
+  # Coverage is restricted to the DataIngestionLib assembly only.
+  COVERAGE_INCLUDE: '[DataIngestionLib]*'
   TEST_PROJECT: RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj
   COVERAGE_DIR: coverage
 
@@ -63,7 +69,8 @@ jobs:
             --no-restore `
             --collect:"XPlat Code Coverage" `
             --results-directory "${{ env.COVERAGE_DIR }}" `
-            --logger "trx;LogFileName=test-results.trx"
+            --logger "trx;LogFileName=test-results.trx" `
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Include="${{ env.COVERAGE_INCLUDE }}"
           $exitCode = $LASTEXITCODE
           "tests_exit_code=$exitCode" >> $env:GITHUB_OUTPUT
           # Do NOT propagate failure yet — we still want the coverage report.
@@ -164,13 +171,13 @@ jobs:
           $testIcon   = if ($testsOk) { "✅" } else { "❌" }
 
           $md = @"
-          ## 📊 Test Coverage Report
+          ## 📊 DataIngestionLib Test Coverage Report
 
           | Metric | Value |
           |--------|-------|
           | **Test Run** | $testIcon $(if ($testsOk) { 'All tests passed' } else { 'One or more tests FAILED — see logs' }) |
           | **Coverage Status** | $statusIcon $statusText |
-          | **Line Coverage** | **$pct%** |
+          | **Line Coverage (DataIngestionLib)** | **$pct%** |
           | **Lines Covered** | $covered / $total |
           | **Required Threshold** | $threshold% |
 
@@ -316,10 +323,11 @@ jobs:
           ---
 
           @copilot /agent testing
-          Bring line coverage to at least $env:THRESHOLD% by adding or extending tests in
-          `RAGDataIngestionWPF.Tests.MSTest/` for the packages listed above.
+          Bring `DataIngestionLib` line coverage to at least $env:THRESHOLD% by adding
+          or extending tests in `RAGDataIngestionWPF.Tests.MSTest/` for the packages
+          listed above.
           The `.github/agents/testing.agent.md` file contains all project conventions,
-          MSTest/Moq patterns, WPF-specific constraints, and step-by-step instructions.
+          MSTest/Moq patterns, and step-by-step instructions.
           The coverage report artifact linked above shows exactly which lines are uncovered.
           "@
 
