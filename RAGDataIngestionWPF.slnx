@@ -2,8 +2,17 @@
   <Folder Name="/.github/">
     <File Path=".github/copilot-instructions.md" />
   </Folder>
-  <Folder Name="/.github/agents/" />
-  <Folder Name="/.github/instructions/" />
+  <Folder Name="/.github/agents/">
+    <File Path=".github/agents/expert-dotnet-software-engineer.agent.md" />
+    <File Path=".github/agents/microsoft-agent-framework-dotnet.agent.md" />
+  </Folder>
+  <Folder Name="/.github/instructions/">
+    <File Path=".github/instructions/api.instructions.md" />
+    <File Path=".github/instructions/copilot-sdk-csharp.instructions.md" />
+    <File Path=".github/instructions/documentation.instructions.md" />
+    <File Path=".github/instructions/microsoft-agent-framework-dotnet.instructions.md" />
+    <File Path=".github/instructions/namingclarity.instructions.md" />
+  </Folder>
   <Folder Name="/.github/prompts/">
     <File Path=".github/prompts/AnalyzeFile.prompt.md" />
     <File Path=".github/prompts/AnalyzeSolution.prompt.md" />
@@ -13,6 +22,9 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="auto-commit.log" />
+    <File Path="README.md" />
   </Folder>
   <Project Path="DataIngestionLib/DataIngestionLib.csproj" Id="97bc46f4-56f4-4b86-a9c0-360849204bd7" />
   <Project Path="RAGDataIngestionWPF.Core/RAGDataIngestionWPF.Core.csproj" />
