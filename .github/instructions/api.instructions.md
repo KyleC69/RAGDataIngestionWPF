@@ -1,7 +1,7 @@
 ---
 name: Nuget package & API guidance
 description: This file provides guidance on the nuget packages used in this  solution.
-applyTo: **
+
 
 ---
 
@@ -14,7 +14,7 @@ applyTo: **
    - Use the newest available methods, types, and patterns.
    - Do NOT rely on your built in knowledge of MS Agent Framework or Semantic Kernel API structures and methods.
    - Always search for the most recent knowledge and cite your findings for MAF or SK information
-   - 
+   
 
 2. Detect Version Drift
    
