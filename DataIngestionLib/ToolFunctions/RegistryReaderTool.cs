@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         RegistryReaderTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 105651
+// Build Num: 013507
 
 
 

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         DataGridViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 105617
+// Build Num: 013437
 
 
 
@@ -45,11 +45,8 @@ public class DataGridViewModel : ObservableObject, INavigationAware
     {
         Source.Clear();
 
-        ObservableCollection<RemoteRag> entries = RagDataService.GetRagDataEntries();
-        foreach (RemoteRag entry in entries)
-        {
-            Source.Add(entry);
-        }
+        var entries = RagDataService.GetRagDataEntries();
+        foreach (RemoteRag entry in entries) Source.Add(entry);
 
     }
 

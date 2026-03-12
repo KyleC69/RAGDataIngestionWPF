@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         RagDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: 105642
+// Build Num: 013457
 
 
 
@@ -74,9 +74,21 @@ public static class RagDataService
 
     public static ObservableCollection<RemoteRag> GetRagDataEntries()
     {
-        RAGContext context = new();
-        context.RemoteRags.Load();
-        ObservableCollection<RemoteRag> rags = context.RemoteRags.Local.ToObservableCollection();
+        ObservableCollection<RemoteRag> rags = [];
+
+        try
+        {
+
+            RAGContext context = new();
+            context.RemoteRags.Load();
+            rags = context.RemoteRags.Local.ToObservableCollection();
+
+        }
+        catch (Exception)
+        {
+
+            //
+        }
 
         return rags;
     }

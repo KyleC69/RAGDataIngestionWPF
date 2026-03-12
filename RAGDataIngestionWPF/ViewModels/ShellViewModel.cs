@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         ShellViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 105620
+// Build Num: 013440
 
 
 

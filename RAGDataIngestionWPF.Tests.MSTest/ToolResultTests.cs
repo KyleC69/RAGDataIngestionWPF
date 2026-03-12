@@ -1,9 +1,9 @@
-// Build Date: 2026/03/11
+// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ToolResultTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 105607
+// Build Num: 013428
 
 
 
@@ -33,7 +33,7 @@ public class ToolResultTests
     public void Fail_ValueTypeResult_ReturnsFailWithError()
     {
         // Arrange / Act
-        ToolResult<int> result = ToolResult<int>.Fail("integer error");
+        var result = ToolResult<int>.Fail("integer error");
 
         // Assert
         Assert.IsFalse(result.Success);
@@ -69,7 +69,7 @@ public class ToolResultTests
     public void Fail_WithValidMessage_SetsSuccessFalseAndError()
     {
         // Arrange / Act
-        ToolResult<string> result = ToolResult<string>.Fail("something went wrong");
+        var result = ToolResult<string>.Fail("something went wrong");
 
         // Assert
         Assert.IsFalse(result.Success);
@@ -91,7 +91,7 @@ public class ToolResultTests
         List<string> list = ["a", "b", "c"];
 
         // Act
-        ToolResult<List<string>> result = ToolResult<List<string>>.Ok(list);
+        var result = ToolResult<List<string>>.Ok(list);
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -109,7 +109,7 @@ public class ToolResultTests
     public void Ok_ValueTypeResult_SetsValueCorrectly()
     {
         // Arrange / Act
-        ToolResult<int> result = ToolResult<int>.Ok(42);
+        var result = ToolResult<int>.Ok(42);
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -142,7 +142,7 @@ public class ToolResultTests
     public void Ok_WithValidValue_SetsSuccessTrueAndValue()
     {
         // Arrange / Act
-        ToolResult<string> result = ToolResult<string>.Ok("hello");
+        var result = ToolResult<string>.Ok("hello");
 
         // Assert
         Assert.IsTrue(result.Success);

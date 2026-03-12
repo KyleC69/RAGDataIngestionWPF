@@ -25,7 +25,8 @@
             <StackPanel Margin="{StaticResource SmallLeftRightMargin}" HorizontalAlignment="Left"
                         Orientation="Horizontal">
                 <StackPanel Orientation="Vertical" Width="250">
-                    <Button Margin="3" Content="Start Ingestion" Height="30" Width="175" FontSize="12" />
+                    <Button Margin="3" Content="Start Ingestion" Height="30" Width="175" FontSize="12"
+                            Click="Button_Click" />
                     <Button Margin="3" Content="Button 1" Height="30" Width="175" />
                     <Button Margin="3" Content="Button 1" Height="30" Width="175" />
                 </StackPanel>

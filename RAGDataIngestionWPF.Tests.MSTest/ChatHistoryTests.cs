@@ -1,9 +1,9 @@
-// Build Date: 2026/03/11
+// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ChatHistoryTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 105605
+// Build Num: 013427
 
 
 
@@ -154,7 +154,7 @@ public class ChatHistoryTests
         history.AddUserMessage(new string('c', 400)); // ~100 tokens
 
         // Act — budget of 150 tokens should admit fewer than all three messages
-        int tokens = history.EstimateContextTokenCount(150);
+        var tokens = history.EstimateContextTokenCount(150);
 
         // Assert
         Assert.IsTrue(tokens <= 150, "Token count must not exceed the configured budget.");
@@ -194,7 +194,7 @@ public class ChatHistoryTests
         history.AddUserMessage("This is a reasonably long user message for token estimation.");
 
         // Act
-        int tokens = history.EstimateTokenCount();
+        var tokens = history.EstimateTokenCount();
 
         // Assert
         Assert.IsTrue(tokens > 0, "Token count should be positive for non-empty text.");
@@ -214,7 +214,7 @@ public class ChatHistoryTests
         AIChatHistory history = [];
 
         // Act
-        int tokens = history.EstimateTokenCount();
+        var tokens = history.EstimateTokenCount();
 
         // Assert
         Assert.AreEqual(0, tokens);
@@ -236,7 +236,7 @@ public class ChatHistoryTests
         history.AddAssistantMessage("reply text");
 
         // Act
-        string text = history.GetLastMessageText(ChatRole.Assistant);
+        var text = history.GetLastMessageText(ChatRole.Assistant);
 
         // Assert
         Assert.AreEqual("reply text", text);
@@ -256,7 +256,7 @@ public class ChatHistoryTests
         AIChatHistory history = [];
 
         // Act
-        string text = history.GetLastMessageText(ChatRole.User);
+        var text = history.GetLastMessageText(ChatRole.User);
 
         // Assert
         Assert.AreEqual(string.Empty, text);
@@ -313,7 +313,7 @@ public class ChatHistoryTests
         history.AddUserMessage("user only");
 
         // Act
-        bool found = history.TryGetLastMessage(ChatRole.Assistant, out AIChatMessage message);
+        var found = history.TryGetLastMessage(ChatRole.Assistant, out AIChatMessage message);
 
         // Assert
         Assert.IsFalse(found);
@@ -337,7 +337,7 @@ public class ChatHistoryTests
         history.AddUserMessage("Second user message");
 
         // Act
-        bool found = history.TryGetLastMessage(ChatRole.User, out AIChatMessage message);
+        var found = history.TryGetLastMessage(ChatRole.User, out AIChatMessage message);
 
         // Assert
         Assert.IsTrue(found);

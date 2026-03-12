@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Core
 // File:         IdentityService.cs
 // Author: Kyle L. Crowder
-// Build Num: 105556
+// Build Num: 013420
 
 
 
@@ -144,26 +144,6 @@ public class IdentityService : IIdentityService
 
         await Task.CompletedTask;
     }
-
-
-
-
-
-
-
-
-    public async Task<string> GetAccessTokenForGraphAsync()
-    {
-        return await GetAccessTokenAsync(Array.Empty<string>());
-    }
-
-
-
-
-
-
-
-
     public async Task<string> GetAccessTokenAsync(string[] scopes)
     {
         await Task.CompletedTask;

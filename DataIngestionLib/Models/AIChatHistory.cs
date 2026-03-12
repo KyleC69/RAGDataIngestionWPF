@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
-// File:         ChatHistory.cs
+// File:         AIChatHistory.cs
 // Author: Kyle L. Crowder
-// Build Num: 105643
+// Build Num: 013459
 
 
 
@@ -62,10 +62,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     {
         ArgumentNullException.ThrowIfNull(messages);
         _messages = [];
-        foreach ((ChatRole Role, string? Text) in messages)
-        {
-            Add(new AIChatMessage(Role, Text));
-        }
+        foreach ((ChatRole Role, var Text) in messages) Add(new AIChatMessage(Role, Text));
     }
 
 
@@ -135,7 +132,10 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     /// <summary>
     ///     Gets the newest message in the history, or <see langword="null" /> when history is empty.
     /// </summary>
-    public AIChatMessage? LastMessage => _messages.Count == 0 ? null : _messages[^1];
+    public AIChatMessage? LastMessage
+    {
+        get { return _messages.Count == 0 ? null : _messages[^1]; }
+    }
 
 
 
@@ -144,7 +144,10 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     /// <summary>
     ///     Gets the number of messages in the history.
     /// </summary>
-    public int Count => _messages.Count;
+    public int Count
+    {
+        get { return _messages.Count; }
+    }
 
 
 
@@ -240,7 +243,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index" /> was not valid for this history.</exception>
     public AIChatMessage this[int index]
     {
-        get => _messages[index];
+        get { return _messages[index]; }
         set
         {
             ArgumentNullException.ThrowIfNull(value);
@@ -329,7 +332,10 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
 
 
     /// <inheritdoc />
-    bool ICollection<AIChatMessage>.IsReadOnly => false;
+    bool ICollection<AIChatMessage>.IsReadOnly
+    {
+        get { return false; }
+    }
 
 
 
@@ -392,8 +398,6 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
                 break;
             case "system":
                 AddSystemMessage(mText);
-                break;
-            default:
                 break;
         }
 
@@ -490,10 +494,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     {
         ArgumentNullException.ThrowIfNull(items);
 
-        foreach (AIChatMessage item in items)
-        {
-            Add(item);
-        }
+        foreach (AIChatMessage item in items) Add(item);
     }
 
 
@@ -594,17 +595,17 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
             throw new ArgumentOutOfRangeException(nameof(maxTokens), "Maximum context tokens must be a positive value.");
         }
 
-        int tokenCount = 0;
+        var tokenCount = 0;
 
-        for (int index = _messages.Count - 1; index >= 0; index--)
+        for (var index = _messages.Count - 1; index >= 0; index--)
         {
-            string text = _messages[index].Text;
+            var text = _messages[index].Text;
             if (string.IsNullOrWhiteSpace(text))
             {
                 continue;
             }
 
-            int messageTokenCount = Math.Max(1, text.Length / 4);
+            var messageTokenCount = Math.Max(1, text.Length / 4);
             if (tokenCount + messageTokenCount > maxTokens)
             {
                 break;
@@ -629,11 +630,11 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     /// <returns>Estimated token count for all messages.</returns>
     public int EstimateTokenCount()
     {
-        int tokenCount = 0;
+        var tokenCount = 0;
 
         foreach (AIChatMessage message in _messages)
         {
-            string text = message.Text;
+            var text = message.Text;
             if (string.IsNullOrWhiteSpace(text))
             {
                 continue;
@@ -697,17 +698,6 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
 
 
 
-
-
-
-
-
-
-
-
-
-
-
     /// <summary>
     ///     Removes a range of messages from the history.
     /// </summary>
@@ -733,14 +723,12 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     /// <returns><see langword="true" /> when a matching message exists; otherwise <see langword="false" />.</returns>
     public bool TryGetLastMessage(ChatRole role, [NotNullWhen(true)] out AIChatMessage? message)
     {
-        for (int index = _messages.Count - 1; index >= 0; index--)
-        {
+        for (var index = _messages.Count - 1; index >= 0; index--)
             if (_messages[index].Role == role)
             {
                 message = _messages[index];
                 return true;
             }
-        }
 
         message = null;
         return false;

@@ -1,4 +1,4 @@
-# Copilot Instructions for RAGDataIngestionWPF
+# Copilot Instructions for RAGDataIngestionWPF -
 
 ## Big picture
 - WPF desktop app generated from Template Studio; uses Generic Host for DI/startup and MahApps.Metro for theming; targets `net10.0-windows10.0` (Preview SDK required).
@@ -23,7 +23,6 @@
 - `IdentityService` is stubbed (no real auth). `IdentityCacheService` persists MSAL tokens via DPAPI in `%LocalAppData%/RAGDataIngestionWPF/.msalcache.bin3`.
 
 ## External integrations
-- HttpClient named `msgraph` preconfigured to `https://graph.microsoft.com/v1.0/`. `MicrosoftGraphService` lives in Core; identity is stubbed, so calls likely need wiring.
 - Notifications: `ToastNotificationsService` uses `Microsoft.Toolkit.Uwp.Notifications`; sample toast shown on startup.
 
 ## Tests & tooling

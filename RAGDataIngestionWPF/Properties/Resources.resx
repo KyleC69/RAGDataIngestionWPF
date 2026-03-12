@@ -157,6 +157,30 @@
   <data name="SettingsPageChooseThemeText" xml:space="preserve">
     <value>Choose Theme</value>
   </data>
+  <data name="SettingsPageChatHistoryContextEnabledLabel" xml:space="preserve">
+    <value>Enable Chat History Context Injection</value>
+  </data>
+  <data name="SettingsPageChatHistorySaveStatus" xml:space="preserve">
+    <value>Chat history settings saved.</value>
+  </data>
+  <data name="SettingsPageChatHistoryTitle" xml:space="preserve">
+    <value>Chat History</value>
+  </data>
+  <data name="SettingsPageChatModelLabel" xml:space="preserve">
+    <value>Chat Model</value>
+  </data>
+  <data name="SettingsPageConnectionStringLabel" xml:space="preserve">
+    <value>Connection String</value>
+  </data>
+  <data name="SettingsPageEmbeddingsModelLabel" xml:space="preserve">
+    <value>Embeddings Model</value>
+  </data>
+  <data name="SettingsPageMaxContextMessagesLabel" xml:space="preserve">
+    <value>Max Context Messages</value>
+  </data>
+  <data name="SettingsPageMaxContextTokensLabel" xml:space="preserve">
+    <value>Max Context Tokens</value>
+  </data>
   <data name="SettingsPagePersonalizationTitle" xml:space="preserve">
     <value>Personalization</value>
   </data>
@@ -168,6 +192,12 @@
   </data>
   <data name="SettingsPageRadioButtonLightTheme" xml:space="preserve">
     <value>Light</value>
+  </data>
+  <data name="SettingsPageRagKnowledgeEnabledLabel" xml:space="preserve">
+    <value>Enable RAG Knowledge Context Injection</value>
+  </data>
+  <data name="SettingsPageSaveChatHistoryButtonText" xml:space="preserve">
+    <value>Save Chat History Settings</value>
   </data>
   <data name="SettingsPageRadioButtonWindowsDefaultTheme" xml:space="preserve">
     <value>Default</value>
@@ -228,5 +258,9 @@
   </data>
   <data name="AppDisplayName" xml:space="preserve">
     <value>RAGDataIngestionWPF</value>
+  </data>
+  <data name="SettingsPageChatHistoryGroupBoxTitle" xml:space="preserve">
+    <value>AI Settings</value>
+    <comment>GroupBox for all AI related settings</comment>
   </data>
 </root>

@@ -1,9 +1,9 @@
-// Build Date: 2026/03/11
+// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 105631
+// Build Num: 013449
 
 
 
@@ -59,8 +59,8 @@ public sealed class ChatConversationService : IChatConversationService
         _agent = agentFactory.GetCodingAssistantAgent();
 
         _agentSession = _agent.CreateSessionAsync().IsCompleted
-            ? _agent.CreateSessionAsync().GetAwaiter().GetResult()
-            : throw new InvalidOperationException("Failed to create agent session.");
+                ? _agent.CreateSessionAsync().GetAwaiter().GetResult()
+                : throw new InvalidOperationException("Failed to create agent session.");
         ;
         _contextAccessor = runtimeContextAccessor;
 
@@ -76,13 +76,19 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public string ApplicationId => _contextAccessor.GetCurrent().ApplicationId.ToString();
+    public string ApplicationId
+    {
+        get { return _contextAccessor.GetCurrent().ApplicationId.ToString(); }
+    }
 
 
 
 
 
-    public string UserId => _contextAccessor.GetCurrent().UserPrincipalName ?? "";
+    public string UserId
+    {
+        get { return _contextAccessor.GetCurrent().UserPrincipalName ?? ""; }
+    }
 
 
 
@@ -95,7 +101,10 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public int ContextTokenCount => CalculateContextTokenCount();
+    public int ContextTokenCount
+    {
+        get { return CalculateContextTokenCount(); }
+    }
 
 
 
@@ -120,7 +129,7 @@ public sealed class ChatConversationService : IChatConversationService
         //Add user message to ChatHistory
         ChatHistory.AddUserMessage(content);
         AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
-        string assistantText = response.Text?.Trim() ?? string.Empty;
+        var assistantText = response.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(assistantText))
         {
 
@@ -134,7 +143,7 @@ public sealed class ChatConversationService : IChatConversationService
                             .Where(static text => !string.IsNullOrWhiteSpace(text)));
         }
 
-        AIChatMessage assistantMessage = new(ChatRole.Assistant, assistantText);
+        AIChatMessage assistantMessage = new AIChatMessage(ChatRole.Assistant, assistantText);
         if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
         {
             ChatHistory.Add(assistantMessage);
@@ -152,12 +161,12 @@ public sealed class ChatConversationService : IChatConversationService
 
     private int CalculateContextTokenCount()
     {
-        int tokenCount = 0;
+        var tokenCount = 0;
 
-        for (int index = ChatHistory.Count - 1; index >= 0; index--)
+        for (var index = ChatHistory.Count - 1; index >= 0; index--)
         {
-            string content = ChatHistory[index].Text ?? string.Empty;
-            int messageTokenCount = EstimateTokenCount(content);
+            var content = ChatHistory[index].Text ?? string.Empty;
+            var messageTokenCount = EstimateTokenCount(content);
             if (tokenCount + messageTokenCount > _options.MaxContextTokens)
             {
                 break;

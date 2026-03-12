@@ -151,6 +151,51 @@ namespace RAGDataIngestionWPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enable Chat History Context Injection.
+        /// </summary>
+        public static string SettingsPageChatHistoryContextEnabledLabel {
+            get {
+                return ResourceManager.GetString("SettingsPageChatHistoryContextEnabledLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AI Settings.
+        /// </summary>
+        public static string SettingsPageChatHistoryGroupBoxTitle {
+            get {
+                return ResourceManager.GetString("SettingsPageChatHistoryGroupBoxTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chat history settings saved..
+        /// </summary>
+        public static string SettingsPageChatHistorySaveStatus {
+            get {
+                return ResourceManager.GetString("SettingsPageChatHistorySaveStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chat History.
+        /// </summary>
+        public static string SettingsPageChatHistoryTitle {
+            get {
+                return ResourceManager.GetString("SettingsPageChatHistoryTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chat Model.
+        /// </summary>
+        public static string SettingsPageChatModelLabel {
+            get {
+                return ResourceManager.GetString("SettingsPageChatModelLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Choose Theme.
         /// </summary>
         public static string SettingsPageChooseThemeText {
@@ -160,11 +205,47 @@ namespace RAGDataIngestionWPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Connection String.
+        /// </summary>
+        public static string SettingsPageConnectionStringLabel {
+            get {
+                return ResourceManager.GetString("SettingsPageConnectionStringLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Embeddings Model.
+        /// </summary>
+        public static string SettingsPageEmbeddingsModelLabel {
+            get {
+                return ResourceManager.GetString("SettingsPageEmbeddingsModelLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Log out.
         /// </summary>
         public static string SettingsPageLogOutButtonText {
             get {
                 return ResourceManager.GetString("SettingsPageLogOutButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Max Context Messages.
+        /// </summary>
+        public static string SettingsPageMaxContextMessagesLabel {
+            get {
+                return ResourceManager.GetString("SettingsPageMaxContextMessagesLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Max Context Tokens.
+        /// </summary>
+        public static string SettingsPageMaxContextTokensLabel {
+            get {
+                return ResourceManager.GetString("SettingsPageMaxContextTokensLabel", resourceCulture);
             }
         }
         
@@ -210,6 +291,24 @@ namespace RAGDataIngestionWPF.Properties {
         public static string SettingsPageRadioButtonWindowsDefaultTheme {
             get {
                 return ResourceManager.GetString("SettingsPageRadioButtonWindowsDefaultTheme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable RAG Knowledge Context Injection.
+        /// </summary>
+        public static string SettingsPageRagKnowledgeEnabledLabel {
+            get {
+                return ResourceManager.GetString("SettingsPageRagKnowledgeEnabledLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save Chat History Settings.
+        /// </summary>
+        public static string SettingsPageSaveChatHistoryButtonText {
+            get {
+                return ResourceManager.GetString("SettingsPageSaveChatHistoryButtonText", resourceCulture);
             }
         }
         

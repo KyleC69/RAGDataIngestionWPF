@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         SystemInfoTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 105650
+// Build Num: 013507
 
 
 
@@ -12,9 +12,10 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
+
 /// <summary>
-/// Provides functionality to retrieve system information, including operating system details,
-/// machine name, processor count, and .NET runtime version.
+///     Provides functionality to retrieve system information, including operating system details,
+///     machine name, processor count, and .NET runtime version.
 /// </summary>
 public sealed class SystemInfoTool
 {
@@ -22,10 +23,10 @@ public sealed class SystemInfoTool
     {
         return ToolResult<SystemInfoSnapshot>.Ok(new()
         {
-            OS = Environment.OSVersion.ToString(),
-            MachineName = Environment.MachineName,
-            ProcessorCount = Environment.ProcessorCount,
-            DotNetVersion = Environment.Version.ToString()
+                OS = Environment.OSVersion.ToString(),
+                MachineName = Environment.MachineName,
+                ProcessorCount = Environment.ProcessorCount,
+                DotNetVersion = Environment.Version.ToString()
         });
     }
 }

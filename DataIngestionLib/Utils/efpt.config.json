@@ -5,7 +5,7 @@
    "FilterSchemas": false,
    "IncludeConnectionString": false,
    "IrregularWords": null,
-   "MinimumProductVersion": "2.6.1378",
+   "MinimumProductVersion": "2.6.1382",
    "ModelNamespace": null,
    "OutputContextPath": "Data",
    "OutputPath": "RAGModels",
@@ -19,23 +19,11 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[Chunks_Code]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[Chunks_Text]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[dbo].[Documents]",
          "ObjectType": 0
       },
       {
          "Name": "[dbo].[Metadata]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[rag_policy_chunk]",
          "ObjectType": 0
       },
       {
@@ -51,11 +39,23 @@
          "ObjectType": 1
       },
       {
+         "Name": "[dbo].[Search_RAG_Advanced]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[dbo].[Search_SemanticKeyPhrases]",
          "ObjectType": 1
       },
       {
          "Name": "[dbo].[Search_Vector]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[sp_GetEmbedding]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[sp_SafeCalculateRAGScores]",
          "ObjectType": 1
       },
       {
@@ -79,7 +79,7 @@
    "UseInternalAccessModifiersForSprocsAndFunctions": false,
    "UseLegacyPluralizer": false,
    "UseManyToManyEntity": false,
-   "UseNoDefaultConstructor": true,
+   "UseNoDefaultConstructor": false,
    "UseNoNavigations": false,
    "UseNoObjectFilter": false,
    "UseNodaTime": false,

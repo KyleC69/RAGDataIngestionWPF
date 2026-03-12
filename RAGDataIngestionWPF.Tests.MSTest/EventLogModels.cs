@@ -1,13 +1,12 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
-// File:         Class1.cs
+// File:         EventLogModels.cs
 // Author: Kyle L. Crowder
-// Build Num: 105601
+// Build Num: 013424
 
 
 
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 
@@ -101,17 +100,17 @@ public sealed class SandboxEventLogReader
 
             using EventLog log = new(logName);
 
-            ReadOnlyCollection<EventLogEntryDto> entries = log.Entries
+            var entries = log.Entries
                     .Cast<EventLogEntry>()
                     .Reverse() // newest first
                     .Take(_maxEvents)
                     .Select(e => new EventLogEntryDto
                     {
-                        TimeGenerated = e.TimeGenerated,
-                        Source = e.Source,
-                        Message = e.Message,
-                        EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
-                        EntryType = e.EntryType
+                            TimeGenerated = e.TimeGenerated,
+                            Source = e.Source,
+                            Message = e.Message,
+                            EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
+                            EntryType = e.EntryType
                     })
                     .ToList()
                     .AsReadOnly();

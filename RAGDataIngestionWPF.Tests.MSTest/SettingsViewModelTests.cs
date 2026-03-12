@@ -1,95 +1,133 @@
-﻿// Build Date: 2026/03/11
-// Solution: RAGDataIngestionWPF
-// Project:   RAGDataIngestionWPF.Tests.MSTest
-// File:         SettingsViewModelTests.cs
-// Author: Kyle L. Crowder
-// Build Num: 105600
-
-
+using DataIngestionLib.Options;
 
 using Microsoft.Extensions.Options;
 
 using Moq;
 
 using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.Core.Contracts.Services;
+using RAGDataIngestionWPF.Core.Models;
 using RAGDataIngestionWPF.Models;
-
-
-
+using RAGDataIngestionWPF.ViewModels;
 
 namespace RAGDataIngestionWPF.Tests.MSTest;
-
-
-
-
 
 [TestClass]
 public class SettingsViewModelTests
 {
-
     [TestMethod]
-    public void TestSettingsViewModel_SetCurrentTheme()
+    public void OnNavigatedTo_LoadsChatModelNameFromChatHistorySettings()
     {
-        Mock<IThemeSelectorService> mockThemeSelectorService = new();
-        mockThemeSelectorService.Setup(mock => mock.GetCurrentTheme()).Returns(AppTheme.Light);
-        Mock<IOptions<AppSettings>> mockAppConfig = new();
-        Mock<ISystemService> mockSystemService = new();
-        Mock<IApplicationInfoService> mockApplicationInfoService = new();
-        Mock<IUserDataService> mockUserDataService = new();
-        Mock<IIdentityService> mockIdentityService = new();
+        SettingsViewModel viewModel = CreateViewModel(
+                chatSettings: new ChatHistoryOptions
+                {
+                    ChatModelName = "model-x",
+                    ConnectionString = "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;",
+                    EmbeddingsModelName = "embed-x",
+                    MaxContextMessages = 50,
+                    MaxContextTokens = 150000,
+                    RAGKnowledgeEnabled = true,
+                    ChatHistoryContextEnabled = true
+                });
 
-        //   var settingsVm = new SettingsViewModel(mockAppConfig.Object, mockThemeSelectorService.Object, mockSystemService.Object, mockApplicationInfoService.Object, mockUserDataService.Object, mockIdentityService.Object);
-        //     settingsVm.OnNavigatedTo(null);
+        viewModel.OnNavigatedTo(null!);
 
-        //     Assert.AreEqual(AppTheme.Light, settingsVm.Theme);
+        Assert.AreEqual("model-x", viewModel.ChatModelName);
     }
 
-
-
-
-
-
-
-
     [TestMethod]
-    public void TestSettingsViewModel_SetCurrentVersion()
+    public void SaveChatHistorySettingsCommand_PersistsChatModelName()
     {
-        Mock<IThemeSelectorService> mockThemeSelectorService = new();
-        Mock<IOptions<AppSettings>> mockAppConfig = new();
-        Mock<ISystemService> mockSystemService = new();
-        Mock<IApplicationInfoService> mockApplicationInfoService = new();
-        Mock<IUserDataService> mockUserDataService = new();
-        Mock<IIdentityService> mockIdentityService = new();
-        Version testVersion = new(1, 2, 3, 4);
-        mockApplicationInfoService.Setup(mock => mock.GetVersion()).Returns(testVersion);
+        Mock<IChatHistorySettingsService> chatSettingsServiceMock = CreateChatHistorySettingsServiceMock();
+        SettingsViewModel viewModel = CreateViewModel(chatSettingsServiceMock: chatSettingsServiceMock);
 
-        //     var settingsVm = new SettingsViewModel(mockAppConfig.Object, mockThemeSelectorService.Object, mockSystemService.Object, mockApplicationInfoService.Object, mockUserDataService.Object, mockIdentityService.Object);
-        //     settingsVm.OnNavigatedTo(null);
+        viewModel.OnNavigatedTo(null!);
+        viewModel.ChatModelName = "saved-model";
 
-        //      Assert.AreEqual($"RAGDataIngestionWPF - {testVersion}", settingsVm.VersionDescription);
+        viewModel.SaveChatHistorySettingsCommand.Execute(null);
+
+        chatSettingsServiceMock.Verify(
+                service => service.SaveSettings(It.Is<ChatHistoryOptions>(options => options.ChatModelName == "saved-model")),
+                Times.Once);
     }
 
-
-
-
-
-
-
-
     [TestMethod]
-    public void TestSettingsViewModel_SetThemeCommand()
+    public void SaveChatHistorySettingsCommand_SetsStatusMessage()
     {
-        Mock<IThemeSelectorService> mockThemeSelectorService = new();
-        Mock<IOptions<AppSettings>> mockAppConfig = new();
-        Mock<ISystemService> mockSystemService = new();
-        Mock<IApplicationInfoService> mockApplicationInfoService = new();
-        Mock<IUserDataService> mockUserDataService = new();
-        Mock<IIdentityService> mockIdentityService = new();
+        SettingsViewModel viewModel = CreateViewModel();
 
-        //      var settingsVm = new SettingsViewModel(mockAppConfig.Object, mockThemeSelectorService.Object, mockSystemService.Object, mockApplicationInfoService.Object, mockUserDataService.Object, mockIdentityService.Object);
-        //    settingsVm.SetThemeCommand.Execute(AppTheme.Light.ToString());
+        viewModel.OnNavigatedTo(null!);
+        viewModel.SaveChatHistorySettingsCommand.Execute(null);
 
-        //     mockThemeSelectorService.Verify(mock => mock.SetTheme(AppTheme.Light));
+        Assert.AreEqual(viewModel.ChatHistorySaveStatusText, viewModel.ChatHistorySettingsStatus);
+    }
+
+    private static Mock<IChatHistorySettingsService> CreateChatHistorySettingsServiceMock()
+    {
+        Mock<IChatHistorySettingsService> chatSettingsServiceMock = new();
+        chatSettingsServiceMock
+                .Setup(service => service.GetCurrentSettings())
+                .Returns(new ChatHistoryOptions
+                {
+                    ChatModelName = "gpt-oss:20b-cloud",
+                    ConnectionString = "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;",
+                    EmbeddingsModelName = "mxbai-embed-large-v1:latest",
+                    MaxContextMessages = 40,
+                    MaxContextTokens = 120000,
+                    RAGKnowledgeEnabled = true,
+                    ChatHistoryContextEnabled = true
+                });
+
+        return chatSettingsServiceMock;
+    }
+
+    private static SettingsViewModel CreateViewModel(
+            ChatHistoryOptions? chatSettings = null,
+            Mock<IChatHistorySettingsService>? chatSettingsServiceMock = null)
+    {
+        Mock<IThemeSelectorService> themeSelectorServiceMock = new();
+        themeSelectorServiceMock.Setup(service => service.GetCurrentTheme()).Returns(AppTheme.Dark);
+
+        Mock<IOptions<AppSettings>> appConfigMock = new();
+        appConfigMock.SetupGet(options => options.Value).Returns(new AppSettings
+        {
+            PrivacyStatement = "https://example.test/privacy",
+            ConfigurationsFolder = "RAGDataIngestionWPF\\Configurations",
+            ChatSessionFileName = "ChatSession.json",
+            AppPropertiesFileName = "AppProperties.json",
+            UserFileName = "User.json"
+        });
+
+        Mock<ISystemService> systemServiceMock = new();
+        Mock<IApplicationInfoService> applicationInfoServiceMock = new();
+        applicationInfoServiceMock.Setup(service => service.GetVersion()).Returns(new Version(1, 0, 0, 0));
+
+        Mock<IUserDataService> userDataServiceMock = new();
+        userDataServiceMock.Setup(service => service.GetUser()).Returns(new UserViewModel { Name = "User" });
+
+        Mock<IApplicationIdService> applicationIdServiceMock = new();
+        applicationIdServiceMock.Setup(service => service.GetApplicationId()).Returns(Guid.NewGuid());
+
+        Mock<IChatHistorySettingsService> resolvedChatSettingsServiceMock = chatSettingsServiceMock ?? new Mock<IChatHistorySettingsService>();
+        resolvedChatSettingsServiceMock
+                .Setup(service => service.GetCurrentSettings())
+                .Returns(chatSettings ?? new ChatHistoryOptions
+                {
+                    ChatModelName = "gpt-oss:20b-cloud",
+                    ConnectionString = "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;",
+                    EmbeddingsModelName = "mxbai-embed-large-v1:latest",
+                    MaxContextMessages = 40,
+                    MaxContextTokens = 120000,
+                    RAGKnowledgeEnabled = true,
+                    ChatHistoryContextEnabled = true
+                });
+
+        return new SettingsViewModel(
+                appConfigMock.Object,
+                themeSelectorServiceMock.Object,
+                systemServiceMock.Object,
+                applicationInfoServiceMock.Object,
+                userDataServiceMock.Object,
+                applicationIdServiceMock.Object,
+                resolvedChatSettingsServiceMock.Object);
     }
 }

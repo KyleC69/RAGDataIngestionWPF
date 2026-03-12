@@ -1,9 +1,9 @@
-// Build Date: 2026/03/11
+// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatHistoryOptions.cs
 // Author: Kyle L. Crowder
-// Build Num: 105646
+// Build Num: 013503
 
 
 
@@ -13,24 +13,32 @@ namespace DataIngestionLib.Options;
 
 
 
+/// <summary>
+///     This class of settings define the behavior of the chat history and context management for a conversational AI
+///     system.
+///     It includes options for configuring the chat model, embeddings model, and various parameters related to how chat
+///     history is retained and pruned.
+///     The settings allow for customization of the chat experience, enabling features such as summarization of pruned
+///     messages,
+///     retention policies based on time or message count, and the inclusion of relevant external knowledge through RAG
+///     (Retrieval-Augmented Generation).
+///     These options are crucial for optimizing the performance and relevance of the conversational AI system in different
+///     scenarios, particularly
+///     These setting are to be moved to UI Registry backed .
+///   This class is for the transfer of settings not a stateful container See UI Settings
+/// </summary>
 public sealed class ChatHistoryOptions
 {
     public const string ConfigurationSectionName = "ChatHistory";
-    public string ChatModelName { get; set; } = "gpt-oss:latest";
 
-    public string ConnectionString { get; set; } = "Server=(localdb)\\MSSQLLocalDB;Database=RAGDataIngestionChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;";
+    public string ChatModelName { get; set; } = "gpt-oss:20b-cloud";
+
+    public string ConnectionString { get; set; } = "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;";
 
     public string EmbeddingsModelName { get; set; } = "mxbai-embed-large-v1:latest";
 
-    /// <summary>
-    ///     Gets or sets a value indicating whether summarization of pruned chat history messages is enabled.
-    /// </summary>
-    /// <remarks>
-    ///     When enabled, pruned messages from the chat history are summarized and the summary is added back to the chat
-    ///     history.
-    ///     This helps retain the context of removed messages while adhering to the constraints of maximum messages or tokens.
-    /// </remarks>
-    public bool EnableSummarization { get; set; } //is it practical to summarize in real-time on enterprise environment that retain full history?
+
+
 
 
     /// <summary>
@@ -40,28 +48,17 @@ public sealed class ChatHistoryOptions
     ///     This property determines the limit on the number of context messages retained in memory.
     ///     Exceeding this limit may result in older messages being discarded.
     /// </remarks>
-    public int MaxContextMessages { get; set; } = 16;
+    public int MaxContextMessages { get; set; } = 40;
 
     /// <summary>
     ///     Sets the size of the context window before context injections.
     /// </summary>
-    public int? MaxContextTokens { get; set; } = 130000;
-
-    /// <summary>
-    ///     Enabled the use of past chat history message as part of the context. Can be extremely useful for enterprise
-    ///     scenarios where the entire history of the conversation needs to be retained and used as part of the context for
-    ///     future interactions. When enabled, past messages from the chat history are
-    ///     Ideal Scenario : Call centers or support systems using LLM's to assist agents in providing better customer service
-    ///     by retaining the entire history of customer interactions, allowing for more informed responses and personalized
-    ///     assistance.
-    ///     This is not the same as RAG Knowledge, which may consist of in-house documents or very specific domain contents
-    ///     like repair manuals, product catalogs, etc...
-    /// </summary>
-    public int MaxSemanticMessages { get; set; } = 8;
+    public int? MaxContextTokens { get; set; } = 120000;
 
 
 
-    public ChatHistoryMode PruneMode { get; set; } = ChatHistoryMode.MessageCount;
+
+
 
     /// <summary>
     ///     can be used for documents, manuals, websites etc... that are relevant to the conversation but not part of the
@@ -72,10 +69,9 @@ public sealed class ChatHistoryOptions
     /// </summary>
     public bool RAGKnowledgeEnabled { get; set; } = true;
 
-    public ChatHistoryRetentionPolicy RetentionPolicy { get; set; } = ChatHistoryRetentionPolicy.TimeBased;
 
     /// <summary>
-    ///     Enabled the use of past chat history message as part of the cotext. Can be extremely useful for enterprise
+    ///     Enabled the use of past chat history message as part of the context. Can be extremely useful for enterprise
     ///     scenarios where the entire history of the conversation needs to be retained and used as part of the context for
     ///     future interactions. When enabled, past messages from the chat history are
     ///     Ideal Scenario : Call centers or support systems using LLM's to assist agents in providing better customer service
@@ -84,60 +80,36 @@ public sealed class ChatHistoryOptions
     ///     This is not the same as RAG Knowledge, which may consiste of in-house documents or very specific domain contents
     ///     like repair manuals, product catalogs, etc...
     /// </summary>
-    public bool SemanticHistoryEnabled { get; set; } = true;
+    public bool ChatHistoryContextEnabled { get; set; } = true;
 }
 
 
 
 
 
-public enum ChatHistoryMode
+
+
+
+public enum ContextStrategy
 {
     /// <summary>
-    ///     Maintain a fixed sized context window dropping off the oldest messages based on the total token count of the
-    ///     context, ensuring it does not exceed the specified
-    ///     maximum.
+    ///     Represents a strategy for managing the context of a conversation by maintaining a sliding window
+    ///     of tokens. This approach ensures that the most recent tokens are retained while older tokens
+    ///     are pruned, allowing the system to stay within token limits while preserving recent context.
     /// </summary>
     SlidingTokenWindow,
 
     /// <summary>
-    ///     Prune messages based on the total number of messages in the context, ensuring it does not exceed the
-    ///     specified maximum.
+    ///     Represents a fixed-size window for managing tokens within a sequence or collection.
+    ///     K
     /// </summary>
-    MessageCount,
+    FixedTokenWindow,
 
     /// <summary>
-    ///     Limits the size of the context by pruning messages based on the total token count, ensuring it does not exceed the
-    ///     specified maximum.
+    ///     Represents a context strategy where the number of messages is used
+    ///     to determine the context size or limit.
     /// </summary>
-    TokenCount,
+    /// <remarks>enables the pruning service, must configure</remarks>
+    MessageCount
 
-    /// <summary>
-    ///     Represents a sliding window of messages, allowing for efficient management and retrieval of recent messages
-    ///     within a specified Message count.
-    /// </summary>
-    /// <remarks>
-    ///     This class is useful for scenarios where you need to keep track of messages that arrive over
-    ///     time, such as logging or event handling. The sliding window automatically discards messages that fall outside
-    ///     the defined time range, ensuring that only relevant messages are retained.
-    /// </remarks>
-    SlidingMessageWindow
-
-}
-
-
-
-
-
-public enum ChatHistoryRetentionPolicy
-{
-    /// <summary>
-    ///     Retain the most recent messages in the chat history, removing older messages when limits are exceeded.
-    /// </summary>
-    TimeBased,
-
-    /// <summary>
-    ///     Retain the oldest messages in the chat history, pruning newer messages first when limits are exceeded.
-    /// </summary>
-    KeepOldest
 }

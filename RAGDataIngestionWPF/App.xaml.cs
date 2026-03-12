@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 105625
+// Build Num: 013445
 
 
 
@@ -127,7 +127,6 @@ public partial class App : Application
 
         // Configuration
         services.Configure<AppSettings>(context.Configuration.GetSection(AppSettings.ConfigurationSectionName));
-        services.Configure<ChatHistoryOptions>(context.Configuration.GetSection(ChatHistoryOptions.ConfigurationSectionName));
     }
 
 
@@ -357,6 +356,9 @@ public partial class App : Application
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
         services.AddSingleton<ISystemService, SystemService>();
         services.AddSingleton<IApplicationIdService, ApplicationIdService>();
+        services.AddSingleton<ChatHistorySettingsService>();
+        services.AddSingleton<IChatHistorySettingsService>(sp => sp.GetRequiredService<ChatHistorySettingsService>());
+        services.AddSingleton<IOptionsMonitor<ChatHistoryOptions>>(sp => sp.GetRequiredService<ChatHistorySettingsService>());
         services.AddSingleton<ISampleDataService, SampleDataService>();
         services.AddSingleton(sp =>
         {
@@ -403,8 +405,8 @@ public partial class App : Application
         services.AddHostedService<ApplicationHostService>();
         services.AddHostedService<ChatHistoryInitializationService>();
         services.AddHttpClient("ollama", client => { client.BaseAddress = new Uri(OllamaEndpoint); });
-        services.AddHttpClient("langsearch", client => { client.BaseAddress = new Uri("https://api.langsearch.com/"); });
     }
+        // Removed Microsoft Graph client registration
 
 
 

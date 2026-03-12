@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         SettingsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 105620
+// Build Num: 013439
 
 
 
@@ -11,6 +11,8 @@ using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+
+using DataIngestionLib.Options;
 
 using Microsoft.Extensions.Options;
 
@@ -28,14 +30,26 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 // TODO: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
-public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IApplicationIdService applicationIdService) : ObservableObject, INavigationAware
+public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService, IApplicationIdService applicationIdService, IChatHistorySettingsService chatHistorySettingsService) : ObservableObject, INavigationAware
 {
+    private const string SettingsPageChatHistoryContextEnabledLabelKey = "SettingsPageChatHistoryContextEnabledLabel";
+    private const string SettingsPageChatHistorySaveStatusKey = "SettingsPageChatHistorySaveStatus";
+    private const string SettingsPageChatHistoryTitleKey = "SettingsPageChatHistoryTitle";
+    private const string SettingsPageChatModelLabelKey = "SettingsPageChatModelLabel";
+    private const string SettingsPageConnectionStringLabelKey = "SettingsPageConnectionStringLabel";
+    private const string SettingsPageEmbeddingsModelLabelKey = "SettingsPageEmbeddingsModelLabel";
+    private const string SettingsPageMaxContextMessagesLabelKey = "SettingsPageMaxContextMessagesLabel";
+    private const string SettingsPageMaxContextTokensLabelKey = "SettingsPageMaxContextTokensLabel";
+    private const string SettingsPageRagKnowledgeEnabledLabelKey = "SettingsPageRagKnowledgeEnabledLabel";
+    private const string SettingsPageSaveChatHistoryButtonTextKey = "SettingsPageSaveChatHistoryButtonText";
+
     private readonly AppSettings _appConfig = appConfig.Value;
     private readonly IApplicationIdService _applicationIdService = applicationIdService;
     private readonly IApplicationInfoService _applicationInfoService = applicationInfoService;
     private readonly ISystemService _systemService = systemService;
     private readonly IThemeSelectorService _themeSelectorService = themeSelectorService;
     private readonly IUserDataService _userDataService = userDataService;
+    private readonly IChatHistorySettingsService _chatHistorySettingsService = chatHistorySettingsService;
 
 
 
@@ -43,36 +57,33 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
 
     public Guid ApplicationId
     {
-        get;
-        set { this.SetProperty(ref field, value); }
+        get; set => SetProperty(ref field, value);
     }
 
 
 
 
 
-    public ICommand PrivacyStatementCommand
-    {
-        get { return field ??= new RelayCommand(OnPrivacyStatement); }
-    }
+    public ICommand PrivacyStatementCommand => field ??= new RelayCommand(OnPrivacyStatement);
 
 
 
 
 
-    public ICommand RenewApplicationIdCommand
-    {
-        get { return field ??= new RelayCommand(OnRenewApplicationId); }
-    }
+    public ICommand RenewApplicationIdCommand => field ??= new RelayCommand(OnRenewApplicationId);
 
 
 
 
 
-    public ICommand SetThemeCommand
-    {
-        get { return field ??= new RelayCommand<string>(OnSetTheme); }
-    }
+
+    public ICommand SaveChatHistorySettingsCommand => field ??= new RelayCommand(OnSaveChatHistorySettings);
+
+
+
+
+
+    public ICommand SetThemeCommand => field ??= new RelayCommand<string>(OnSetTheme);
 
 
 
@@ -80,9 +91,140 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
 
     public AppTheme Theme
     {
-        get;
-        set { this.SetProperty(ref field, value); }
+        get; set => SetProperty(ref field, value);
     }
+
+
+
+
+
+    public string ChatModelName
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+
+    public string ChatHistoryConnectionString
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+
+    public string EmbeddingsModelName
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+
+    public int MaxContextMessages
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+
+    public int? MaxContextTokens
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+
+    public bool RAGKnowledgeEnabled
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+
+    public bool ChatHistoryContextEnabled
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+
+    public string ChatHistorySettingsStatus
+    {
+        get; set => SetProperty(ref field, value);
+    }
+
+
+
+
+
+    public string ChatHistoryTitleText => GetResourceString(SettingsPageChatHistoryTitleKey, "Chat History");
+
+
+
+
+
+    public string ChatModelLabelText => GetResourceString(SettingsPageChatModelLabelKey, "Chat Model");
+
+
+
+
+
+    public string EmbeddingsModelLabelText => GetResourceString(SettingsPageEmbeddingsModelLabelKey, "Embeddings Model");
+
+
+
+
+
+    public string ConnectionStringLabelText => GetResourceString(SettingsPageConnectionStringLabelKey, "Connection String");
+
+
+
+
+
+    public string MaxContextMessagesLabelText => GetResourceString(SettingsPageMaxContextMessagesLabelKey, "Max Context Messages");
+
+
+
+
+
+    public string MaxContextTokensLabelText => GetResourceString(SettingsPageMaxContextTokensLabelKey, "Max Context Tokens");
+
+
+
+
+
+    public string RagKnowledgeEnabledLabelText => GetResourceString(SettingsPageRagKnowledgeEnabledLabelKey, "Enable RAG Knowledge Context Injection");
+
+
+
+
+
+    public string ChatHistoryContextEnabledLabelText => GetResourceString(SettingsPageChatHistoryContextEnabledLabelKey, "Enable Chat History Context Injection");
+
+
+
+
+
+    public string SaveChatHistoryButtonText => GetResourceString(SettingsPageSaveChatHistoryButtonTextKey, "Save Chat History Settings");
+
+
+
+
+
+    public string ChatHistorySaveStatusText => GetResourceString(SettingsPageChatHistorySaveStatusKey, "Chat history settings saved.");
 
 
 
@@ -90,8 +232,7 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
 
     public UserViewModel User
     {
-        get;
-        set { this.SetProperty(ref field, value); }
+        get; set => SetProperty(ref field, value);
     }
 
 
@@ -100,8 +241,7 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
 
     public string VersionDescription
     {
-        get;
-        set { this.SetProperty(ref field, value); }
+        get; set => SetProperty(ref field, value);
     }
 
 
@@ -124,6 +264,16 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
 
         _userDataService.UserDataUpdated += OnUserDataUpdated;
         User = _userDataService.GetUser();
+
+        ChatHistoryOptions settings = _chatHistorySettingsService.GetCurrentSettings();
+        ChatModelName = settings.ChatModelName;
+        ChatHistoryConnectionString = settings.ConnectionString;
+        EmbeddingsModelName = settings.EmbeddingsModelName;
+        MaxContextMessages = settings.MaxContextMessages;
+        MaxContextTokens = settings.MaxContextTokens;
+        RAGKnowledgeEnabled = settings.RAGKnowledgeEnabled;
+        ChatHistoryContextEnabled = settings.ChatHistoryContextEnabled;
+        ChatHistorySettingsStatus = string.Empty;
     }
 
 
@@ -182,6 +332,30 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
 
 
 
+    private void OnSaveChatHistorySettings()
+    {
+        ChatHistoryOptions options = new()
+        {
+            ChatModelName = ChatModelName,
+            ConnectionString = ChatHistoryConnectionString,
+            EmbeddingsModelName = EmbeddingsModelName,
+            MaxContextMessages = MaxContextMessages,
+            MaxContextTokens = MaxContextTokens,
+            RAGKnowledgeEnabled = RAGKnowledgeEnabled,
+            ChatHistoryContextEnabled = ChatHistoryContextEnabled
+        };
+
+        _chatHistorySettingsService.SaveSettings(options);
+        ChatHistorySettingsStatus = ChatHistorySaveStatusText;
+    }
+
+
+
+
+
+
+
+
     private void OnUserDataUpdated(object sender, UserViewModel userData)
     {
         User = userData;
@@ -197,5 +371,17 @@ public class SettingsViewModel(IOptions<AppSettings> appConfig, IThemeSelectorSe
     private void UnregisterEvents()
     {
         _userDataService.UserDataUpdated -= OnUserDataUpdated;
+    }
+
+
+
+
+
+
+
+
+    private static string GetResourceString(string key, string fallback)
+    {
+        return Properties.Resources.ResourceManager.GetString(key) ?? fallback;
     }
 }

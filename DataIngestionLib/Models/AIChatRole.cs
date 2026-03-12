@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIChatRole.cs
 // Author: Kyle L. Crowder
-// Build Num: 105645
+// Build Num: 013502
 
 
 
@@ -278,14 +278,6 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
 
 
-
-
-
-
-
-
-
-
     public ChatRole ToChatRole()
     {
         return new ChatRole(Value);
@@ -303,6 +295,7 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
         return this;
     }
 }
+
 
 
 

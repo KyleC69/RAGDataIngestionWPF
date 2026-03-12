@@ -1,9 +1,9 @@
-// Build Date: 2026/03/11
+// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         SafeCommandRunnerTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 105606
+// Build Num: 013428
 
 
 
@@ -45,7 +45,7 @@ public class SafeCommandRunnerTests
         SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
-        ToolResult<string> result = runner.Run($"cat {fileName}");
+        var result = runner.Run($"cat {fileName}");
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -63,10 +63,10 @@ public class SafeCommandRunnerTests
     public void Run_CatCommand_WithNonexistentFile_ReturnsFileNotFound()
     {
         // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
         // Act
-        ToolResult<string> result = runner.Run("cat ghost_file.txt");
+        var result = runner.Run("cat ghost_file.txt");
 
         // Assert
         Assert.IsFalse(result.Success);
@@ -84,10 +84,10 @@ public class SafeCommandRunnerTests
     public void Run_CatCommand_WithPathTraversal_ReturnsDenied()
     {
         // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
         // Act — attempt to read outside the sandbox
-        ToolResult<string> result = runner.Run("cat ../../sensitive.txt");
+        var result = runner.Run("cat ../../sensitive.txt");
 
         // Assert
         Assert.IsFalse(result.Success);
@@ -105,10 +105,10 @@ public class SafeCommandRunnerTests
     public void Run_EchoCommand_ReturnsArguments()
     {
         // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
         // Act
-        ToolResult<string> result = runner.Run("echo hello world");
+        var result = runner.Run("echo hello world");
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -126,10 +126,10 @@ public class SafeCommandRunnerTests
     public void Run_EchoWithNoArgs_ReturnsEmptyString()
     {
         // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
         // Act
-        ToolResult<string> result = runner.Run("echo");
+        var result = runner.Run("echo");
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -150,10 +150,10 @@ public class SafeCommandRunnerTests
         File.WriteAllText(Path.Combine(_sandboxDir, "alpha.txt"), "a");
         File.WriteAllText(Path.Combine(_sandboxDir, "beta.txt"), "b");
 
-        SafeCommandRunner runner = new(_sandboxDir);
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
         // Act
-        ToolResult<string> result = runner.Run("ls");
+        var result = runner.Run("ls");
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -172,10 +172,10 @@ public class SafeCommandRunnerTests
     public void Run_WithDisallowedCommand_ReturnsNotAllowedMessage()
     {
         // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
         // Act
-        ToolResult<string> result = runner.Run("rm -rf /");
+        var result = runner.Run("rm -rf /");
 
         // Assert
         Assert.IsFalse(result.Success);
@@ -196,10 +196,10 @@ public class SafeCommandRunnerTests
     public void Run_WithNullOrWhitespaceInput_ReturnsNoCommandProvided(string input)
     {
         // Arrange
-        SafeCommandRunner runner = new(_sandboxDir);
+        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
 
         // Act
-        ToolResult<string> result = runner.Run(input!);
+        var result = runner.Run(input!);
 
         // Assert
         Assert.IsFalse(result.Success);

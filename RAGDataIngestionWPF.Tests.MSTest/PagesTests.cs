@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         PagesTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 105558
+// Build Num: 013421
 
 
 
@@ -17,6 +17,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+
+using Moq;
 
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Core.Contracts.Services;
@@ -68,7 +70,6 @@ public class PagesTests
         // Core Services
         services.AddSingleton<IFileService, FileService>();
         services.AddSingleton<IIdentityService, IdentityService>();
-        services.AddSingleton<IMicrosoftGraphService, MicrosoftGraphService>();
 
         // Services
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
@@ -88,8 +89,12 @@ public class PagesTests
         services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
         services.AddSingleton<IUserDataService, UserDataService>();
         //       services.AddSingleton<IIdentityCacheService, IdentityCacheService>();
-        services.AddHttpClient("msgraph", client => { client.BaseAddress = new Uri("https://graph.microsoft.com/v1.0/"); });
         services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
+        Mock<IChatHistorySettingsService> chatHistorySettingsServiceMock = new();
+        chatHistorySettingsServiceMock
+                .Setup(service => service.GetCurrentSettings())
+                .Returns(new ChatHistoryOptions());
+        services.AddSingleton(chatHistorySettingsServiceMock.Object);
         services.AddSingleton<IPageService, PageService>();
         services.AddSingleton<INavigationService, NavigationService>();
 

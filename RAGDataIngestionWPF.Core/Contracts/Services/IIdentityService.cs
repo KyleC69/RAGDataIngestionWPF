@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/11
+﻿// Build Date: 2026/03/12
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Core
 // File:         IIdentityService.cs
 // Author: Kyle L. Crowder
-// Build Num: 105555
+// Build Num: 013418
 
 
 
@@ -25,9 +25,6 @@ public interface IIdentityService
 
 
     Task<string> GetAccessTokenAsync(string[] scopes);
-
-
-    Task<string> GetAccessTokenForGraphAsync();
 
 
     string GetAccountUserName();
