@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         AIChatRole.cs
 // Author: Kyle L. Crowder
-// Build Num: 175054
+// Build Num: 202402
 
 
 
@@ -308,7 +308,7 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 public sealed class Converter : JsonConverter<AIChatRole>
 {
     /// <inheritdoc />
-    public  AIChatRole Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public static AIChatRole Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         return new(reader.GetString()!);
     }
@@ -321,7 +321,20 @@ public sealed class Converter : JsonConverter<AIChatRole>
 
 
     /// <inheritdoc />
-    public  void Write(Utf8JsonWriter writer, AIChatRole value, JsonSerializerOptions options)
+    public override AIChatRole ReadJson(JsonReader reader, Type objectType, AIChatRole existingValue, bool hasExistingValue, JsonSerializer serializer)
+    {
+        throw new NotImplementedException();
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public static void Write(Utf8JsonWriter writer, AIChatRole value, JsonSerializerOptions options)
     {
         writer.WriteStringValue(value.Value);
     }
@@ -335,19 +348,6 @@ public sealed class Converter : JsonConverter<AIChatRole>
 
     /// <inheritdoc />
     public override void WriteJson(JsonWriter writer, AIChatRole value, JsonSerializer serializer)
-    {
-        throw new NotImplementedException();
-    }
-
-
-
-
-
-
-
-
-    /// <inheritdoc />
-    public override AIChatRole ReadJson(JsonReader reader, Type objectType, AIChatRole existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         throw new NotImplementedException();
     }

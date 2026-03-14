@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         SystemInfoTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 175059
+// Build Num: 202412
 
 
 
@@ -23,10 +23,10 @@ public sealed class SystemInfoTool
     {
         return ToolResult<SystemInfoSnapshot>.Ok(new()
         {
-                OS = Environment.OSVersion.ToString(),
-                MachineName = Environment.MachineName,
-                ProcessorCount = Environment.ProcessorCount,
-                DotNetVersion = Environment.Version.ToString()
+            OS = Environment.OSVersion.ToString(),
+            MachineName = Environment.MachineName,
+            ProcessorCount = Environment.ProcessorCount,
+            DotNetVersion = Environment.Version.ToString()
         });
     }
 }
@@ -37,8 +37,8 @@ public sealed class SystemInfoTool
 
 public sealed class SystemInfoSnapshot
 {
-    public string DotNetVersion { get; set; } = "";
-    public string MachineName { get; set; } = "";
-    public string OS { get; set; } = "";
-    public int ProcessorCount { get; set; }
+    public string DotNetVersion { get; init; } = "";
+    public string MachineName { get; init; } = "";
+    public string OS { get; init; } = "";
+    public int ProcessorCount { get; init; }
 }

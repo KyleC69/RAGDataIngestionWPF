@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         LogInViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 175113
+// Build Num: 202429
 
 
 
@@ -23,7 +23,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 
-public class LogInViewModel(IIdentityService identityService) : ObservableObject
+public sealed partial class LogInViewModel(IIdentityService identityService) : ObservableObject
 {
     private readonly IIdentityService _identityService = identityService;
 
@@ -54,11 +54,8 @@ public class LogInViewModel(IIdentityService identityService) : ObservableObject
 
 
 
-    public string StatusMessage
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial string StatusMessage { get; set; }
 
 
 
@@ -71,11 +68,11 @@ public class LogInViewModel(IIdentityService identityService) : ObservableObject
     {
         return loginResult switch
         {
-                LoginResultType.Unauthorized => Resources.StatusUnauthorized,
-                LoginResultType.NoNetworkAvailable => Resources.StatusNoNetworkAvailable,
-                LoginResultType.UnknownError => Resources.StatusLoginFails,
-                LoginResultType.Success or LoginResultType.CancelledByUser => string.Empty,
-                _ => string.Empty
+            LoginResultType.Unauthorized => Resources.StatusUnauthorized,
+            LoginResultType.NoNetworkAvailable => Resources.StatusNoNetworkAvailable,
+            LoginResultType.UnknownError => Resources.StatusLoginFails,
+            LoginResultType.Success or LoginResultType.CancelledByUser => string.Empty,
+            _ => string.Empty
         };
     }
 

@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 175122
+// Build Num: 202436
 
 
 
@@ -54,7 +54,7 @@ namespace RAGDataIngestionWPF;
 
 
 
-public partial class App : Application
+public sealed partial class App : Application
 {
     private IHost? _host;
     private bool _isHostStarted;

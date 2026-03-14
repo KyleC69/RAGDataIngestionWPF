@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         DataGridPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 175119
+// Build Num: 202433
 
 
 
@@ -18,7 +18,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public partial class DataGridPage : Page
+public sealed partial class DataGridPage : Page
 {
     public DataGridPage()
     {

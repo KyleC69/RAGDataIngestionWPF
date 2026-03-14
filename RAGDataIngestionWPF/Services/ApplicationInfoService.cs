@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         ApplicationInfoService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175109
+// Build Num: 202425
 
 
 
@@ -21,7 +21,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 
-public class ApplicationInfoService : IApplicationInfoService
+public sealed class ApplicationInfoService : IApplicationInfoService
 {
 
     public Version GetVersion()

@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Core
 // File:         SampleDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175102
+// Build Num: 202415
 
 
 
@@ -26,7 +26,7 @@ namespace RAGDataIngestionWPF.Core.Services;
 // 3. Models/SampleCompany.cs
 // 4. Models/SampleOrder.cs
 // 5. Models/SampleOrderDetail.cs
-public class SampleDataService : ISampleDataService
+public sealed class SampleDataService : ISampleDataService
 {
 
     // Remove this once your DataGrid pages are displaying real data.

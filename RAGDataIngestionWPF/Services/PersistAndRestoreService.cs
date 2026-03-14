@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         PersistAndRestoreService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175110
+// Build Num: 202426
 
 
 
@@ -18,7 +18,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 
-public class PersistAndRestoreService : IPersistAndRestoreService
+public sealed class PersistAndRestoreService : IPersistAndRestoreService
 {
 
 

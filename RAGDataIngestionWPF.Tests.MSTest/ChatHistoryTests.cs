@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ChatHistoryTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 175103
+// Build Num: 202418
 
 
 
@@ -32,7 +32,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void AddAssistantMessage_AddsMessageWithAssistantRole()
+    public void AddAssistantMessageAddsMessageWithAssistantRole()
     {
         // Arrange
         AIChatHistory history = [];
@@ -54,15 +54,15 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void AddRange_AddsAllProvidedMessages()
+    public void AddRangeAddsAllProvidedMessages()
     {
         // Arrange
         AIChatHistory history = [];
         List<AIChatMessage> messages =
         [
-                new AIChatMessage(ChatRole.User, "first"),
-                new AIChatMessage(ChatRole.Assistant, "second"),
-                new AIChatMessage(ChatRole.User, "third")
+                new(ChatRole.User, "first"),
+                new(ChatRole.Assistant, "second"),
+                new(ChatRole.User, "third")
         ];
 
         // Act
@@ -80,7 +80,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void AddSystemMessage_AddsMessageWithSystemRole()
+    public void AddSystemMessageAddsMessageWithSystemRole()
     {
         // Arrange
         AIChatHistory history = [];
@@ -101,7 +101,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void AddUserMessage_AddsMessageWithUserRole()
+    public void AddUserMessageAddsMessageWithUserRole()
     {
         // Arrange
         AIChatHistory history = [];
@@ -126,7 +126,7 @@ public class ChatHistoryTests
     [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
-    public void AddUserMessage_WithNullOrWhitespaceContent_ThrowsArgumentException(string content)
+    public void AddUserMessageWithNullOrWhitespaceContentThrowsArgumentException(string content)
     {
         // Arrange
         AIChatHistory history = [];
@@ -143,22 +143,22 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void EstimateContextTokenCount_RespectsMaxTokenBudget()
+    public void EstimateContextTokenCountRespectsMaxTokenBudget()
     {
         // Arrange — add several long messages that individually exceed a small budget.
         // The heuristic estimates 1 token per 4 characters (Math.Max(1, text.Length / 4)),
         // so 400-character messages each cost ~100 tokens.
         AIChatHistory history = [];
-        history.AddUserMessage(new string('a', 400)); // ~100 tokens
-        history.AddAssistantMessage(new string('b', 400)); // ~100 tokens
-        history.AddUserMessage(new string('c', 400)); // ~100 tokens
+        history.AddUserMessage(new('a', 400)); // ~100 tokens
+        history.AddAssistantMessage(new('b', 400)); // ~100 tokens
+        history.AddUserMessage(new('c', 400)); // ~100 tokens
 
         // Act — budget of 150 tokens should admit fewer than all three messages
         var tokens = history.EstimateContextTokenCount(150);
 
         // Assert
-        Assert.IsTrue(tokens <= 150, "Token count must not exceed the configured budget.");
-        Assert.IsTrue(tokens > 0, "At least one message should fit within the budget.");
+        Assert.IsLessThanOrEqualTo(150, tokens, "Token count must not exceed the configured budget.");
+        Assert.IsGreaterThan(0, tokens, "At least one message should fit within the budget.");
     }
 
 
@@ -169,7 +169,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void EstimateContextTokenCount_WithNonPositiveMaxTokens_ThrowsArgumentOutOfRangeException()
+    public void EstimateContextTokenCountWithNonPositiveMaxTokensThrowsArgumentOutOfRangeException()
     {
         // Arrange
         AIChatHistory history = [];
@@ -187,7 +187,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void EstimateTokenCount_ReturnsPositiveCount_ForNonEmptyHistory()
+    public void EstimateTokenCountReturnsPositiveCountForNonEmptyHistory()
     {
         // Arrange
         AIChatHistory history = [];
@@ -197,7 +197,7 @@ public class ChatHistoryTests
         var tokens = history.EstimateTokenCount();
 
         // Assert
-        Assert.IsTrue(tokens > 0, "Token count should be positive for non-empty text.");
+        Assert.IsGreaterThan(0, tokens, "Token count should be positive for non-empty text.");
     }
 
 
@@ -208,7 +208,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void EstimateTokenCount_ReturnsZero_ForEmptyHistory()
+    public void EstimateTokenCountReturnsZeroForEmptyHistory()
     {
         // Arrange
         AIChatHistory history = [];
@@ -228,7 +228,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void GetLastMessageText_ReturnsCorrectText_ForMatchingRole()
+    public void GetLastMessageTextReturnsCorrectTextForMatchingRole()
     {
         // Arrange
         AIChatHistory history = [];
@@ -250,7 +250,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void GetLastMessageText_ReturnsEmptyString_WhenRoleNotPresent()
+    public void GetLastMessageTextReturnsEmptyStringWhenRoleNotPresent()
     {
         // Arrange
         AIChatHistory history = [];
@@ -270,7 +270,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void LastMessage_ReturnsNewestMessage()
+    public void LastMessageReturnsNewestMessage()
     {
         // Arrange
         AIChatHistory history = [];
@@ -289,7 +289,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void LastMessage_ReturnsNull_WhenHistoryIsEmpty()
+    public void LastMessageReturnsNullWhenHistoryIsEmpty()
     {
         // Arrange
         AIChatHistory history = [];
@@ -306,7 +306,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void TryGetLastMessage_ReturnsFalse_WhenRoleNotPresent()
+    public void TryGetLastMessageReturnsFalseWhenRoleNotPresent()
     {
         // Arrange
         AIChatHistory history = [];
@@ -328,7 +328,7 @@ public class ChatHistoryTests
 
 
     [TestMethod]
-    public void TryGetLastMessage_ReturnsLatestMessageMatchingRole()
+    public void TryGetLastMessageReturnsLatestMessageMatchingRole()
     {
         // Arrange
         AIChatHistory history = [];

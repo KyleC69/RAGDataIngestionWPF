@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         SafeCommandRunnerTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 175105
+// Build Num: 202420
 
 
 
@@ -35,7 +35,7 @@ public class SafeCommandRunnerTests
 
 
     [TestMethod]
-    public void Run_CatCommand_WithExistingFile_ReturnsFileContent()
+    public void RunCatCommandWithExistingFileReturnsFileContent()
     {
         // Arrange
         const string fileName = "read_me.txt";
@@ -60,10 +60,10 @@ public class SafeCommandRunnerTests
 
 
     [TestMethod]
-    public void Run_CatCommand_WithNonexistentFile_ReturnsFileNotFound()
+    public void RunCatCommandWithNonexistentFileReturnsFileNotFound()
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
         var result = runner.Run("cat ghost_file.txt");
@@ -81,10 +81,10 @@ public class SafeCommandRunnerTests
 
 
     [TestMethod]
-    public void Run_CatCommand_WithPathTraversal_ReturnsDenied()
+    public void RunCatCommandWithPathTraversalReturnsDenied()
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act — attempt to read outside the sandbox
         var result = runner.Run("cat ../../sensitive.txt");
@@ -102,10 +102,10 @@ public class SafeCommandRunnerTests
 
 
     [TestMethod]
-    public void Run_EchoCommand_ReturnsArguments()
+    public void RunEchoCommandReturnsArguments()
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
         var result = runner.Run("echo hello world");
@@ -123,10 +123,10 @@ public class SafeCommandRunnerTests
 
 
     [TestMethod]
-    public void Run_EchoWithNoArgs_ReturnsEmptyString()
+    public void RunEchoWithNoArgsReturnsEmptyString()
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
         var result = runner.Run("echo");
@@ -144,21 +144,21 @@ public class SafeCommandRunnerTests
 
 
     [TestMethod]
-    public void Run_LsCommand_ReturnsSandboxFileNames()
+    public void RunLsCommandReturnsSandboxFileNames()
     {
         // Arrange
         File.WriteAllText(Path.Combine(_sandboxDir, "alpha.txt"), "a");
         File.WriteAllText(Path.Combine(_sandboxDir, "beta.txt"), "b");
 
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
         var result = runner.Run("ls");
 
         // Assert
         Assert.IsTrue(result.Success);
-        StringAssert.Contains(result.Value!, "alpha.txt");
-        StringAssert.Contains(result.Value!, "beta.txt");
+        Assert.Contains("alpha.txt", result.Value!);
+        Assert.Contains("beta.txt", result.Value!);
     }
 
 
@@ -169,17 +169,17 @@ public class SafeCommandRunnerTests
 
 
     [TestMethod]
-    public void Run_WithDisallowedCommand_ReturnsNotAllowedMessage()
+    public void RunWithDisallowedCommandReturnsNotAllowedMessage()
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
         var result = runner.Run("rm -rf /");
 
         // Assert
         Assert.IsFalse(result.Success);
-        StringAssert.Contains(result.Error!, "not allowed");
+        Assert.Contains("not allowed", result.Error!);
     }
 
 
@@ -193,10 +193,10 @@ public class SafeCommandRunnerTests
     [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
-    public void Run_WithNullOrWhitespaceInput_ReturnsNoCommandProvided(string input)
+    public void RunWithNullOrWhitespaceInputReturnsNoCommandProvided(string input)
     {
         // Arrange
-        SafeCommandRunner runner = new SafeCommandRunner(_sandboxDir);
+        SafeCommandRunner runner = new(_sandboxDir);
 
         // Act
         var result = runner.Run(input!);

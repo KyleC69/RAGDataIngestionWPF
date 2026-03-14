@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         AIChatHistory.cs
 // Author: Kyle L. Crowder
-// Build Num: 175053
+// Build Num: 202400
 
 
 
@@ -62,10 +62,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     {
         ArgumentNullException.ThrowIfNull(messages);
         _messages = [];
-        foreach ((ChatRole Role, var Text) in messages)
-        {
-            ((ICollection<AIChatMessage>)this).Add(new AIChatMessage(Role, Text));
-        }
+        foreach ((ChatRole role, var text) in messages) this.Add(new AIChatMessage(role, text));
     }
 
 
@@ -80,7 +77,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     /// </summary>
     /// <param name="message">The text message to add to the first message in chat history.</param>
     /// <param name="role">The role to add as the first message.</param>
-    public AIChatHistory(string message, ChatRole role)
+    private AIChatHistory(string message, ChatRole role)
     {
         EnsureNotNullOrWhiteSpace(message, nameof(message));
 
@@ -175,11 +172,6 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
 
 
 
-
-
-
-
-
     /// <summary>
     ///     Inserts a message into the history at the specified index.
     /// </summary>
@@ -227,10 +219,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     /// <inheritdoc />
     public void Add(AIChatMessage item)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         _messages.Add(item);
         OnPropertyChanged(nameof(Count));
@@ -383,6 +372,22 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
 
 
 
+    /// <inheritdoc />
+    public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
+
+
+
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+
+
+
+
+
+
+
     public void Add(ChatRole mRole, string mText)
     {
         switch (mRole.Value)
@@ -448,7 +453,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     public void AddMessage(ChatRole authorRole, string content)
     {
         EnsureNotNullOrWhiteSpace(content, nameof(content));
-        ((ICollection<AIChatMessage>)this).Add(new AIChatMessage(authorRole, content));
+        this.Add(new AIChatMessage(authorRole, content));
     }
 
 
@@ -471,7 +476,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
                 throw new ArgumentException($"All messages must have role '{expectedRole.Value}'.", parameterName);
             }
 
-            ((ICollection<AIChatMessage>)this).Add(message);
+            this.Add(message);
         }
     }
 
@@ -491,10 +496,7 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     {
         ArgumentNullException.ThrowIfNull(items);
 
-        foreach (AIChatMessage item in items)
-        {
-            ((ICollection<AIChatMessage>)this).Add(item);
-        }
+        foreach (AIChatMessage item in items) this.Add(item);
     }
 
 
@@ -560,16 +562,6 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     {
         AddMessagesByRole(messages, ChatRole.User, nameof(messages));
     }
-
-
-
-
-
-
-
-
-    /// <inheritdoc />
-    public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
 
 
@@ -663,6 +655,18 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
 
 
 
+    public IEnumerator GetEnumerator()
+    {
+        return _messages.GetEnumerator();
+    }
+
+
+
+
+
+
+
+
     /// <summary>
     ///     Gets the text from the most recent message for the provided role.
     /// </summary>
@@ -708,15 +712,6 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
 
 
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-
-
-
-
-
-
-
     /// <summary>
     ///     Removes a range of messages from the history.
     /// </summary>
@@ -743,36 +738,13 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     public bool TryGetLastMessage(ChatRole role, [NotNullWhen(true)] out AIChatMessage? message)
     {
         for (var index = _messages.Count - 1; index >= 0; index--)
-        {
             if (_messages[index].Role == role)
             {
                 message = _messages[index];
                 return true;
             }
-        }
 
         message = null;
         return false;
     }
-
-
-
-
-
-
-
-
-    public IEnumerator GetEnumerator()
-    {
-        return _messages.GetEnumerator();
-    }
-
-
-
-
-
-
-
-
-
 }

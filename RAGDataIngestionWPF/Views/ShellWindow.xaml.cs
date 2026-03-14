@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         ShellWindow.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 175120
+// Build Num: 202435
 
 
 
@@ -23,7 +23,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public partial class ShellWindow : MetroWindow, IShellWindow
+public sealed partial class ShellWindow : MetroWindow, IShellWindow
 {
     public ShellWindow(ShellViewModel viewModel)
     {

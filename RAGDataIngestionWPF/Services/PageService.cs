@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         PageService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175110
+// Build Num: 202426
 
 
 
@@ -24,7 +24,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 
-public class PageService : IPageService
+public sealed class PageService : IPageService
 {
     private readonly Dictionary<string, Type> _pages = [];
     private readonly IServiceProvider _serviceProvider;

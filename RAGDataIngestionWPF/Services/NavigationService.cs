@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         NavigationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175110
+// Build Num: 202425
 
 
 
@@ -23,7 +23,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 
-public class NavigationService : INavigationService
+public sealed class NavigationService : INavigationService
 {
     private readonly IPageService _pageService;
     private Frame _frame;

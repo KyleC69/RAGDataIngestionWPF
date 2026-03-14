@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         IdentityCacheService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175109
+// Build Num: 202425
 
 
 
@@ -22,7 +22,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 
-internal class IdentityCacheService : IIdentityCacheService
+internal sealed class IdentityCacheService : IIdentityCacheService
 {
     private readonly Lock _fileLock = new();
     public static readonly string MsalCacheFileName = ".msalcache.bin3";

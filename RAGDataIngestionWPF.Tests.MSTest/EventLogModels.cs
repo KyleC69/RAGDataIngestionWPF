@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         EventLogModels.cs
 // Author: Kyle L. Crowder
-// Build Num: 175104
+// Build Num: 202418
 
 
 
@@ -106,11 +106,11 @@ public sealed class SandboxEventLogReader
                     .Take(_maxEvents)
                     .Select(e => new EventLogEntryDto
                     {
-                            TimeGenerated = e.TimeGenerated,
-                            Source = e.Source,
-                            Message = e.Message,
-                            EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
-                            EntryType = e.EntryType
+                        TimeGenerated = e.TimeGenerated,
+                        Source = e.Source,
+                        Message = e.Message,
+                        EventId = e.InstanceId > int.MaxValue ? 0 : (int)e.InstanceId,
+                        EntryType = e.EntryType
                     })
                     .ToList()
                     .AsReadOnly();

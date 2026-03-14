@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         UserViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 175117
+// Build Num: 202432
 
 
 
@@ -20,31 +20,22 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 
-public class UserViewModel : ObservableObject
+public sealed partial class UserViewModel : ObservableObject
 {
-    public string Name
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial string Name { get; set; }
 
 
 
 
 
-    public BitmapImage Photo
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial BitmapImage Photo { get; set; }
 
 
 
 
 
-    public string UserPrincipalName
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial string UserPrincipalName { get; set; }
 }

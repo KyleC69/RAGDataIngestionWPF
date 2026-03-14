@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         MainViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 175113
+// Build Num: 202429
 
 
 
@@ -22,7 +22,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 
-public sealed class MainViewModel : ObservableObject, IDisposable
+public sealed partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly IChatConversationService _chatConversationService;
     private CancellationTokenSource _responseCancellationTokenSource;
@@ -74,11 +74,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
 
 
-    public int ContextTokenCount
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial int ContextTokenCount { get; set; }
 
 
 
@@ -206,7 +203,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         try
         {
             AIChatMessage assistantMessage = await _chatConversationService.SendRequestToModelAsync(content, _responseCancellationTokenSource.Token);
-            ((ICollection<AIChatMessage>)Messages).Add(assistantMessage);
+            Messages.Add(assistantMessage);
         }
         catch (OperationCanceledException)
         {

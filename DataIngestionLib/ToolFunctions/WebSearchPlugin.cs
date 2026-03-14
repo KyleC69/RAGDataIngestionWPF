@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         WebSearchPlugin.cs
 // Author: Kyle L. Crowder
-// Build Num: 175100
+// Build Num: 202413
 
 
 
@@ -76,17 +76,17 @@ public sealed class WebSearchPlugin
 
             var body = new
             {
-                    query = strquery,
-                    count = maxResults,
-                    freshness = "oneMonth",
-                    summary = false
+                query = strquery,
+                count = maxResults,
+                freshness = "oneMonth",
+                summary = false
             };
 
 
             JsonSerializerOptions options = new()
             {
-                    PropertyNameCaseInsensitive = true,
-                    WriteIndented = true
+                PropertyNameCaseInsensitive = true,
+                WriteIndented = true
             };
 
             var jsonBody = JsonSerializer.Serialize(body, options);
@@ -123,7 +123,7 @@ public sealed class WebSearchPlugin
             // 3. Pretty-print
             var pretty = JsonSerializer.Serialize(doc, new JsonSerializerOptions
             {
-                    WriteIndented = true
+                WriteIndented = true
             });
 
             return ToolResult<string>.Ok(pretty);

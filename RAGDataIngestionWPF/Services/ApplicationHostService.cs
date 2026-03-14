@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         ApplicationHostService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175108
+// Build Num: 202424
 
 
 
@@ -32,7 +32,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 
-public class ApplicationHostService : IHostedService
+public sealed class ApplicationHostService : IHostedService
 {
 
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
@@ -132,7 +132,7 @@ public class ApplicationHostService : IHostedService
 
         await Task.CompletedTask;
 
-        if (App.Current.Windows.OfType<IShellWindow>().Count() == 0)
+        if (!Application.Current.Windows.OfType<IShellWindow>().Any())
         {
             // Default activation that navigates to the apps default page
             _shellWindow = _serviceProvider.GetService(typeof(IShellWindow)) as IShellWindow;

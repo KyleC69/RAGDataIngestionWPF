@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         EnumToBooleanConverter.cs
 // Author: Kyle L. Crowder
-// Build Num: 175107
+// Build Num: 202423
 
 
 
@@ -19,9 +19,9 @@ namespace RAGDataIngestionWPF.Converters;
 
 
 
-public class EnumToBooleanConverter : IValueConverter
+public sealed class EnumToBooleanConverter : IValueConverter
 {
-    public Type EnumType { get; set; }
+    public Type EnumType { get; init; }
 
 
 

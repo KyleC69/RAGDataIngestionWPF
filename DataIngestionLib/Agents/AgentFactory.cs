@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 175049
+// Build Num: 202354
 
 
 
@@ -26,7 +26,7 @@ namespace DataIngestionLib.Agents;
 
 
 //This class is intended to be an Agent Factory that will create and configure agents.
-public class AgentFactory : IAgentFactory
+public sealed class AgentFactory : IAgentFactory
 {
     private readonly ILoggerFactory _factory;
     private readonly IHttpClientFactory _httpClientFactory;

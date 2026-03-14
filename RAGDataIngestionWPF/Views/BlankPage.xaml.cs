@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         BlankPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 175119
+// Build Num: 202433
 
 
 
@@ -20,7 +20,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public partial class BlankPage : Page
+public sealed partial class BlankPage : Page
 {
     public BlankPage(BlankViewModel viewModel)
     {

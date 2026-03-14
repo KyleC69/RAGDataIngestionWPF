@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         SettingsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 175115
+// Build Num: 202430
 
 
 
@@ -35,7 +35,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 // TODO: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
-public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService) : ObservableObject, INavigationAware
+public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemService systemService, IApplicationInfoService applicationInfoService, IUserDataService userDataService) : ObservableObject, INavigationAware
 {
     private readonly IApplicationInfoService _applicationInfoService = applicationInfoService;
 
@@ -60,11 +60,8 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public Guid ApplicationId
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial Guid ApplicationId { get; set; }
 
 
 
@@ -82,27 +79,21 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public string ChatHistoryConnectionString
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial string ChatHistoryConnectionString { get; set; }
 
 
 
 
 
-    public bool ChatHistoryContextEnabled
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial bool ChatHistoryContextEnabled { get; set; }
 
 
 
 
 
-    public string ChatHistoryContextEnabledLabelText
+    public static string ChatHistoryContextEnabledLabelText
     {
         get { return GetResourceString(SettingsPageChatHistoryContextEnabledLabelKey, "Enable Chat History Context Injection"); }
     }
@@ -111,7 +102,7 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public string ChatHistorySaveStatusText
+    public static string ChatHistorySaveStatusText
     {
         get { return GetResourceString(SettingsPageChatHistorySaveStatusKey, "Chat history settings saved."); }
     }
@@ -120,17 +111,14 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public string ChatHistorySettingsStatus
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial string ChatHistorySettingsStatus { get; set; }
 
 
 
 
 
-    public string ChatHistoryTitleText
+    public static string ChatHistoryTitleText
     {
         get { return GetResourceString(SettingsPageChatHistoryTitleKey, "Chat History"); }
     }
@@ -139,7 +127,7 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public string ChatModelLabelText
+    public static string ChatModelLabelText
     {
         get { return GetResourceString(SettingsPageChatModelLabelKey, "Chat Model"); }
     }
@@ -148,17 +136,14 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public string ChatModelName
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial string ChatModelName { get; set; }
 
 
 
 
 
-    public string ConnectionStringLabelText
+    public static string ConnectionStringLabelText
     {
         get { return GetResourceString(SettingsPageConnectionStringLabelKey, "Connection String"); }
     }
@@ -167,7 +152,7 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public string EmbeddingsModelLabelText
+    public static string EmbeddingsModelLabelText
     {
         get { return GetResourceString(SettingsPageEmbeddingsModelLabelKey, "Embeddings Model"); }
     }
@@ -176,27 +161,21 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public string EmbeddingsModelName
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial string EmbeddingsModelName { get; set; }
 
 
 
 
 
-    public int MaxContextMessages
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial int MaxContextMessages { get; set; }
 
 
 
 
 
-    public string MaxContextMessagesLabelText
+    public static string MaxContextMessagesLabelText
     {
         get { return GetResourceString(SettingsPageMaxContextMessagesLabelKey, "Max Context Messages"); }
     }
@@ -205,17 +184,14 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public int? MaxContextTokens
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial int? MaxContextTokens { get; set; }
 
 
 
 
 
-    public string MaxContextTokensLabelText
+    public static string MaxContextTokensLabelText
     {
         get { return GetResourceString(SettingsPageMaxContextTokensLabelKey, "Max Context Tokens"); }
     }
@@ -225,11 +201,8 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
     /// <summary>Gets or sets the currently selected minimum log level.</summary>
-    public LogLevel MinimumLogLevel
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial LogLevel MinimumLogLevel { get; set; }
 
 
 
@@ -244,17 +217,14 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public bool RAGKnowledgeEnabled
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial bool RAGKnowledgeEnabled { get; set; }
 
 
 
 
 
-    public string RagKnowledgeEnabledLabelText
+    public static string RagKnowledgeEnabledLabelText
     {
         get { return GetResourceString(SettingsPageRagKnowledgeEnabledLabelKey, "Enable RAG Knowledge Context Injection"); }
     }
@@ -272,7 +242,7 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public string SaveChatHistoryButtonText
+    public static string SaveChatHistoryButtonText
     {
         get { return GetResourceString(SettingsPageSaveChatHistoryButtonTextKey, "Save Chat History Settings"); }
     }
@@ -308,31 +278,22 @@ public class SettingsViewModel(LoggingLevelSwitch loggingLevelSwitch, ISystemSer
 
 
 
-    public AppTheme Theme
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial AppTheme Theme { get; set; }
 
 
 
 
 
-    public UserViewModel User
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial UserViewModel User { get; set; }
 
 
 
 
 
-    public string VersionDescription
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial string VersionDescription { get; set; }
 
 
 

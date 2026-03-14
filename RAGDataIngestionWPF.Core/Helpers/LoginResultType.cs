@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Core
 // File:         LoginResultType.cs
 // Author: Kyle L. Crowder
-// Build Num: 175100
+// Build Num: 202414
 
 
 

@@ -172,7 +172,7 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
         AIChatHistory messagesToStore = new();
         messagesToStore.AddRange(filteredRequestMessages);
         messagesToStore.AddRange(filteredResponseMessages);
-        
+
         if (messagesToStore.Count == 0)
         {
             return;
@@ -351,7 +351,7 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
     /// <exception cref="OperationCanceledException">
     ///     Thrown if the operation is canceled via the <paramref name="cancellationToken" />.
     /// </exception>
-    private async ValueTask<AIChatHistory> ApplyWindowAsync(
+    private static async ValueTask<AIChatHistory> ApplyWindowAsync(
             AIChatHistory historicalMessages,
             int maxMessages,
             int maxTokens,

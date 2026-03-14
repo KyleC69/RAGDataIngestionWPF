@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Core
 // File:         User.cs
 // Author: Kyle L. Crowder
-// Build Num: 175101
+// Build Num: 202414
 
 
 

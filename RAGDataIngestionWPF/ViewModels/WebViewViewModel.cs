@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         WebViewViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 175118
+// Build Num: 202432
 
 
 
@@ -27,7 +27,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 
-public class WebViewViewModel : ObservableObject
+public sealed partial class WebViewViewModel : ObservableObject
 {
 
     private readonly ISystemService _systemService;
@@ -74,14 +74,8 @@ public class WebViewViewModel : ObservableObject
 
 
 
-    public Visibility FailedMesageVisibility
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    } = Visibility.Collapsed;
-
-
-
+    [ObservableProperty]
+    public partial Visibility FailedMesageVisibility { get; set; } = Visibility.Collapsed;
 
 
     public bool IsLoading
@@ -98,11 +92,8 @@ public class WebViewViewModel : ObservableObject
 
 
 
-    public Visibility IsLoadingVisibility
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    } = Visibility.Visible;
+    [ObservableProperty]
+    public partial Visibility IsLoadingVisibility { get; set; } = Visibility.Visible;
 
 
 
@@ -140,11 +131,8 @@ public class WebViewViewModel : ObservableObject
 
 
 
-    public string Source
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial string Source { get; set; }
 
 
 

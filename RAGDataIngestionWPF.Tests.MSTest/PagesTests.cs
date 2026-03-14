@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         PagesTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 175104
+// Build Num: 202419
 
 
 
@@ -84,7 +84,7 @@ public class PagesTests
 
         IServiceCollection unused12 = services.AddSingleton<ISystemService, SystemService>();
         IServiceCollection unused11 = services.AddSingleton<ISampleDataService, SampleDataService>();
-        Mock<IChatConversationService> chatConversationServiceMock = new Mock<IChatConversationService>();
+        var chatConversationServiceMock = new Mock<IChatConversationService>();
         chatConversationServiceMock.SetupGet(service => service.ContextTokenCount).Returns(0);
         services.AddSingleton(chatConversationServiceMock.Object);
         IServiceCollection unused10 = services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();

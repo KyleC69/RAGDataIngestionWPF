@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Core
 // File:         FileService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175101
+// Build Num: 202414
 
 
 
@@ -22,7 +22,7 @@ namespace RAGDataIngestionWPF.Core.Services;
 
 
 
-public class FileService : IFileService
+public sealed class FileService : IFileService
 {
     public T Read<T>(string folderPath, string fileName)
     {

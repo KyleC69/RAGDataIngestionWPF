@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         RagDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175057
+// Build Num: 202407
 
 
 
@@ -51,11 +51,11 @@ public static class RagDataService
         {
             results.Add(new FullTextResults
             {
-                    Id = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Summary = reader.GetString(2),
-                    Keywords = reader.GetString(3).Split(','),
-                    Score = reader.GetDouble(4)
+                Id = reader.GetInt32(0),
+                Title = reader.GetString(1),
+                Summary = reader.GetString(2),
+                Keywords = reader.GetString(3).Split(','),
+                Score = reader.GetDouble(4)
             });
         }
 
@@ -117,11 +117,11 @@ public static class RagDataService
         {
             results.Add(new FullTextResults
             {
-                    Id = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Summary = reader.GetString(2),
-                    Keywords = reader.GetString(3).Split(','),
-                    Score = reader.GetDouble(4)
+                Id = reader.GetInt32(0),
+                Title = reader.GetString(1),
+                Summary = reader.GetString(2),
+                Keywords = reader.GetString(3).Split(','),
+                Score = reader.GetDouble(4)
             });
         }
 
@@ -139,9 +139,9 @@ public static class RagDataService
 
 public sealed class FullTextResults
 {
-    public int Id { get; set; }
-    public string[] Keywords { get; set; } = [];
-    public double Score { get; set; }
-    public required string Summary { get; set; }
-    public required string Title { get; set; }
+    public int Id { get; init; }
+    public string[] Keywords { get; init; } = [];
+    public double Score { get; init; }
+    public required string Summary { get; init; }
+    public required string Title { get; init; }
 }

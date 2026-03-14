@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         BlankViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 175112
+// Build Num: 202428
 
 
 
@@ -18,6 +18,6 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 
-public class BlankViewModel : ObservableObject
+public sealed class BlankViewModel : ObservableObject
 {
 }

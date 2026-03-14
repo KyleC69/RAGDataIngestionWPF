@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         RagSearchTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 175059
+// Build Num: 202411
 
 
 
@@ -45,9 +45,9 @@ public sealed class FullTextRagSearchTool
 
 public class RagResult
 {
-    public string Content { get; set; } = "";
-    public string Id { get; set; } = "";
-    public double Score { get; set; }
+    public string Content { get; init; } = "";
+    public string Id { get; init; } = "";
+    public double Score { get; init; }
 }
 
 

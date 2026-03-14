@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         LogInWindow.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 175119
+// Build Num: 202434
 
 
 
@@ -21,7 +21,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public partial class LogInWindow : MetroWindow, ILogInWindow
+public sealed partial class LogInWindow : MetroWindow, ILogInWindow
 {
     public LogInWindow(LogInViewModel viewModel)
     {

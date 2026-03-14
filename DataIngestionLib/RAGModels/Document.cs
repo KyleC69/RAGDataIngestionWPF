@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         Document.cs
 // Author: Kyle L. Crowder
-// Build Num: 175054
+// Build Num: 202403
 
 
 
@@ -13,29 +13,29 @@ namespace DataIngestionLib.ExternalKnowledge.RAGModels;
 
 
 
-public class Document
+public sealed class Document
 {
 
-    public string? Breadcrumb { get; set; }
+    public string? Breadcrumb { get; init; }
 
-    public string ContentRaw { get; set; } = null!;
+    public string ContentRaw { get; init; } = null!;
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; init; }
 
-    public string? DocHtml { get; set; }
-    public Guid DocId { get; set; }
+    public string? DocHtml { get; init; }
+    public Guid DocId { get; init; }
 
-    public string? Hash { get; set; }
+    public string? Hash { get; init; }
 
-    public DateTime? LastFetched { get; set; }
+    public DateTime? LastFetched { get; init; }
 
-    public string? NormalizedMarkdown { get; set; }
+    public string? NormalizedMarkdown { get; init; }
 
-    public string Title { get; set; } = null!;
+    public string Title { get; init; } = null!;
 
-    public Guid? Uid { get; set; }
+    public Guid? Uid { get; init; }
 
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; init; }
 
-    public string? Url { get; set; }
+    public string? Url { get; init; }
 }

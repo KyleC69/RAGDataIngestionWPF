@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Core
 // File:         IdentityService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175102
+// Build Num: 202415
 
 
 
@@ -19,7 +19,7 @@ namespace RAGDataIngestionWPF.Core.Services;
 
 
 
-public class IdentityService : IIdentityService
+public sealed class IdentityService : IIdentityService
 {
     private string _accountUserName = string.Empty;
     private bool _isLoggedIn;

@@ -97,7 +97,7 @@ public class HeadlessBrowser : IDisposable, IHeadlessBrowser
 
         NavigationOptions navigationOptions = new()
         {
-                WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
+            WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
         };
 
         await page.GoToAsync(url, navigationOptions).ConfigureAwait(false);
@@ -127,7 +127,7 @@ public class HeadlessBrowser : IDisposable, IHeadlessBrowser
         await using IPage page = await browser.NewPageAsync().ConfigureAwait(false);
         NavigationOptions navigationOptions = new()
         {
-                WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
+            WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
         };
         await page.GoToAsync(url, navigationOptions).ConfigureAwait(false);
 
@@ -147,29 +147,29 @@ public class HeadlessBrowser : IDisposable, IHeadlessBrowser
     ///     Launches a headless Chromium instance using PuppeteerSharp.
     /// </summary>
     /// <returns>Initialized <see cref="IBrowser" /> instance.</returns>
-    private async Task<IBrowser> StartAsync()
+    private static async Task<IBrowser> StartAsync()
     {
 
 
         LaunchOptions launchOptions = new()
         {
-                AcceptInsecureCerts = false,
-                Headless = false,
-                HeadlessMode = HeadlessMode.False,
-                Args = new[]
+            AcceptInsecureCerts = false,
+            Headless = false,
+            HeadlessMode = HeadlessMode.False,
+            Args = new[]
                 {
                         "--no-sandbox",
                         "--disable-setuid-sandbox",
                         "--disable-gpu"
                 },
-                Timeout = 300000,
-                DumpIO = false,
-                Devtools = false,
-                IgnoreDefaultArgs = false,
-                EnqueueTransportMessages = false,
-                Browser = SupportedBrowser.Chrome,
-                EnqueueAsyncMessages = false,
-                WaitForInitialPage = false
+            Timeout = 300000,
+            DumpIO = false,
+            Devtools = false,
+            IgnoreDefaultArgs = false,
+            EnqueueTransportMessages = false,
+            Browser = SupportedBrowser.Chrome,
+            EnqueueAsyncMessages = false,
+            WaitForInitialPage = false
         };
 
         return await Puppeteer.LaunchAsync(launchOptions).ConfigureAwait(false);

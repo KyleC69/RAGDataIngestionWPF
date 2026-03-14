@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         RegistryReaderTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 175059
+// Build Num: 202411
 
 
 
@@ -90,7 +90,7 @@ public class RegistryReaderTool
                 return ToolResult<string>.Fail(message);
             }
 
-            var useDefaultValue = keyAndValuePath.EndsWith("\\", StringComparison.Ordinal);
+            var useDefaultValue = keyAndValuePath.EndsWith('\\');
             var trimmedPath = useDefaultValue ? keyAndValuePath.TrimEnd('\\') : keyAndValuePath;
 
             var lastSlashIndex = trimmedPath.LastIndexOf('\\');
@@ -165,12 +165,12 @@ public class RegistryReaderTool
     {
         baseKey = hiveName.ToUpperInvariant() switch
         {
-                "HKEY_CLASSES_ROOT" => Microsoft.Win32.Registry.ClassesRoot,
-                "HKEY_CURRENT_USER" => Microsoft.Win32.Registry.CurrentUser,
-                "HKEY_LOCAL_MACHINE" => Microsoft.Win32.Registry.LocalMachine,
-                "HKEY_USERS" => Microsoft.Win32.Registry.Users,
-                "HKEY_CURRENT_CONFIG" => Microsoft.Win32.Registry.CurrentConfig,
-                _ => null
+            "HKEY_CLASSES_ROOT" => Microsoft.Win32.Registry.ClassesRoot,
+            "HKEY_CURRENT_USER" => Microsoft.Win32.Registry.CurrentUser,
+            "HKEY_LOCAL_MACHINE" => Microsoft.Win32.Registry.LocalMachine,
+            "HKEY_USERS" => Microsoft.Win32.Registry.Users,
+            "HKEY_CURRENT_CONFIG" => Microsoft.Win32.Registry.CurrentConfig,
+            _ => null
         };
 
         return baseKey != null;

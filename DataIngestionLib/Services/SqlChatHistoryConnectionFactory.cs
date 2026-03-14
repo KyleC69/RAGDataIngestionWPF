@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         SqlChatHistoryConnectionFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 175057
+// Build Num: 202408
 
 
 

@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         RemoteRag.cs
 // Author: Kyle L. Crowder
-// Build Num: 175055
+// Build Num: 202403
 
 
 
@@ -18,31 +18,31 @@ namespace DataIngestionLib.RAGModels;
 
 
 
-public class RemoteRag
+public sealed class RemoteRag
 {
 
-    public string Description { get; set; } = null!;
+    public string Description { get; init; } = null!;
 
-    public Guid DocumentId { get; set; }
+    public Guid DocumentId { get; init; }
 
-    public SqlVector<float>? Embedding { get; set; }
-    public int Id { get; set; }
+    public SqlVector<float>? Embedding { get; init; }
+    public int Id { get; init; }
 
-    public string? Keywords { get; set; }
+    public string? Keywords { get; init; }
 
-    public DateTime MsDate { get; set; }
+    public DateTime MsDate { get; init; }
 
-    public string OgUrl { get; set; } = null!;
+    public string OgUrl { get; init; } = null!;
 
-    public double? Score { get; set; }
+    public double? Score { get; init; }
 
-    public string? Summary { get; set; }
+    public string? Summary { get; init; }
 
-    public string Title { get; set; } = null!;
+    public string Title { get; init; } = null!;
 
-    public int? TokenCount { get; set; }
+    public int? TokenCount { get; init; }
 
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; init; }
 
-    public int? Version { get; set; }
+    public int? Version { get; init; }
 }

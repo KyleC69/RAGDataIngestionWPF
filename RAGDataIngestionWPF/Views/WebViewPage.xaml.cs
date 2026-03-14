@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         WebViewPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 175120
+// Build Num: 202435
 
 
 
@@ -22,7 +22,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public partial class WebViewPage : Page
+public sealed partial class WebViewPage : Page
 {
     private readonly WebViewViewModel _viewModel;
 

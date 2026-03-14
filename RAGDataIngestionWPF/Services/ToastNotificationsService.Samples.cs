@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         ToastNotificationsService.Samples.cs
 // Author: Kyle L. Crowder
-// Build Num: 175111
+// Build Num: 202427
 
 
 
@@ -21,21 +21,21 @@ namespace RAGDataIngestionWPF.Services;
 
 
 
-public partial class ToastNotificationsService
+public sealed partial class ToastNotificationsService
 {
     public void ShowToastNotificationSample()
     {
         // Create the toast content
         ToastContent content = new()
         {
-                // More about the Launch property at https://docs.microsoft.com/dotnet/api/communitytoolkit.winui.notifications.toastcontent
-                Launch = "ToastContentActivationParams",
+            // More about the Launch property at https://docs.microsoft.com/dotnet/api/communitytoolkit.winui.notifications.toastcontent
+            Launch = "ToastContentActivationParams",
 
-                Visual = new ToastVisual
+            Visual = new ToastVisual
+            {
+                BindingGeneric = new ToastBindingGeneric
                 {
-                        BindingGeneric = new ToastBindingGeneric
-                        {
-                                Children =
+                    Children =
                                 {
                                         new AdaptiveText
                                         {
@@ -47,12 +47,12 @@ public partial class ToastNotificationsService
                                                 Text = @"Click OK to see how activation from a toast notification can be handled in the ToastNotificationService."
                                         }
                                 }
-                        }
-                },
+                }
+            },
 
-                Actions = new ToastActionsCustom
-                {
-                        Buttons =
+            Actions = new ToastActionsCustom
+            {
+                Buttons =
                         {
                                 // More about Toast Buttons at https://docs.microsoft.com/dotnet/api/communitytoolkit.winui.notifications.toastbutton
                                 new ToastButton("OK", "ToastButtonActivationArguments")
@@ -62,7 +62,7 @@ public partial class ToastNotificationsService
 
                                 new ToastButtonDismiss("Cancel")
                         }
-                }
+            }
         };
 
         // Add the content to the toast
@@ -70,9 +70,9 @@ public partial class ToastNotificationsService
         doc.LoadXml(content.GetContent());
         ToastNotification toast = new(doc)
         {
-                // TODO: Set a unique identifier for this notification within the notification group. (optional)
-                // More details at https://docs.microsoft.com/uwp/api/windows.ui.notifications.toastnotification.tag
-                Tag = "ToastTag"
+            // TODO: Set a unique identifier for this notification within the notification group. (optional)
+            // More details at https://docs.microsoft.com/uwp/api/windows.ui.notifications.toastnotification.tag
+            Tag = "ToastTag"
         };
 
         // And show the toast

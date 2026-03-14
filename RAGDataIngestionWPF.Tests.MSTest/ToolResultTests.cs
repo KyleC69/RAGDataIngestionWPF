@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ToolResultTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 175106
+// Build Num: 202421
 
 
 
@@ -30,7 +30,7 @@ public class ToolResultTests
 
 
     [TestMethod]
-    public void Fail_ValueTypeResult_ReturnsFailWithError()
+    public void FailValueTypeResultReturnsFailWithError()
     {
         // Arrange / Act
         var result = ToolResult<int>.Fail("integer error");
@@ -52,7 +52,7 @@ public class ToolResultTests
     [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
-    public void Fail_WithNullOrWhitespaceMessage_ThrowsArgumentException(string message)
+    public void FailWithNullOrWhitespaceMessageThrowsArgumentException(string message)
     {
         // Arrange / Act / Assert
         Assert.ThrowsExactly<ArgumentException>(() => ToolResult<string>.Fail(message!));
@@ -66,7 +66,7 @@ public class ToolResultTests
 
 
     [TestMethod]
-    public void Fail_WithValidMessage_SetsSuccessFalseAndError()
+    public void FailWithValidMessageSetsSuccessFalseAndError()
     {
         // Arrange / Act
         var result = ToolResult<string>.Fail("something went wrong");
@@ -85,7 +85,7 @@ public class ToolResultTests
 
 
     [TestMethod]
-    public void Ok_ComplexObjectResult_PreservesReference()
+    public void OkComplexObjectResultPreservesReference()
     {
         // Arrange
         List<string> list = ["a", "b", "c"];
@@ -106,7 +106,7 @@ public class ToolResultTests
 
 
     [TestMethod]
-    public void Ok_ValueTypeResult_SetsValueCorrectly()
+    public void OkValueTypeResultSetsValueCorrectly()
     {
         // Arrange / Act
         var result = ToolResult<int>.Ok(42);
@@ -125,7 +125,7 @@ public class ToolResultTests
 
 
     [TestMethod]
-    public void Ok_WithNullValue_ThrowsArgumentNullException()
+    public void OkWithNullValueThrowsArgumentNullException()
     {
         // Arrange / Act / Assert
         Assert.ThrowsExactly<ArgumentNullException>(() => ToolResult<string>.Ok(null!));
@@ -139,7 +139,7 @@ public class ToolResultTests
 
 
     [TestMethod]
-    public void Ok_WithValidValue_SetsSuccessTrueAndValue()
+    public void OkWithValidValueSetsSuccessTrueAndValue()
     {
         // Arrange / Act
         var result = ToolResult<string>.Ok("hello");

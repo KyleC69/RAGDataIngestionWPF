@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         MenuItemTemplateSelector.cs
 // Author: Kyle L. Crowder
-// Build Num: 175111
+// Build Num: 202428
 
 
 
@@ -21,11 +21,11 @@ namespace RAGDataIngestionWPF.TemplateSelectors;
 
 
 
-public class MenuItemTemplateSelector : DataTemplateSelector
+public sealed class MenuItemTemplateSelector : DataTemplateSelector
 {
-    public DataTemplate GlyphDataTemplate { get; set; }
+    public DataTemplate GlyphDataTemplate { get; init; }
 
-    public DataTemplate ImageDataTemplate { get; set; }
+    public DataTemplate ImageDataTemplate { get; init; }
 
 
 

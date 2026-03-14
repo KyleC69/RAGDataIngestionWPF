@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         AgentRunMiddleWare.cs
 // Author: Kyle L. Crowder
-// Build Num: 175058
+// Build Num: 202410
 
 
 
@@ -24,7 +24,7 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 
-public class AgentRunMiddleWare
+public sealed class AgentRunMiddleWare
 {
 
     private readonly IChatClient _baseAgent;
@@ -104,8 +104,8 @@ public class AgentRunMiddleWare
 
         ChatOptions options = new()
         {
-                Tools = ToolBuilder.GetAiTools(_httpClientFactory),
-                Instructions = """
+            Tools = ToolBuilder.GetAiTools(_httpClientFactory),
+            Instructions = """
 
                                """
 

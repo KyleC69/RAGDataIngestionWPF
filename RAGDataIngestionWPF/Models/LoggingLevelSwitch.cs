@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         LoggingLevelSwitch.cs
 // Author: Kyle L. Crowder
-// Build Num: 175108
+// Build Num: 202424
 
 
 

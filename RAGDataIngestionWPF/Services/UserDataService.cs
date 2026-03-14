@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         UserDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175111
+// Build Num: 202427
 
 
 
@@ -26,7 +26,7 @@ public sealed class UserDataService : IUserDataService
 {
     private UserViewModel _currentUser = new();
 
-    public event EventHandler<UserViewModel>? UserDataUpdated;
+    public event EventHandler<UserViewModel> UserDataUpdated;
 
 
 
@@ -51,8 +51,8 @@ public sealed class UserDataService : IUserDataService
     {
         _currentUser = new UserViewModel
         {
-                Name = Environment.UserName,
-                UserPrincipalName = Environment.UserName
+            Name = Environment.UserName,
+            UserPrincipalName = Environment.UserName
         };
 
         UserDataUpdated?.Invoke(this, _currentUser);

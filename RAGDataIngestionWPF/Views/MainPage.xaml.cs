@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         MainPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 175119
+// Build Num: 202434
 
 
 
@@ -24,7 +24,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public partial class MainPage : Page
+public sealed partial class MainPage : Page
 {
     private ScrollViewer _messagesScrollViewer;
 

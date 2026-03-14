@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         EventLogReaderTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 175104
+// Build Num: 202418
 
 
 
@@ -17,7 +17,7 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 public class EventLogReaderTests
 {
     [TestMethod]
-    public void Constructor_WithDefaultMaxEvents_CreatesInstance()
+    public void ConstructorWithDefaultMaxEventsCreatesInstance()
     {
         SandboxEventLogReader reader = new();
 
@@ -32,7 +32,7 @@ public class EventLogReaderTests
 
 
     [TestMethod]
-    public void Constructor_WithNegativeMaxEvents_ClampsToOne()
+    public void ConstructorWithNegativeMaxEventsClampsToOne()
     {
         SandboxEventLogReader reader = new(-10);
 
@@ -47,7 +47,7 @@ public class EventLogReaderTests
 
 
     [TestMethod]
-    public void Constructor_WithPositiveMaxEvents_CreatesInstance()
+    public void ConstructorWithPositiveMaxEventsCreatesInstance()
     {
         SandboxEventLogReader reader = new(50);
 
@@ -62,7 +62,7 @@ public class EventLogReaderTests
 
 
     [TestMethod]
-    public void Constructor_WithZeroMaxEvents_ClampsToOne()
+    public void ConstructorWithZeroMaxEventsClampsToOne()
     {
         // SandboxEventLogReader clamps maxEvents to at least 1 via Math.Max(1, maxEvents)
         SandboxEventLogReader reader = new(0);
@@ -78,7 +78,7 @@ public class EventLogReaderTests
 
 
     [TestMethod]
-    public void EventLogEntryDto_DefaultProperties_AreInitialized()
+    public void EventLogEntryDtoDefaultPropertiesAreInitialized()
     {
         EventLogEntryDto dto = new();
 
@@ -96,7 +96,7 @@ public class EventLogReaderTests
 
 
     [TestMethod]
-    public void EventLogReadResult_FailFactory_SetsSuccessFalse()
+    public void EventLogReadResultFailFactorySetsSuccessFalse()
     {
         const string errorMessage = "Test error message";
 
@@ -115,7 +115,7 @@ public class EventLogReaderTests
 
 
     [TestMethod]
-    public void EventLogReadResult_OkFactory_SetsSuccessTrue()
+    public void EventLogReadResultOkFactorySetsSuccessTrue()
     {
         IReadOnlyList<EventLogEntryDto> entries = new List<EventLogEntryDto>().AsReadOnly();
 
@@ -134,7 +134,7 @@ public class EventLogReaderTests
 
 
     [TestMethod]
-    public void ReadLog_WithEmptyLogName_ReturnsFail()
+    public void ReadLogWithEmptyLogNameReturnsFail()
     {
         SandboxEventLogReader reader = new();
 
@@ -153,7 +153,7 @@ public class EventLogReaderTests
 
 
     [TestMethod]
-    public void ReadLog_WithNonExistentLogName_ReturnsFail()
+    public void ReadLogWithNonExistentLogNameReturnsFail()
     {
         SandboxEventLogReader reader = new();
 
@@ -172,7 +172,7 @@ public class EventLogReaderTests
 
 
     [TestMethod]
-    public void ReadLog_WithWhitespaceLogName_ReturnsFail()
+    public void ReadLogWithWhitespaceLogNameReturnsFail()
     {
         SandboxEventLogReader reader = new();
 

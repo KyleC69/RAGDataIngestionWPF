@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         FixedAgentIdentityProviderTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 175104
+// Build Num: 202418
 
 
 
@@ -32,7 +32,7 @@ public class FixedAgentIdentityProviderTests
 
 
     [TestMethod]
-    public void AIChatMessage_ToString_ReturnsEmptyString_WhenContentIsNull()
+    public void AIChatMessageToStringReturnsEmptyStringWhenContentIsNull()
     {
         AIChatMessage message = new(ChatRole.User, (string)null);
         Assert.AreEqual(string.Empty, message.ToString());
@@ -46,7 +46,7 @@ public class FixedAgentIdentityProviderTests
 
 
     [TestMethod]
-    public void AIChatMessage_ToString_ReturnsMessageText()
+    public void AIChatMessageToStringReturnsMessageText()
     {
         AIChatMessage message = new(ChatRole.User, "Hello, world!");
         Assert.AreEqual("Hello, world!", message.ToString());
@@ -60,7 +60,7 @@ public class FixedAgentIdentityProviderTests
 
 
     [TestMethod]
-    public void GetAgentId_ReturnsConfiguredValue()
+    public void GetAgentIdReturnsConfiguredValue()
     {
         FixedAgentIdentityProvider provider = new("my-agent");
         Assert.AreEqual("my-agent", provider.GetAgentId());

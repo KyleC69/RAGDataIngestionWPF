@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         ShellViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 175117
+// Build Num: 202431
 
 
 
@@ -27,7 +27,7 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 
 
-public class ShellViewModel : ObservableObject
+public sealed partial class ShellViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
     private readonly IUserDataService _userDataService;
@@ -107,21 +107,15 @@ public class ShellViewModel : ObservableObject
 
 
 
-    public HamburgerMenuItem SelectedMenuItem
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial HamburgerMenuItem SelectedMenuItem { get; set; }
 
 
 
 
 
-    public HamburgerMenuItem SelectedOptionsMenuItem
-    {
-        get;
-        set { this.SetProperty(ref field, value); }
-    }
+    [ObservableProperty]
+    public partial HamburgerMenuItem SelectedOptionsMenuItem { get; set; }
 
 
 
@@ -185,9 +179,9 @@ public class ShellViewModel : ObservableObject
         UserViewModel user = _userDataService.GetUser();
         HamburgerMenuImageItem userMenuItem = new()
         {
-                Thumbnail = user.Photo,
-                Label = user.Name,
-                Command = new RelayCommand(OnUserItemSelected)
+            Thumbnail = user.Photo,
+            Label = user.Name,
+            Command = new RelayCommand(OnUserItemSelected)
         };
 
         OptionMenuItems.Insert(0, userMenuItem);

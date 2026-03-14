@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         ChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175056
+// Build Num: 202406
 
 
 
@@ -75,7 +75,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public string ApplicationId
+    public static string ApplicationId
     {
         get { return SystemConfigurationManager.AppSettings["ApplicationId"] ?? AppDomain.CurrentDomain.FriendlyName; }
     }
@@ -84,7 +84,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public string UserId
+    public static string UserId
     {
         get { return Environment.UserName; }
     }
@@ -145,7 +145,7 @@ public sealed class ChatConversationService : IChatConversationService
         AIChatMessage assistantMessage = new(ChatRole.Assistant, assistantText);
         if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
         {
-            ((ICollection<AIChatMessage>)ChatHistory).Add(assistantMessage);
+            ChatHistory.Add(assistantMessage);
         }
 
         return assistantMessage;

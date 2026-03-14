@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Core
 // File:         SampleOrder.cs
 // Author: Kyle L. Crowder
-// Build Num: 175101
+// Build Num: 202414
 
 
 
@@ -16,7 +16,7 @@ namespace RAGDataIngestionWPF.Core.Models;
 // Remove this class once your pages/features are using your data.
 // This is used by the SampleDataService.
 // It is the model class we use to display data on pages like Grid, Chart, and List Details.
-public class SampleOrder
+public sealed class SampleOrder
 {
 
     public string Company { get; set; }

@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         RAGContext.cs
 // Author: Kyle L. Crowder
-// Build Num: 175051
+// Build Num: 202356
 
 
 
@@ -24,11 +24,11 @@ namespace DataIngestionLib.Data;
 public partial class RAGContext : DbContext
 {
 
-    public virtual DbSet<Document> Documents { get; set; }
+    public virtual DbSet<Document> Documents { get; init; }
 
-    public virtual DbSet<Metadata> Metadata { get; set; }
+    public virtual DbSet<Metadata> Metadata { get; init; }
 
-    public virtual DbSet<RemoteRag> RemoteRags { get; set; }
+    public virtual DbSet<RemoteRag> RemoteRags { get; init; }
 
 
 

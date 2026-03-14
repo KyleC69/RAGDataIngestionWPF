@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         SettingsPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 175120
+// Build Num: 202434
 
 
 
@@ -20,7 +20,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public partial class SettingsPage : Page
+public sealed partial class SettingsPage : Page
 {
     public SettingsPage(SettingsViewModel viewModel)
     {

@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         AIContextHistoryInjectorTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 175103
+// Build Num: 202416
 
 
 
@@ -36,7 +36,7 @@ public class AIContextHistoryInjectorTests
 
 
     [TestMethod]
-    public async Task BuildContextMessagesAsync_DeduplicatesRequestMessages()
+    public async Task BuildContextMessagesAsyncDeduplicatesRequestMessages()
     {
         PersistedChatMessage persisted = MakeMessage("user", "Hello");
 
@@ -68,9 +68,9 @@ public class AIContextHistoryInjectorTests
 
 
     [TestMethod]
-    public async Task BuildContextMessagesAsync_RespectsMaxContextMessages()
+    public async Task BuildContextMessagesAsyncRespectsMaxContextMessages()
     {
-        List<PersistedChatMessage> messages = Enumerable
+        var messages = Enumerable
                 .Range(1, 15)
                 .Select(i => MakeMessage("user", $"Message {i}", DateTimeOffset.UtcNow.AddMinutes(i)))
                 .ToList();
@@ -81,7 +81,7 @@ public class AIContextHistoryInjectorTests
                 .ReturnsAsync(messages);
 
         SetAppSetting("MaxContextMessages", "5");
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object);
+        AIContextHistoryInjector injector = new(providerMock.Object);
 
         var result = await injector.BuildContextMessagesAsync(
                 "conv-1",
@@ -99,7 +99,7 @@ public class AIContextHistoryInjectorTests
 
 
     [TestMethod]
-    public async Task BuildContextMessagesAsync_ReturnsEmpty_WhenNoHistoryExists()
+    public async Task BuildContextMessagesAsyncReturnsEmptyWhenNoHistoryExists()
     {
         Mock<IChatHistoryProvider> providerMock = new();
         providerMock
@@ -107,7 +107,7 @@ public class AIContextHistoryInjectorTests
                 .ReturnsAsync([]);
 
         SetAppSetting("MaxContextMessages", "10");
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object);
+        AIContextHistoryInjector injector = new(providerMock.Object);
 
         var result = await injector.BuildContextMessagesAsync(
                 "conv-1",
@@ -125,7 +125,7 @@ public class AIContextHistoryInjectorTests
 
 
     [TestMethod]
-    public async Task BuildContextMessagesAsync_SkipsMessagesWithEmptyContent()
+    public async Task BuildContextMessagesAsyncSkipsMessagesWithEmptyContent()
     {
         List<PersistedChatMessage> messages =
         [
@@ -140,7 +140,7 @@ public class AIContextHistoryInjectorTests
                 .ReturnsAsync(messages);
 
         SetAppSetting("MaxContextMessages", "10");
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object);
+        AIContextHistoryInjector injector = new(providerMock.Object);
 
         var result = await injector.BuildContextMessagesAsync(
                 "conv-1",
@@ -161,15 +161,15 @@ public class AIContextHistoryInjectorTests
     [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
-    public async Task BuildContextMessagesAsync_ThrowsArgumentException_WhenConversationIdIsNullOrWhiteSpace(string conversationId)
+    public async Task BuildContextMessagesAsyncThrowsArgumentExceptionWhenConversationIdIsNullOrWhiteSpace(string conversationId)
     {
         Mock<IChatHistoryProvider> providerMock = new();
 
         SetAppSetting("MaxContextMessages", "40");
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object);
+        AIContextHistoryInjector injector = new(providerMock.Object);
 
         await Assert.ThrowsExactlyAsync<ArgumentException>(async () =>
-                await injector.BuildContextMessagesAsync(conversationId!, []));
+                await injector.BuildContextMessagesAsync(conversationId!, [], TestContext.CancellationToken));
     }
 
 
@@ -181,17 +181,17 @@ public class AIContextHistoryInjectorTests
 
     private static PersistedChatMessage MakeMessage(string role, string content, DateTimeOffset? timestamp = null, Guid? id = null)
     {
-        return new PersistedChatMessage
+        return new()
         {
-                MessageId = id ?? Guid.NewGuid(),
-                ConversationId = "conv-1",
-                SessionId = "session-1",
-                AgentId = "agent-1",
-                UserId = "user-1",
-                ApplicationId = "app-1",
-                Role = role,
-                Content = content,
-                TimestampUtc = timestamp ?? DateTimeOffset.UtcNow
+            MessageId = id ?? Guid.NewGuid(),
+            ConversationId = "conv-1",
+            SessionId = "session-1",
+            AgentId = "agent-1",
+            UserId = "user-1",
+            ApplicationId = "app-1",
+            Role = role,
+            Content = content,
+            TimestampUtc = timestamp ?? DateTimeOffset.UtcNow
         };
     }
 
@@ -202,15 +202,10 @@ public class AIContextHistoryInjectorTests
 
 
 
-
-
-
-
-
     [TestMethod]
-    public async Task PruneConversationAsync_ReturnsZero_WhenUnderLimit()
+    public async Task PruneConversationAsyncReturnsZeroWhenUnderLimit()
     {
-        List<PersistedChatMessage> messages = Enumerable
+        var messages = Enumerable
                 .Range(1, 3)
                 .Select(i => MakeMessage("user", $"Msg {i}"))
                 .ToList();
@@ -221,7 +216,7 @@ public class AIContextHistoryInjectorTests
                 .ReturnsAsync(messages);
 
         SetAppSetting("MaxContextMessages", "10");
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object);
+        AIContextHistoryInjector injector = new(providerMock.Object);
 
         var removed = await injector.PruneConversationAsync("conv-1", CancellationToken.None);
 
@@ -259,7 +254,7 @@ public class AIContextHistoryInjectorTests
 
 
     [TestMethod]
-    public async Task StoreMessagesAsync_DoesNotPersistEmptyMessages()
+    public async Task StoreMessagesAsyncDoesNotPersistEmptyMessages()
     {
         List<PersistedChatMessage> stored = [];
 
@@ -274,15 +269,15 @@ public class AIContextHistoryInjectorTests
                 .ReturnsAsync([]);
 
         SetAppSetting("MaxContextMessages", "100");
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object);
+        AIContextHistoryInjector injector = new(providerMock.Object);
 
-        AIChatHistory request = [new AIChatMessage(ChatRole.User, string.Empty)];
+        AIChatHistory request = [new(ChatRole.User, string.Empty)];
 
         await injector.StoreMessagesAsync(
                 "conv-1", "session-1", "agent-1", "user-1", "app-1",
                 request, [], CancellationToken.None);
 
-        Assert.AreEqual(0, stored.Count, "Messages with empty content should not be persisted.");
+        Assert.IsEmpty(stored, "Messages with empty content should not be persisted.");
     }
 
 
@@ -293,7 +288,7 @@ public class AIContextHistoryInjectorTests
 
 
     [TestMethod]
-    public async Task StoreMessagesAsync_DoesNotPersistSystemMessages()
+    public async Task StoreMessagesAsyncDoesNotPersistSystemMessages()
     {
         List<PersistedChatMessage> stored = [];
 
@@ -308,7 +303,7 @@ public class AIContextHistoryInjectorTests
                 .ReturnsAsync([]);
 
         SetAppSetting("MaxContextMessages", "100");
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object);
+        AIContextHistoryInjector injector = new(providerMock.Object);
 
         AIChatHistory request = [];
         request.AddSystemMessage("You are a helpful assistant.");
@@ -318,8 +313,8 @@ public class AIContextHistoryInjectorTests
                 "conv-1", "session-1", "agent-1", "user-1", "app-1",
                 request, [], CancellationToken.None);
 
-        Assert.IsFalse(stored.Any(m => m.Role == "system"), "System messages should not be persisted.");
-        Assert.AreEqual(1, stored.Count, "Only the user message should be persisted.");
+        Assert.DoesNotContain(m => m.Role == "system", stored, "System messages should not be persisted.");
+        Assert.HasCount(1, stored, "Only the user message should be persisted.");
     }
 
 
@@ -330,7 +325,7 @@ public class AIContextHistoryInjectorTests
 
 
     [TestMethod]
-    public async Task StoreMessagesAsync_PersistsUserAndAssistantMessages()
+    public async Task StoreMessagesAsyncPersistsUserAndAssistantMessages()
     {
         List<PersistedChatMessage> stored = [];
 
@@ -345,7 +340,7 @@ public class AIContextHistoryInjectorTests
                 .ReturnsAsync(stored.AsReadOnly());
 
         SetAppSetting("MaxContextMessages", "100");
-        AIContextHistoryInjector injector = new AIContextHistoryInjector(providerMock.Object);
+        AIContextHistoryInjector injector = new(providerMock.Object);
 
         AIChatHistory request = [];
         request.AddUserMessage("What is the weather?");
@@ -357,8 +352,10 @@ public class AIContextHistoryInjectorTests
                 "conv-1", "session-1", "agent-1", "user-1", "app-1",
                 request, response, CancellationToken.None);
 
-        Assert.AreEqual(2, stored.Count, "Both request and response messages should be persisted.");
-        Assert.IsTrue(stored.Any(m => m.Role == "user"), "User message should be stored.");
-        Assert.IsTrue(stored.Any(m => m.Role == "assistant"), "Assistant message should be stored.");
+        Assert.HasCount(2, stored, "Both request and response messages should be persisted.");
+        Assert.Contains(m => m.Role == "user", stored, "User message should be stored.");
+        Assert.Contains(m => m.Role == "assistant", stored, "Assistant message should be stored.");
     }
+
+    public TestContext TestContext { get; init; }
 }

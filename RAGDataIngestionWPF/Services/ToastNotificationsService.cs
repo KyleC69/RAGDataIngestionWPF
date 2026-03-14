@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         ToastNotificationsService.cs
 // Author: Kyle L. Crowder
-// Build Num: 175111
+// Build Num: 202427
 
 
 
@@ -22,7 +22,7 @@ namespace RAGDataIngestionWPF.Services;
 
 
 
-public partial class ToastNotificationsService : IToastNotificationsService
+public sealed partial class ToastNotificationsService : IToastNotificationsService
 {
 
     public void ShowToastNotification(ToastNotification toastNotification)

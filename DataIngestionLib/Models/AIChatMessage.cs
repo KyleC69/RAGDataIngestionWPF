@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         AIChatMessage.cs
 // Author: Kyle L. Crowder
-// Build Num: 175054
+// Build Num: 202401
 
 
 
@@ -34,7 +34,7 @@ namespace DataIngestionLib.Models;
 ///     with .NET.
 /// </related>
 [DebuggerDisplay("[{Role}] {ContentForDebuggerDisplay}{EllipsesForDebuggerDisplay,nq}")]
-public class AIChatMessage : IEquatable<AIChatMessage>
+public sealed class AIChatMessage : IEquatable<AIChatMessage>
 {
     private string? _authorName;
     private IList<AIContent>? _contents;
@@ -127,7 +127,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     public string? AuthorName
     {
         get { return _authorName; }
-        set { _authorName = string.IsNullOrWhiteSpace(value) ? null : value; }
+        init { _authorName = string.IsNullOrWhiteSpace(value) ? null : value; }
     }
 
 
@@ -157,7 +157,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     public IList<AIContent> Contents
     {
         get { return _contents ??= []; }
-        set { _contents = value; }
+        init { _contents = value; }
     }
 
 
@@ -165,7 +165,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
 
 
     /// <summary>Gets or sets a timestamp for the chat message.</summary>
-    public DateTimeOffset? CreatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; init; }
 
 
 
@@ -201,7 +201,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
 
 
     /// <summary>Gets or sets the ID of the chat message.</summary>
-    public string? MessageId { get; set; }
+    public string? MessageId { get; init; }
 
     /// <summary>Gets or sets the raw representation of the chat message from an underlying implementation.</summary>
     /// <remarks>
@@ -210,10 +210,10 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     ///     for enabling a consumer to access the underlying object model if needed.
     /// </remarks>
     [JsonIgnore]
-    public object? RawRepresentation { get; set; }
+    public object? RawRepresentation { get; init; }
 
     /// <summary>Gets or sets the role of the author of the message.</summary>
-    public AIChatRole Role { get; set; } = AIChatRole.User;
+    public AIChatRole Role { get; init; } = AIChatRole.User;
 
 
 
@@ -239,7 +239,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
 
 
     /// <summary>Gets a timestamp for the chat message normalized to the local time zone.</summary>
-    public DateTimeOffset TimeStampOffset
+    public static DateTimeOffset TimeStampOffset
     {
         get { return DateTime.Now; }
     }
@@ -278,13 +278,13 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     {
         return new()
         {
-                AdditionalProperties = AdditionalProperties,
-                _authorName = _authorName,
-                _contents = _contents,
-                CreatedAt = CreatedAt,
-                RawRepresentation = RawRepresentation,
-                Role = Role,
-                MessageId = MessageId
+            AdditionalProperties = AdditionalProperties,
+            _authorName = _authorName,
+            _contents = _contents,
+            CreatedAt = CreatedAt,
+            RawRepresentation = RawRepresentation,
+            Role = Role,
+            MessageId = MessageId
         };
     }
 

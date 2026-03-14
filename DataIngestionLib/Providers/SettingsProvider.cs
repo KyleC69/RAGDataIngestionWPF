@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         SettingsProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 175100
+// Build Num: 202413
 
 
 
@@ -38,22 +38,10 @@ public interface ISettingsProvider
 
 
 
-public class SettingsProvider : ISettingsProvider
+public sealed class SettingsProvider(ILogger<SettingsProvider> logger) : ISettingsProvider
 {
 
-    private static ILogger<SettingsProvider> _logger;
-
-
-
-
-
-
-
-
-    public SettingsProvider(ILogger<SettingsProvider> logger)
-    {
-        _logger = logger;
-    }
+    private ILogger<SettingsProvider> _logger = logger;
 
 
 
@@ -70,7 +58,7 @@ public class SettingsProvider : ISettingsProvider
 
             if (appSettings.Count == 0)
             {
-                _logger.LogWarning("AppSettings is empty.");
+                _logger?.LogWarning("AppSettings is empty.");
             }
             else
             {
@@ -79,7 +67,7 @@ public class SettingsProvider : ISettingsProvider
         }
         catch (ConfigurationErrorsException)
         {
-            _logger.LogWarning("Error reading app settings");
+            _logger?.LogWarning("Error reading app settings");
         }
 
         return null;
