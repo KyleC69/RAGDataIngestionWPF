@@ -1,14 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         SqlConnectionFactoryRagKB.cs
 // Author: Kyle L. Crowder
-// Build Num: 013458
-
-
-
-using Microsoft.Data.SqlClient;
-
+// Build Num: 175058
 
 
 

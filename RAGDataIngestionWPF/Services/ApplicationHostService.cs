@@ -1,20 +1,27 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         ApplicationHostService.cs
 // Author: Kyle L. Crowder
-// Build Num: 013431
+// Build Num: 175108
 
 
+
+using System.Windows;
+
+using ControlzEx.Theming;
+
+using MahApps.Metro.Theming;
 
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
 using RAGDataIngestionWPF.Contracts.Activation;
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.Views;
 using RAGDataIngestionWPF.Models;
 using RAGDataIngestionWPF.ViewModels;
+
+using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
 
 
@@ -29,15 +36,14 @@ public class ApplicationHostService : IHostedService
 {
 
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
-    private readonly AppSettings _appConfig;
     private readonly INavigationService _navigationService;
-    private readonly IPersistAndRestoreService _persistAndRestoreService;
     private readonly IServiceProvider _serviceProvider;
-    private readonly IThemeSelectorService _themeSelectorService;
     private readonly IToastNotificationsService _toastNotificationsService;
     private readonly IUserDataService _userDataService;
     private bool _isInitialized;
     private IShellWindow _shellWindow;
+    private const string HcDarkTheme = "pack://application:,,,/Styles/Themes/HC.Dark.Blue.xaml";
+    private const string HcLightTheme = "pack://application:,,,/Styles/Themes/HC.Light.Blue.xaml";
 
 
 
@@ -46,16 +52,13 @@ public class ApplicationHostService : IHostedService
 
 
 
-    public ApplicationHostService(IServiceProvider serviceProvider, IEnumerable<IActivationHandler> activationHandlers, INavigationService navigationService, IThemeSelectorService themeSelectorService, IPersistAndRestoreService persistAndRestoreService, IToastNotificationsService toastNotificationsService, IUserDataService userDataService, IOptions<AppSettings> config)
+    public ApplicationHostService(IServiceProvider serviceProvider, IEnumerable<IActivationHandler> activationHandlers, INavigationService navigationService, IToastNotificationsService toastNotificationsService, IUserDataService userDataService)
     {
         _serviceProvider = serviceProvider;
         _activationHandlers = activationHandlers;
         _navigationService = navigationService;
-        _themeSelectorService = themeSelectorService;
-        _persistAndRestoreService = persistAndRestoreService;
         _toastNotificationsService = toastNotificationsService;
         _userDataService = userDataService;
-        _appConfig = config.Value;
     }
 
 
@@ -85,8 +88,30 @@ public class ApplicationHostService : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _persistAndRestoreService.PersistData();
         await Task.CompletedTask;
+    }
+
+
+
+
+
+
+
+
+    private static void ApplyTheme(AppTheme theme)
+    {
+        _ = ThemeManager.Current.AddLibraryTheme(new LibraryTheme(new Uri(HcDarkTheme), MahAppsLibraryThemeProvider.DefaultInstance));
+        _ = ThemeManager.Current.AddLibraryTheme(new LibraryTheme(new Uri(HcLightTheme), MahAppsLibraryThemeProvider.DefaultInstance));
+        if (theme == AppTheme.Default)
+        {
+            ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
+            ThemeManager.Current.SyncTheme();
+            return;
+        }
+
+        ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithHighContrast;
+        ThemeManager.Current.SyncTheme();
+        _ = ThemeManager.Current.ChangeTheme(Application.Current, $"{theme}.Blue", SystemParameters.HighContrast);
     }
 
 
@@ -113,7 +138,7 @@ public class ApplicationHostService : IHostedService
             _shellWindow = _serviceProvider.GetService(typeof(IShellWindow)) as IShellWindow;
             _navigationService.Initialize(_shellWindow.GetNavigationFrame());
             _shellWindow.ShowWindow();
-            _navigationService.NavigateTo(typeof(MainViewModel).FullName);
+            var unused = _navigationService.NavigateTo(typeof(MainViewModel).FullName);
             await Task.CompletedTask;
         }
     }
@@ -129,11 +154,22 @@ public class ApplicationHostService : IHostedService
     {
         if (!_isInitialized)
         {
-            _persistAndRestoreService.RestoreData();
-            _themeSelectorService.InitializeTheme();
+            ApplyTheme(ParseTheme(SystemConfigurationManager.AppSettings["Theme"] ?? "Dark"));
             _userDataService.Initialize();
             await Task.CompletedTask;
         }
+    }
+
+
+
+
+
+
+
+
+    private static AppTheme ParseTheme(string themeName)
+    {
+        return Enum.TryParse(themeName, out AppTheme theme) ? theme : AppTheme.Dark;
     }
 
 

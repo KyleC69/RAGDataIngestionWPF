@@ -1,15 +1,9 @@
-// 2026/03/04
-//  Solution: DataIngestionService
-//  Project:   DataIngestionService
-//  File:         FileHarvestPipeline.cs
-//   Author: Kyle L. Crowder
-
-
-
-using Microsoft.Extensions.Logging;
-
-using DataIngestionLib.EFModels;
-
+// Build Date: 2026/03/13
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         FileHarvestPipeline.cs
+// Author: Kyle L. Crowder
+// Build Num: 175051
 
 
 

@@ -1,21 +1,56 @@
-﻿using DataIngestionLib.ExternalKnowledge.RAGModels;
+﻿// Build Date: 2026/03/13
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         RAGContext.cs
+// Author: Kyle L. Crowder
+// Build Num: 175051
+
+
+
+using DataIngestionLib.ExternalKnowledge.RAGModels;
+using DataIngestionLib.RAGModels;
 
 using Microsoft.EntityFrameworkCore;
 
+
+
+
 namespace DataIngestionLib.Data;
+
+
+
+
 
 public partial class RAGContext : DbContext
 {
-    public RAGContext()
-        : base()
-    {
-    }
 
     public virtual DbSet<Document> Documents { get; set; }
 
     public virtual DbSet<Metadata> Metadata { get; set; }
 
     public virtual DbSet<RemoteRag> RemoteRags { get; set; }
+
+
+
+
+
+
+
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CONN_STRING"));
+        }
+    }
+
+
+
+
+
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,8 +63,8 @@ public partial class RAGContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.DocHtml).HasColumnName("DocHTML");
             entity.Property(e => e.Hash)
-                .HasMaxLength(450)
-                .IsUnicode(false);
+                    .HasMaxLength(450)
+                    .IsUnicode(false);
             entity.Property(e => e.Title).HasMaxLength(512);
             entity.Property(e => e.Url).HasMaxLength(350);
         });
@@ -48,18 +83,18 @@ public partial class RAGContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__RemoteRA__3214EC075F4501BD");
 
             entity.ToTable("RemoteRAG", tb =>
-                {
-                    tb.HasTrigger("tr_generate_embeddings");
-                    tb.HasTrigger("trg_RemoteRAG_CalculateScore");
-                });
+            {
+                tb.HasTrigger("tr_generate_embeddings");
+                tb.HasTrigger("trg_RemoteRAG_CalculateScore");
+            });
 
             entity.HasIndex(e => e.MsDate, "IX_RemoteRAG_ms_date").IsDescending();
 
             entity.HasIndex(e => e.Score, "IX_RemoteRAG_score").IsDescending();
 
             entity.HasIndex(e => e.UpdatedAt, "IX_RemoteRAG_updated_at_filtered")
-                .IsDescending()
-                .HasFilter("([embedding] IS NOT NULL)");
+                    .IsDescending()
+                    .HasFilter("([embedding] IS NOT NULL)");
 
             entity.HasIndex(e => e.DocumentId, "UX_RemoteRAG_document_id").IsUnique();
 
@@ -69,23 +104,23 @@ public partial class RAGContext : DbContext
 
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.DocumentId)
-                .HasDefaultValueSql("(newid())", "DF__RemoteRAG__DocId__4F47C5E3")
-                .HasColumnName("document_id");
+                    .HasDefaultValueSql("(newid())", "DF__RemoteRAG__DocId__4F47C5E3")
+                    .HasColumnName("document_id");
             entity.Property(e => e.Embedding)
-                .HasMaxLength(1024)
-                .HasColumnName("embedding");
+                    .HasMaxLength(1024)
+                    .HasColumnName("embedding");
             entity.Property(e => e.Keywords)
-                .HasMaxLength(500)
-                .HasColumnName("keywords");
+                    .HasMaxLength(500)
+                    .HasColumnName("keywords");
             entity.Property(e => e.MsDate).HasColumnName("ms_date");
             entity.Property(e => e.OgUrl)
-                .HasMaxLength(500)
-                .HasColumnName("og_url");
+                    .HasMaxLength(500)
+                    .HasColumnName("og_url");
             entity.Property(e => e.Score).HasColumnName("score");
             entity.Property(e => e.Summary).HasColumnName("summary");
             entity.Property(e => e.Title)
-                .HasMaxLength(450)
-                .HasColumnName("title");
+                    .HasMaxLength(450)
+                    .HasColumnName("title");
             entity.Property(e => e.TokenCount).HasColumnName("token_count");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.Property(e => e.Version).HasColumnName("version");
@@ -94,13 +129,12 @@ public partial class RAGContext : DbContext
         OnModelCreatingPartial(modelBuilder);
     }
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CONN_STRING"));
-        }
-    }
+
+
+
+
+
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

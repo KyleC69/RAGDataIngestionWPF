@@ -1,22 +1,25 @@
-﻿// 2026/03/04
-//  Solution: DataIngestionService
-//  Project:   DataIngestionService
-//  File:         DocumentationModelProcessor.cs
-//   Author: Kyle L. Crowder
-
-
-
-using System.Text.Json;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-
-using OllamaSharp;
-
+﻿// Build Date: 2026/03/13
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         DocumentationModelProcessor.cs
+// Author: Kyle L. Crowder
+// Build Num: 175051
 
 
 
 namespace DataIngestionLib.DocIngestion;
+
+
+
+
+
+public interface IDocumentationModelProcessor
+{
+    Task PreProcessLearnRepo(string targetPath);
+
+
+    Task StartPreprocessingAsync(IEnumerable<string> filepaths, CancellationToken token = default);
+}
 
 
 
@@ -43,12 +46,9 @@ public class DocumentationModelProcessor : IDocumentationModelProcessor
 
 
 
-    public DocumentationModelProcessor(ILogger<DocumentationModelProcessor> logger, IOptions<IngestionSettings> settings)
+    public DocumentationModelProcessor(ILogger<DocumentationModelProcessor> logger)
     {
         _logger = logger;
-        IngestionSettings s = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
-        var baseUrl = s.OllamaBaseUrl ?? "http://127.0.0.1:11434";
-        var model = s.OllamaModel ?? "testmod:latest";
         _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(3), BaseAddress = new Uri(baseUrl) };
         _ollamaClient = new OllamaApiClient(_httpClient, model);
 
@@ -94,30 +94,7 @@ public class DocumentationModelProcessor : IDocumentationModelProcessor
 
 
 
-    /// <summary>
-    ///     Returns the extraction instruction prompt; delegates to
-    ///     <see cref="DocumentExtractionPrompts.GetModelInstructions" />.
-    /// </summary>
-    private string GetModelInstructions() => DocumentExtractionPrompts.GetModelInstructions();
-
-
-
-
-
-
-
-
-    /// <summary>Returns the JSON output schema; delegates to <see cref="DocumentExtractionPrompts.GetOutputSchema" />.</summary>
-    private JsonElement GetOutputSchema() => DocumentExtractionPrompts.GetOutputSchema();
-
-
-
-
-
-
-
-
-    private async Task StartPreprocessingAsync(IEnumerable<string> filepaths, CancellationToken token = default)
+    public async Task StartPreprocessingAsync(IEnumerable<string> filepaths, CancellationToken token = default)
     {
         _logger.LogInformation("Beginning asynchronous preprocessing of {Count} files.", filepaths.Count());
 
@@ -186,5 +163,50 @@ public class DocumentationModelProcessor : IDocumentationModelProcessor
                 _logger.LogError(ex, "Error processing file: {0}", file);
             }
         }
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Returns the extraction instruction prompt; delegates to
+    ///     <see cref="DocumentExtractionPrompts.GetModelInstructions" />.
+    /// </summary>
+    private string GetModelInstructions()
+    {
+        return DocumentExtractionPrompts.GetModelInstructions();
+    }
+
+
+
+
+
+
+
+
+    /// <summary>Returns the JSON output schema; delegates to <see cref="DocumentExtractionPrompts.GetOutputSchema" />.</summary>
+    private JsonElement GetOutputSchema()
+    {
+        return DocumentExtractionPrompts.GetOutputSchema();
+    }
+
+
+
+
+
+
+
+
+    private void GetSettings()
+    {
+
+        var settings = ConfigurationManager("ModelSettings");
+        var baseUrl = settings["OllamaBaseUrl"] ?? "http://127.0.0.1:11434";
+        var model = settings["OllamaModel"] ?? "testmod:latest";
+
     }
 }

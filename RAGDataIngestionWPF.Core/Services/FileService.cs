@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Core
 // File:         FileService.cs
 // Author: Kyle L. Crowder
-// Build Num: 013419
+// Build Num: 175101
 
 
 
@@ -47,7 +47,7 @@ public class FileService : IFileService
     {
         if (!Directory.Exists(folderPath))
         {
-            Directory.CreateDirectory(folderPath);
+            _ = Directory.CreateDirectory(folderPath);
         }
 
         var fileContent = JsonConvert.SerializeObject(content);

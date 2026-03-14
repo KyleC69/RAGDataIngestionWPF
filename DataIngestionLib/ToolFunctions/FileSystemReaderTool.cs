@@ -1,17 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         FileSystemReaderTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 013508
-
-
-
-using System.ComponentModel;
-using System.IO;
-
-using OllamaSharp;
-
+// Build Num: 175059
 
 
 

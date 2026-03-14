@@ -1,19 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIChatHistory.cs
 // Author: Kyle L. Crowder
-// Build Num: 013459
-
-
-
-using System.Collections;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-
-using Microsoft.Extensions.AI;
-
+// Build Num: 175053
 
 
 
@@ -62,7 +52,10 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     {
         ArgumentNullException.ThrowIfNull(messages);
         _messages = [];
-        foreach ((ChatRole Role, var Text) in messages) Add(new AIChatMessage(Role, Text));
+        foreach ((ChatRole Role, var Text) in messages)
+        {
+            Add(new AIChatMessage(Role, Text));
+        }
     }
 
 
@@ -136,6 +129,22 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     {
         get { return _messages.Count == 0 ? null : _messages[^1]; }
     }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _messages.GetEnumerator();
+    }
+
+
+
 
 
 
@@ -357,35 +366,6 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
 
 
 
-    /// <inheritdoc />
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return _messages.GetEnumerator();
-    }
-
-
-
-
-
-
-
-
-    /// <inheritdoc />
-    public event NotifyCollectionChangedEventHandler? CollectionChanged;
-
-
-
-
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-
-
-
-
-
-
-
     public void Add(ChatRole mRole, string mText)
     {
         switch (mRole.Value)
@@ -494,7 +474,10 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     {
         ArgumentNullException.ThrowIfNull(items);
 
-        foreach (AIChatMessage item in items) Add(item);
+        foreach (AIChatMessage item in items)
+        {
+            Add(item);
+        }
     }
 
 
@@ -560,6 +543,16 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     {
         AddMessagesByRole(messages, ChatRole.User, nameof(messages));
     }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
 
 
@@ -698,6 +691,15 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
 
 
 
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+
+
+
+
+
+
+
     /// <summary>
     ///     Removes a range of messages from the history.
     /// </summary>
@@ -724,11 +726,13 @@ public sealed class AIChatHistory : IList<AIChatMessage>, IReadOnlyList<AIChatMe
     public bool TryGetLastMessage(ChatRole role, [NotNullWhen(true)] out AIChatMessage? message)
     {
         for (var index = _messages.Count - 1; index >= 0; index--)
+        {
             if (_messages[index].Role == role)
             {
                 message = _messages[index];
                 return true;
             }
+        }
 
         message = null;
         return false;

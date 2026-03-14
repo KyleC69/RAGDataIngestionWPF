@@ -1,14 +1,9 @@
-﻿// 2026/03/04
-//  Solution: DataIngestionService
-//  Project:   DataIngestionService
-//  File:         HeadlessBrowser.cs
-//   Author: Kyle L. Crowder
-
-
-
-using PuppeteerSharp;
-using PuppeteerSharp.Media;
-
+﻿// Build Date: 2026/03/13
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         HeadlessBrowser.cs
+// Author: Kyle L. Crowder
+// Build Num: 175051
 
 
 

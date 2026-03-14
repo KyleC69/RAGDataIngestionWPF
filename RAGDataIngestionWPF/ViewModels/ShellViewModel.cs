@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         ShellViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 013440
+// Build Num: 175117
 
 
 
@@ -155,7 +155,7 @@ public class ShellViewModel : ObservableObject
     {
         if (targetViewModel != null)
         {
-            _navigationService.NavigateTo(targetViewModel.FullName);
+            _ = _navigationService.NavigateTo(targetViewModel.FullName);
         }
     }
 
@@ -257,7 +257,7 @@ public class ShellViewModel : ObservableObject
         HamburgerMenuImageItem userMenuItem = OptionMenuItems.OfType<HamburgerMenuImageItem>().FirstOrDefault();
         if (userMenuItem != null)
         {
-            OptionMenuItems.Remove(userMenuItem);
+            var unused = OptionMenuItems.Remove(userMenuItem);
         }
     }
 

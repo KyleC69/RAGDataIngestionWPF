@@ -17,7 +17,7 @@
 - Themes: `ThemeSelectorService` uses MahApps `ThemeManager`; stores current theme in `App.Current.Properties["Theme"]`. High-contrast themes declared in `Styles/Themes`.
 - Ensure that UI elements colors/styles use DynamicResource for theming support (e.g. `{DynamicResource MahApps.Brushes.ThemeBackground}`).
 - Ensure UI text is stored in `Properties/Resources.resx` for localization; use `Properties.Resources.ResourceKey` in XAML and code.
-- UI responsiveness: use async/await for long-running operations; consider `IAsyncCommand` pattern for commands that trigger async work. Avoid blocking the UI thread.
+- UI responsiveness: use async/await for long-running operations; consider `IAsyncRelayCommand` pattern for commands that trigger async work. Avoid blocking the UI thread.
 - UI styles and control templates should be defined in XAML resource dictionaries (e.g. `Styles/Controls.xaml`) and referenced via StaticResource or DynamicResource as appropriate.
 
 ## Data & persistence

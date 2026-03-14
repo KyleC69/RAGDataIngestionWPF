@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         ToastNotificationActivationHandler.cs
 // Author: Kyle L. Crowder
-// Build Num: 013429
+// Build Num: 175106
 
 
 
@@ -77,7 +77,7 @@ public class ToastNotificationActivationHandler : IActivationHandler
         }
         else
         {
-            App.Current.MainWindow.Activate();
+            _ = App.Current.MainWindow.Activate();
             if (App.Current.MainWindow.WindowState == WindowState.Minimized)
             {
                 App.Current.MainWindow.WindowState = WindowState.Normal;

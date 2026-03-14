@@ -1,16 +1,15 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 013448
+// Build Num: 175049
 
 
 
 using System.Net.Http;
 
 using DataIngestionLib.Contracts;
-using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Agents.AI;
@@ -31,7 +30,7 @@ public class AgentFactory : IAgentFactory
 {
     private readonly ILoggerFactory _factory;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IChatClient _innerClient;
+
 
     private readonly string _modelInstructions = """
                                                  -- Your name is Maxx, using a name helps personalize the experience and allows users to refer to you in a more natural way. It also helps establish a consistent identity for you as an AI agent.
@@ -50,6 +49,8 @@ public class AgentFactory : IAgentFactory
 
                                                  """;
 
+    private IChatClient _innerClient; // Base client that will be decorated with additional functionality using the builder pattern.
+
 
 
 
@@ -58,21 +59,15 @@ public class AgentFactory : IAgentFactory
 
 
     public AgentFactory(
-            IChatClient innerClient,
             ILoggerFactory factory,
-            IRuntimeContextAccessor accessor,
             IHttpClientFactory httpClientFactory
     )
     {
-        ArgumentNullException.ThrowIfNull(innerClient);
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(httpClientFactory);
 
-
-        _innerClient = innerClient;
         _factory = factory;
         _httpClientFactory = httpClientFactory;
-        //   _memoryProvider = new AIContextHistoryInjector2(chatHistoryMemoryProvider, accessor);
     }
 
 

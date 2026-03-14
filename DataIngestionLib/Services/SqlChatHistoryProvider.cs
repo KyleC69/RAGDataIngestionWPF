@@ -1,20 +1,16 @@
-// Build Date: 2026/03/12
+// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         SqlChatHistoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 013455
+// Build Num: 175057
 
 
-
-using System.Text.Json;
 
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
-using Microsoft.Agents.AI;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.AI;
+using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
 
 
@@ -57,7 +53,6 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     private readonly string _defaultAgentId;
     private readonly string _defaultApplicationId;
     private readonly string _defaultUserId;
-    private readonly IRuntimeContextAccessor _runtimeContextAccessor;
 
     private const int ConversationKeyLength = 128;
     private const int DefaultHistoryWindowSize = 200;
@@ -71,12 +66,10 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-    public SQLChatHistoryProvider(ISqlChatHistoryConnectionFactory connectionFactory, IRuntimeContextAccessor runtimeContextAccessor)
+    public SQLChatHistoryProvider(ISqlChatHistoryConnectionFactory connectionFactory)
     {
         ArgumentNullException.ThrowIfNull(connectionFactory);
-        ArgumentNullException.ThrowIfNull(runtimeContextAccessor);
         _connectionFactory = connectionFactory;
-        _runtimeContextAccessor = runtimeContextAccessor;
         _defaultAgentId = this.GetType().Name;
         _defaultApplicationId = AppDomain.CurrentDomain.FriendlyName;
         _defaultUserId = Environment.UserName;
@@ -211,9 +204,8 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
-        RuntimeContext runtimeContext = _runtimeContextAccessor.GetCurrent();
-        var applicationId = runtimeContext.ApplicationId.ToString("N");
-        var userId = GetUserId(runtimeContext);
+        var applicationId = GetApplicationId();
+        var userId = GetUserId();
         var hasTake = take.HasValue;
 
         var selectSql = hasTake
@@ -262,7 +254,10 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         ;
 
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false)) messages.Add(MapMessage(reader));
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            messages.Add(MapMessage(reader));
+        }
 
         return messages;
     }
@@ -359,9 +354,8 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
-        RuntimeContext runtimeContext = _runtimeContextAccessor.GetCurrent();
-        var applicationId = runtimeContext.ApplicationId.ToString("N");
-        var userId = GetUserId(runtimeContext);
+        var applicationId = GetApplicationId();
+        var userId = GetUserId();
 
         const string deleteSql =
                 """
@@ -399,9 +393,8 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     {
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
-        RuntimeContext runtimeContext = _runtimeContextAccessor.GetCurrent();
-        var applicationId = runtimeContext.ApplicationId.ToString("N");
-        var userId = GetUserId(runtimeContext);
+        var applicationId = GetApplicationId();
+        var userId = GetUserId();
 
         const string selectSql =
                 """
@@ -495,6 +488,21 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
+    private string GetApplicationId()
+    {
+        var configuredApplicationId = SystemConfigurationManager.AppSettings["ApplicationId"] ?? string.Empty;
+        return string.IsNullOrWhiteSpace(configuredApplicationId)
+                ? _defaultApplicationId
+                : configuredApplicationId.Trim();
+    }
+
+
+
+
+
+
+
+
     private async ValueTask<IReadOnlyList<PersistedChatMessage>> GetMessagesAsync(ChatHistoryScope scope, int? take, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(scope.ConversationId))
@@ -541,11 +549,11 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         List<SqlParameter> parameters =
         [
-                new SqlParameter("@ApplicationId", scope.ApplicationId),
-                new SqlParameter("@UserId", scope.UserId),
-                new SqlParameter("@ConversationId", scope.ConversationId),
-                new SqlParameter("@SessionId", scope.SessionId),
-                new SqlParameter("@AgentId", scope.AgentId)
+                new("@ApplicationId", scope.ApplicationId),
+                new("@UserId", scope.UserId),
+                new("@ConversationId", scope.ConversationId),
+                new("@SessionId", scope.SessionId),
+                new("@AgentId", scope.AgentId)
         ];
         if (hasTake)
         {
@@ -564,7 +572,10 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         ;
         ;
 
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false)) messages.Add(MapMessage(reader));
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            messages.Add(MapMessage(reader));
+        }
 
         return messages;
     }
@@ -576,13 +587,10 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-    private string GetUserId(RuntimeContext runtimeContext)
+    private string GetUserId()
     {
-        return !string.IsNullOrWhiteSpace(runtimeContext.UserPrincipalName)
-                ? runtimeContext.UserPrincipalName.Trim()
-                : !string.IsNullOrWhiteSpace(runtimeContext.DisplayName)
-                        ? runtimeContext.DisplayName.Trim()
-                        : _defaultUserId;
+        var configuredUserId = SystemConfigurationManager.AppSettings["UserId"] ?? string.Empty;
+        return string.IsNullOrWhiteSpace(configuredUserId) ? _defaultUserId : configuredUserId.Trim();
     }
 
 
@@ -604,17 +612,17 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         SqlParameter[] parameters =
         [
-                new SqlParameter("@MessageId", message.MessageId),
-                new SqlParameter("@ConversationId", message.ConversationId),
-                new SqlParameter("@SessionId", message.SessionId),
-                new SqlParameter("@AgentId", message.AgentId),
-                new SqlParameter("@UserId", message.UserId),
-                new SqlParameter("@ApplicationId", message.ApplicationId),
-                new SqlParameter("@Role", message.Role),
-                new SqlParameter("@Content", message.Content),
-                new SqlParameter("@TimestampUtc", message.TimestampUtc),
-                new SqlParameter("@Metadata", message.Metadata?.RootElement.GetRawText() ?? (object)DBNull.Value),
-                new SqlParameter("@Enabled", true)
+                new("@MessageId", message.MessageId),
+                new("@ConversationId", message.ConversationId),
+                new("@SessionId", message.SessionId),
+                new("@AgentId", message.AgentId),
+                new("@UserId", message.UserId),
+                new("@ApplicationId", message.ApplicationId),
+                new("@Role", message.Role),
+                new("@Content", message.Content),
+                new("@TimestampUtc", message.TimestampUtc),
+                new("@Metadata", message.Metadata?.RootElement.GetRawText() ?? (object)DBNull.Value),
+                new("@Enabled", true)
         ];
         _ = await ExecuteNonQueryAsync(connection, null, insertSql, parameters, cancellationToken).ConfigureAwait(false);
     }
@@ -752,13 +760,11 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
     private ChatHistoryScope ResolveScope(AgentSession? session)
     {
-        RuntimeContext runtimeContext = _runtimeContextAccessor.GetCurrent();
-
         var applicationId = ChatHistorySessionState.GetOrCreateApplicationId(
                 session,
-                runtimeContext.ApplicationId.ToString("N"));
+                GetApplicationId());
 
-        var userId = ChatHistorySessionState.GetOrCreateUserId(session, GetUserId(runtimeContext));
+        var userId = ChatHistorySessionState.GetOrCreateUserId(session, GetUserId());
         var conversationId = ChatHistorySessionState.GetOrCreateConversationId(session);
         var sessionId = ChatHistorySessionState.GetOrCreateSessionId(session);
         var agentId = ChatHistorySessionState.GetOrCreateAgentId(session, _defaultAgentId);
@@ -828,7 +834,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 continue;
             }
 
-            PersistedChatMessage persistedMessage = new PersistedChatMessage
+            PersistedChatMessage persistedMessage = new()
             {
                     MessageId = Guid.NewGuid(),
                     ConversationId = scope.ConversationId,

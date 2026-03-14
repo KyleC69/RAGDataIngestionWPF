@@ -1,15 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatMessageExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: 013503
-
-
-
-using Microsoft.Agents.AI;
-using Microsoft.Extensions.AI;
-
+// Build Num: 175052
 
 
 

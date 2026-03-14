@@ -1,24 +1,13 @@
-﻿// 2026/03/04
-//  Solution: DataIngestionService
-//  Project:   DataIngestionService
-//  File:         IngestQualityControl.cs
-//   Author: Kyle L. Crowder
+﻿// Build Date: 2026/03/13
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IngestQualityControl.cs
+// Author: Kyle L. Crowder
+// Build Num: 175051
 
 
-
-using System.Diagnostics;
 
 using DataIngestionLib.Contracts;
-
-using Microsoft.Agents.AI;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-
-using Newtonsoft.Json;
-
-using DataIngestionLib.Agents;
-using DataIngestionLib.EFModels;
-using DataIngestionLib.Utilities;
 
 
 
@@ -112,96 +101,66 @@ public sealed class IngestQualityControl : IIngestQualityControl
 
 
 
-    /// <summary>
-    ///     Initiates the asynchronous quality control process for a collection of data items by validating each item.
-    /// </summary>
-    /// <remarks>
-    ///     Invalid data items are handled by logging a message for each item that fails validation.
-    ///     Ensure that the data items are in a valid format before invoking this method.
-    /// </remarks>
-    /// <param name="dataItems">
-    ///     An enumerable collection of data items to validate. Each item is processed individually to determine its
-    ///     validity.
-    /// </param>
-    /// <returns>A task that represents the asynchronous operation of starting the quality control process.</returns>
-    public async Task StartQualityControlAsync(IEnumerable<DocPage> dataItems)
+    private async Task ConstructTopics(DocPage doc)
     {
-        if (dataItems.Count() == 0)
+        // Last step in the evaluation process, this is where we take the content that has been deemed "valuable"
+        // and had "RAGQuality" and organize it in a way that is suitable for prompt injection and can produce a valuable vector index for retrieval.
+        // by this point the text should be well-structured and have semantic value, so we can ask the LLM to organize it into topics and content blocks that can be used for retrieval in a RAG system.
+
+        ChatClientAgent chatClient = _agentFactory.Create(
+                """
+
+                You are a topic segmenter for RAG preparation.
+                Reorganize the input into semantic segments and return a list of items with `Topic` and `Content`.
+
+                  Output rules:
+                  - `Topic`: short heading, 3–8 words, not a full sentence, not duplicated content.
+                  - `Content`: multi-sentence block (≥30 chars) extracted or lightly reorganized from the input; no placeholders, headings, or invented text.
+                  - Every item must include both `Topic` and `Content`; no empty strings or nulls.
+                  - Preserve the author’s intent while improving clarity and structure.
+
+                  Example:
+                  [
+                    { "Topic": "Introduction to the Framework", "Content": "The framework provides a comprehensive set of tools and libraries for building AI applications, including support for natural language processing, machine learning, and deep learning. It also offers pre-built models and components that can be easily integrated into your applications." },
+                    { "Topic": "Key Features", "Content": "The framework includes features such as model training and deployment, data preprocessing, and model evaluation. It also provides support for distributed computing and GPU acceleration, making it suitable for large-scale AI projects." }
+                  ]
+
+                """
+        );
+
+
+        try
         {
-            _logger.LogInformation("No data items provided for quality control.");
-            return;
+            var response = await chatClient.RunAsync<List<StructuredResults>>(doc.RawPageSource).ConfigureAwait(false);
+
+            if (response.Result != null)
+            {
+                await SaveNewSectionsAsync(response.Result, doc).ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidModelResponse("Model returned an empty or null response for structured results.");
+            }
+
+
         }
-
-        foreach (DocPage data in dataItems) await EvaluateDocument(data).ConfigureAwait(false);
-    }
-
-
-
-
-
-
-
-
-    /// <inheritdoc />
-    public Task<bool> ValidateDataAsync(string data)
-    {
-        if (string.IsNullOrWhiteSpace(data))
+        catch (InvalidModelResponse ex)
         {
-            _logger.LogDebug("ValidateDataAsync: rejecting empty or whitespace-only input.");
-            return Task.FromResult(false);
+            _logger.LogError(ex, "Model returned an invalid response for document with ID {DocumentId}: {ResponseResult}", doc.Id, ex.Message);
+            await FurtherEvaluation(doc).ConfigureAwait(false);
+            _evaluationSemaphore.Release();
         }
-
-        // TODO: Replace stub logic with LLM-assisted quality scoring.
-        // The stub conservatively rejects all content to avoid false positives
-        // until a real validation strategy is implemented.
-        _logger.LogDebug("ValidateDataAsync: stub returning false for '{DataPreview}'.", data[..Math.Min(60, data.Length)]);
-        return Task.FromResult(false);
-    }
-
-
-
-
-
-
-
-
-    //Run test text through the pipeline
-    public async Task TestIngestQualityControlAsync()
-    {
-
-        //Garbage input example, this is the type of content that is considered "garbage" and should be discarded, as it lacks context, detail, and meaningful information about the content.
-        var garbageTest = """
-                          This is a file. Contains code. <file> <code> Programming, C#, .NET Error messages, troubleshooting
-                          """;
-
-
-
-        //This is an example of content that is valuable, as it has complete sentences that provide context and detail about the content,
-        //and does not contain excessive tags or metadata that do not provide meaningful information about the content.
-        var nonGarbage = """
-                         The framework also provides foundational building blocks, 
-                         including model clients (chat completions and responses), 
-                         an agent session for state management, context providers for agent memory,
-                          middleware for intercepting agent actions, and MCP clients for tool integration. 
-                          Together, these components give you the flexibility
-                           and power to build interactive, robust, and safe AI applications.
-                         """;
-
-        // This is an example of content that is neither clearly garbage nor clearly valuable, and may require further analysis or context to determine its value.
-        // It is intentionally in a gray area to test the LLM's understanding of the criteria. It is a short sentence, but it is a complete sentence and provides sentiment.
-        // It is important to note that the classification of content as "garbage" or "valuable" can be subjective and may depend on the specific use case or context in which the content is being evaluated.
-        // This should however be caught in the RAG evaluation, as it is not clearly garbage, but also not clearly valuable in the intended usage patterns.
-        var unknown = """
-                      It is a bright and sunny day.
-                      """;
-
-
-        // Run the test inputs through the evaluation process
-        await EvaluateDocument(new DocPage { RawPageSource = garbageTest }).ConfigureAwait(false);
-        await EvaluateDocument(new DocPage { RawPageSource = nonGarbage }).ConfigureAwait(false);
-        await EvaluateDocument(new DocPage { RawPageSource = unknown }).ConfigureAwait(false);
-
-        Debugger.Break();
+        catch (Exception)
+        {
+            _logger.LogError("An error occurred while evaluating document with ID {DocumentId}. Marking for further evaluation.", doc.Id);
+            await FurtherEvaluation(doc).ConfigureAwait(false);
+            _evaluationSemaphore.Release();
+        }
+        finally
+        {
+            chatClient.ChatClient.Dispose();
+            _evaluationSemaphore.Release();
+        }
     }
 
 
@@ -269,75 +228,6 @@ public sealed class IngestQualityControl : IIngestQualityControl
             chatClient.ChatClient.Dispose();
         }
 
-    }
-
-
-
-
-
-
-
-
-    private async Task ConstructTopics(DocPage doc)
-    {
-        // Last step in the evaluation process, this is where we take the content that has been deemed "valuable"
-        // and had "RAGQuality" and organize it in a way that is suitable for prompt injection and can produce a valuable vector index for retrieval.
-        // by this point the text should be well-structured and have semantic value, so we can ask the LLM to organize it into topics and content blocks that can be used for retrieval in a RAG system.
-
-        ChatClientAgent chatClient = _agentFactory.Create(
-                """
-
-                You are a topic segmenter for RAG preparation.
-                Reorganize the input into semantic segments and return a list of items with `Topic` and `Content`.
-
-                  Output rules:
-                  - `Topic`: short heading, 3–8 words, not a full sentence, not duplicated content.
-                  - `Content`: multi-sentence block (≥30 chars) extracted or lightly reorganized from the input; no placeholders, headings, or invented text.
-                  - Every item must include both `Topic` and `Content`; no empty strings or nulls.
-                  - Preserve the author’s intent while improving clarity and structure.
-
-                  Example:
-                  [
-                    { "Topic": "Introduction to the Framework", "Content": "The framework provides a comprehensive set of tools and libraries for building AI applications, including support for natural language processing, machine learning, and deep learning. It also offers pre-built models and components that can be easily integrated into your applications." },
-                    { "Topic": "Key Features", "Content": "The framework includes features such as model training and deployment, data preprocessing, and model evaluation. It also provides support for distributed computing and GPU acceleration, making it suitable for large-scale AI projects." }
-                  ]
-
-                """
-        );
-
-
-        try
-        {
-            var response = await chatClient.RunAsync<List<StructuredResults>>(doc.RawPageSource).ConfigureAwait(false);
-
-            if (response.Result != null)
-            {
-                await SaveNewSectionsAsync(response.Result, doc).ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidModelResponse("Model returned an empty or null response for structured results.");
-            }
-
-
-        }
-        catch (InvalidModelResponse ex)
-        {
-            _logger.LogError(ex, "Model returned an invalid response for document with ID {DocumentId}: {ResponseResult}", doc.Id, ex.Message);
-            await FurtherEvaluation(doc).ConfigureAwait(false);
-            _evaluationSemaphore.Release();
-        }
-        catch (Exception)
-        {
-            _logger.LogError("An error occurred while evaluating document with ID {DocumentId}. Marking for further evaluation.", doc.Id);
-            await FurtherEvaluation(doc).ConfigureAwait(false);
-            _evaluationSemaphore.Release();
-        }
-        finally
-        {
-            chatClient.ChatClient.Dispose();
-            _evaluationSemaphore.Release();
-        }
     }
 
 
@@ -517,6 +407,108 @@ public sealed class IngestQualityControl : IIngestQualityControl
         }
 
 
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Initiates the asynchronous quality control process for a collection of data items by validating each item.
+    /// </summary>
+    /// <remarks>
+    ///     Invalid data items are handled by logging a message for each item that fails validation.
+    ///     Ensure that the data items are in a valid format before invoking this method.
+    /// </remarks>
+    /// <param name="dataItems">
+    ///     An enumerable collection of data items to validate. Each item is processed individually to determine its
+    ///     validity.
+    /// </param>
+    /// <returns>A task that represents the asynchronous operation of starting the quality control process.</returns>
+    public async Task StartQualityControlAsync(IEnumerable<DocPage> dataItems)
+    {
+        if (dataItems.Count() == 0)
+        {
+            _logger.LogInformation("No data items provided for quality control.");
+            return;
+        }
+
+        foreach (DocPage data in dataItems)
+        {
+            await EvaluateDocument(data).ConfigureAwait(false);
+        }
+    }
+
+
+
+
+
+
+
+
+    //Run test text through the pipeline
+    public async Task TestIngestQualityControlAsync()
+    {
+
+        //Garbage input example, this is the type of content that is considered "garbage" and should be discarded, as it lacks context, detail, and meaningful information about the content.
+        var garbageTest = """
+                          This is a file. Contains code. <file> <code> Programming, C#, .NET Error messages, troubleshooting
+                          """;
+
+
+
+        //This is an example of content that is valuable, as it has complete sentences that provide context and detail about the content,
+        //and does not contain excessive tags or metadata that do not provide meaningful information about the content.
+        var nonGarbage = """
+                         The framework also provides foundational building blocks, 
+                         including model clients (chat completions and responses), 
+                         an agent session for state management, context providers for agent memory,
+                          middleware for intercepting agent actions, and MCP clients for tool integration. 
+                          Together, these components give you the flexibility
+                           and power to build interactive, robust, and safe AI applications.
+                         """;
+
+        // This is an example of content that is neither clearly garbage nor clearly valuable, and may require further analysis or context to determine its value.
+        // It is intentionally in a gray area to test the LLM's understanding of the criteria. It is a short sentence, but it is a complete sentence and provides sentiment.
+        // It is important to note that the classification of content as "garbage" or "valuable" can be subjective and may depend on the specific use case or context in which the content is being evaluated.
+        // This should however be caught in the RAG evaluation, as it is not clearly garbage, but also not clearly valuable in the intended usage patterns.
+        var unknown = """
+                      It is a bright and sunny day.
+                      """;
+
+
+        // Run the test inputs through the evaluation process
+        await EvaluateDocument(new DocPage { RawPageSource = garbageTest }).ConfigureAwait(false);
+        await EvaluateDocument(new DocPage { RawPageSource = nonGarbage }).ConfigureAwait(false);
+        await EvaluateDocument(new DocPage { RawPageSource = unknown }).ConfigureAwait(false);
+
+        Debugger.Break();
+    }
+
+
+
+
+
+
+
+
+    /// <inheritdoc />
+    public Task<bool> ValidateDataAsync(string data)
+    {
+        if (string.IsNullOrWhiteSpace(data))
+        {
+            _logger.LogDebug("ValidateDataAsync: rejecting empty or whitespace-only input.");
+            return Task.FromResult(false);
+        }
+
+        // TODO: Replace stub logic with LLM-assisted quality scoring.
+        // The stub conservatively rejects all content to avoid false positives
+        // until a real validation strategy is implemented.
+        _logger.LogDebug("ValidateDataAsync: stub returning false for '{DataPreview}'.", data[..Math.Min(60, data.Length)]);
+        return Task.FromResult(false);
     }
 
 

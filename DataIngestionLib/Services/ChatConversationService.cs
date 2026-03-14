@@ -1,25 +1,22 @@
-// Build Date: 2026/03/12
+// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 013449
+// Build Num: 175056
 
 
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
-using DataIngestionLib.Options;
 
-using Microsoft.Agents.AI;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
+using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
 
 
 
-namespace DataIngestionLib.Agents;
+namespace DataIngestionLib.Services;
 
 
 
@@ -32,8 +29,7 @@ public sealed class ChatConversationService : IChatConversationService
 {
     private readonly AIAgent _agent;
     private readonly AgentSession _agentSession;
-    private readonly IRuntimeContextAccessor _contextAccessor;
-    private readonly ChatSessionOptions _options;
+    private readonly int _maxContextTokens;
 
 
 
@@ -42,27 +38,26 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public ChatConversationService(ChatSessionOptions options, IChatClient client, ILoggerFactory factory, IAgentFactory agentFactory, IRuntimeContextAccessor runtimeContextAccessor)
+    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory)
     {
-        ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(agentFactory);
-        ArgumentNullException.ThrowIfNull(runtimeContextAccessor);
 
-        if (options.MaxContextTokens <= 0)
+        _maxContextTokens = int.TryParse(SystemConfigurationManager.AppSettings["MaxContextTokens"], out var maxContextTokens) && maxContextTokens > 0
+                ? maxContextTokens
+                : 120000;
+
+        if (_maxContextTokens <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(options), "Maximum context tokens must be a positive value.");
+            throw new ArgumentOutOfRangeException(nameof(_maxContextTokens), "Maximum context tokens must be a positive value.");
         }
 
-        _options = options;
         _agent = agentFactory.GetCodingAssistantAgent();
 
         _agentSession = _agent.CreateSessionAsync().IsCompleted
                 ? _agent.CreateSessionAsync().GetAwaiter().GetResult()
                 : throw new InvalidOperationException("Failed to create agent session.");
-        ;
-        _contextAccessor = runtimeContextAccessor;
+
 
 
 
@@ -78,7 +73,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     public string ApplicationId
     {
-        get { return _contextAccessor.GetCurrent().ApplicationId.ToString(); }
+        get { return SystemConfigurationManager.AppSettings["ApplicationId"] ?? AppDomain.CurrentDomain.FriendlyName; }
     }
 
 
@@ -87,7 +82,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     public string UserId
     {
-        get { return _contextAccessor.GetCurrent().UserPrincipalName ?? ""; }
+        get { return Environment.UserName; }
     }
 
 
@@ -143,7 +138,7 @@ public sealed class ChatConversationService : IChatConversationService
                             .Where(static text => !string.IsNullOrWhiteSpace(text)));
         }
 
-        AIChatMessage assistantMessage = new AIChatMessage(ChatRole.Assistant, assistantText);
+        AIChatMessage assistantMessage = new(ChatRole.Assistant, assistantText);
         if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
         {
             ChatHistory.Add(assistantMessage);
@@ -167,7 +162,7 @@ public sealed class ChatConversationService : IChatConversationService
         {
             var content = ChatHistory[index].Text ?? string.Empty;
             var messageTokenCount = EstimateTokenCount(content);
-            if (tokenCount + messageTokenCount > _options.MaxContextTokens)
+            if (tokenCount + messageTokenCount > _maxContextTokens)
             {
                 break;
             }

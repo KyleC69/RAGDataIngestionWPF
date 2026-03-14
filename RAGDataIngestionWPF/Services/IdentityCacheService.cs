@@ -1,17 +1,15 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         IdentityCacheService.cs
 // Author: Kyle L. Crowder
-// Build Num: 013432
+// Build Num: 175109
 
 
 
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
-
-using RAGDataIngestionWPF.Core.Contracts.Services;
 
 
 
@@ -63,7 +61,7 @@ internal class IdentityCacheService : IIdentityCacheService
         {
             if (!Directory.Exists(MsalCacheFilePath))
             {
-                DirectoryInfo unused = Directory.CreateDirectory(MsalCacheFilePath);
+                _ = Directory.CreateDirectory(MsalCacheFilePath);
             }
 
             var encryptedData = ProtectedData.Protect(token, null, DataProtectionScope.CurrentUser);

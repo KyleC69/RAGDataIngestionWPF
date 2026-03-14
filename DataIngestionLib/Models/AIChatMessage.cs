@@ -1,17 +1,11 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIChatMessage.cs
 // Author: Kyle L. Crowder
-// Build Num: 013501
+// Build Num: 175054
 
 
-
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
-
-using Microsoft.Extensions.AI;
 
 using AIContent = Microsoft.Extensions.AI.AIContent;
 using TextContent = Microsoft.Extensions.AI.TextContent;
@@ -253,11 +247,11 @@ public class AIChatMessage : IEquatable<AIChatMessage>
     /// <inheritdoc />
     public bool Equals(AIChatMessage? other)
     {
-        return other is not null && (ReferenceEquals(this, other) || Role == other.Role
-                && string.Equals(Text, other.Text, StringComparison.Ordinal)
-                && string.Equals(AuthorName, other.AuthorName, StringComparison.Ordinal)
-                && Nullable.Equals(CreatedAt, other.CreatedAt)
-                && string.Equals(MessageId, other.MessageId, StringComparison.Ordinal));
+        return other is not null && (ReferenceEquals(this, other) || (Role == other.Role
+                                                                      && string.Equals(Text, other.Text, StringComparison.Ordinal)
+                                                                      && string.Equals(AuthorName, other.AuthorName, StringComparison.Ordinal)
+                                                                      && Nullable.Equals(CreatedAt, other.CreatedAt)
+                                                                      && string.Equals(MessageId, other.MessageId, StringComparison.Ordinal)));
     }
 
 
@@ -322,7 +316,7 @@ public class AIChatMessage : IEquatable<AIChatMessage>
 
     public static bool operator ==(AIChatMessage? left, AIChatMessage? right)
     {
-        return ReferenceEquals(left, right) || left is not null && right is not null && left.Equals(right);
+        return ReferenceEquals(left, right) || (left is not null && right is not null && left.Equals(right));
     }
 
 

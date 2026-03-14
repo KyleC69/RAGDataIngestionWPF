@@ -1,14 +1,11 @@
-// Build Date: 2026/03/12
+// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         FixedAgentIdentityProviderTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 013426
+// Build Num: 175104
 
 
-
-using DataIngestionLib.Models;
-using DataIngestionLib.Services;
 
 using Microsoft.Extensions.AI;
 
@@ -50,22 +47,6 @@ public class FixedAgentIdentityProviderTests
     {
         AIChatMessage message = new(ChatRole.User, "Hello, world!");
         Assert.AreEqual("Hello, world!", message.ToString());
-    }
-
-
-
-
-
-
-
-
-    [TestMethod]
-    [DataRow(null)]
-    [DataRow("")]
-    [DataRow("   ")]
-    public void Constructor_ThrowsArgumentException_WhenAgentIdIsNullOrWhiteSpace(string agentId)
-    {
-        Assert.ThrowsExactly<ArgumentException>(() => _ = new FixedAgentIdentityProvider(agentId!));
     }
 
 

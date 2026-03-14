@@ -1,13 +1,11 @@
-// Build Date: 2026/03/12
+// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ChatHistoryTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 013427
+// Build Num: 175103
 
 
-
-using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 
@@ -42,7 +40,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.AreEqual(1, history.Count);
-        Assert.AreEqual<ChatRole>(ChatRole.Assistant, history[0].Role);
+        Assert.AreEqual(ChatRole.Assistant, history[0].Role);
         Assert.AreEqual("It is sunny.", history[0].Text);
     }
 
@@ -90,7 +88,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.AreEqual(1, history.Count);
-        Assert.AreEqual<ChatRole>(ChatRole.System, history[0].Role);
+        Assert.AreEqual(ChatRole.System, history[0].Role);
     }
 
 
@@ -111,7 +109,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.AreEqual(1, history.Count);
-        Assert.AreEqual<ChatRole>(ChatRole.User, history[0].Role);
+        Assert.AreEqual(ChatRole.User, history[0].Role);
         Assert.AreEqual("What is the weather?", history[0].Text);
     }
 
@@ -132,7 +130,7 @@ public class ChatHistoryTests
         AIChatHistory history = [];
 
         // Act / Assert
-        Assert.ThrowsExactly<ArgumentException>(() => history.AddUserMessage(content!));
+        ArgumentException unused = Assert.ThrowsExactly<ArgumentException>(() => history.AddUserMessage(content!));
     }
 
 
@@ -176,7 +174,7 @@ public class ChatHistoryTests
         history.AddUserMessage("some text");
 
         // Act / Assert
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => history.EstimateContextTokenCount(0));
+        ArgumentOutOfRangeException unused = Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => history.EstimateContextTokenCount(0));
     }
 
 

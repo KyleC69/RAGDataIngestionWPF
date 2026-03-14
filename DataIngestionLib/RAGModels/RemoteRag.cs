@@ -1,34 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Data.SqlTypes;
+﻿// Build Date: 2026/03/13
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         RemoteRag.cs
+// Author: Kyle L. Crowder
+// Build Num: 175055
 
-namespace DataIngestionLib.ExternalKnowledge.RAGModels;
 
-public partial class RemoteRag
+
+namespace DataIngestionLib.RAGModels;
+
+
+
+
+
+public class RemoteRag
 {
-    public int Id { get; set; }
-
-    public Guid DocumentId { get; set; }
-
-    public string OgUrl { get; set; } = null!;
-
-    public DateTime MsDate { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
-
-    public string Title { get; set; } = null!;
 
     public string Description { get; set; } = null!;
 
+    public Guid DocumentId { get; set; }
+
+    public SqlVector<float>? Embedding { get; set; }
+    public int Id { get; set; }
+
     public string? Keywords { get; set; }
+
+    public DateTime MsDate { get; set; }
+
+    public string OgUrl { get; set; } = null!;
+
+    public double? Score { get; set; }
 
     public string? Summary { get; set; }
 
-    public SqlVector<float>? Embedding { get; set; }
+    public string Title { get; set; } = null!;
 
     public int? TokenCount { get; set; }
 
-    public int? Version { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
-    public double? Score { get; set; }
+    public int? Version { get; set; }
 }

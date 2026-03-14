@@ -1,18 +1,14 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 013445
+// Build Num: 175122
 
 
 
 #nullable enable
-// 2026/03/05
-//  Solution: RAGDataIngestionWPF
-//  Project:   RAGDataIngestionWPF
-//  File:         App.xaml.cs
-//   Author: Kyle L. Crowder
+
 
 
 
@@ -25,20 +21,17 @@ using System.Windows.Threading;
 using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.Options;
+using DataIngestionLib.DocIngestion;
+using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
 using DataIngestionLib.Services.ContextInjectors;
 using DataIngestionLib.ToolFunctions;
 
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.Uwp.Notifications;
-
-using OllamaSharp;
 
 using RAGDataIngestionWPF.Activation;
 using RAGDataIngestionWPF.Contracts.Activation;
@@ -46,10 +39,11 @@ using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.Views;
 using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Core.Services;
-using RAGDataIngestionWPF.Models;
 using RAGDataIngestionWPF.Services;
 using RAGDataIngestionWPF.ViewModels;
 using RAGDataIngestionWPF.Views;
+
+using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
 
 
@@ -60,27 +54,14 @@ namespace RAGDataIngestionWPF;
 
 
 
-// For more information about application lifecycle events see https://docs.microsoft.com/dotnet/framework/wpf/app-development/application-management-overview
-
-
-
-
-
-// WPF UI elements use language en-US by default.
-// If you need to support other cultures make sure you add converters and review dates and numbers in your UI to ensure everything adapts correctly.
-// Tracking issue for improving this is https://github.com/dotnet/wpf/issues/1946
 public partial class App : Application
 {
-    private readonly SemaphoreSlim _hostStartGate = new(1, 1);
     private IHost? _host;
     private bool _isHostStarted;
-    private const string OllamaEndpoint = "http://localhost:11434";
-    private const string OllamaModel = "gpt-oss:20b-cloud";
 
-    // Created before the host is built so it can be captured by the logging
-    // filter lambda. Registered as a singleton in DI so LoggingLevelService
-    // can mutate it at runtime.
-    private readonly LoggingLevelSwitch _loggingLevelSwitch = new();
+
+
+    private LogLevel loglevel;
 
 
 
@@ -89,29 +70,27 @@ public partial class App : Application
 
 
 
-    private IHost BuildHost(string[] args, string appLocation, IDictionary<string, string?> activationArgs)
+    private IHost BuildHost()
     {
-        ArgumentNullException.ThrowIfNull(args);
-        ArgumentException.ThrowIfNullOrWhiteSpace(appLocation);
-        ArgumentNullException.ThrowIfNull(activationArgs);
-
-        return Host.CreateDefaultBuilder(args)
+        loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel)
+                ? configLevel
+                : LogLevel.Trace;
+        return Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c =>
                 {
-                    c.SetBasePath(appLocation);
-                    c.AddInMemoryCollection(activationArgs);
+                    IConfigurationBuilder unused4 = c.SetBasePath(Environment.CurrentDirectory);
                 })
                 .ConfigureServices(ConfigureServices)
                 .ConfigureLogging(logging =>
                 {
-                    logging.AddDebug();
-                    logging.AddConsole();
+                    ILoggingBuilder unused3 = logging.AddDebug();
+                    ILoggingBuilder unused2 = logging.AddConsole();
                     // Set the host-level minimum to Trace so every message reaches
                     // the dynamic filter below. The LoggingLevelSwitch controls the
                     // effective minimum at runtime and is user-configurable from the
                     // Settings page.
-                    logging.SetMinimumLevel(LogLevel.Trace);
-                    logging.AddFilter((_, level) => level >= _loggingLevelSwitch.MinimumLevel);
+                    ILoggingBuilder unused1 = logging.SetMinimumLevel(loglevel);
+                    ILoggingBuilder unused = logging.AddFilter((_, level) => level >= loglevel);
                 })
                 .Build();
     }
@@ -132,11 +111,9 @@ public partial class App : Application
         RegisterAgentServices(services);
         RegisterActivationHandlers(services);
         RegisterCoreServices(services);
-        RegisterApplicationServices(services, _loggingLevelSwitch);
+        RegisterApplicationServices(services, loglevel);
         RegisterViewsAndViewModels(services);
 
-        // Configuration
-        services.Configure<AppSettings>(context.Configuration.GetSection(AppSettings.ConfigurationSectionName));
     }
 
 
@@ -153,7 +130,7 @@ public partial class App : Application
             return;
         }
 
-        await _hostStartGate.WaitAsync();
+
         try
         {
             if (_isHostStarted)
@@ -164,9 +141,9 @@ public partial class App : Application
             await _host.StartAsync();
             _isHostStarted = true;
         }
-        finally
+        catch
         {
-            _hostStartGate.Release();
+
         }
     }
 
@@ -179,8 +156,8 @@ public partial class App : Application
 
     private static string GetAppLocation()
     {
-        string? entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
-        string? appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
+        var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
+        var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
                 ? AppContext.BaseDirectory
                 : Path.GetDirectoryName(entryAssemblyLocation);
 
@@ -274,7 +251,7 @@ public partial class App : Application
             _host.Dispose();
             _host = null;
             _isHostStarted = false;
-            _hostStartGate.Dispose();
+
         }
     }
 
@@ -288,16 +265,13 @@ public partial class App : Application
     private async void OnStartup(object sender, StartupEventArgs e)
     {
         // https://docs.microsoft.com/windows/apps/design/shell/tiles-and-notifications/send-local-toast?tabs=desktop
-        ToastNotificationManagerCompat.OnActivated += toastArgs => { Current.Dispatcher.Invoke(() => _ = HandleToastActivationAsync(toastArgs.Argument)); };
+        ToastNotificationManagerCompat.OnActivated += toastArgs =>
+        {
+            Task unused = Current.Dispatcher.Invoke(() => _ = HandleToastActivationAsync(toastArgs.Argument));
+        };
         // For more information about .NET generic host see  https://docs.microsoft.com/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-3.0
 
-        Dictionary<string, string?> activationArgs = new()
-        {
-                { ToastNotificationActivationHandler.ActivationArguments, string.Empty }
-        };
-        string appLocation = GetAppLocation();
-
-        _host = BuildHost(e.Args ?? Array.Empty<string>(), appLocation, activationArgs);
+        _host = BuildHost();
 
         if (ToastNotificationManagerCompat.WasCurrentProcessToastActivated())
         {
@@ -318,8 +292,7 @@ public partial class App : Application
     private static void RegisterActivationHandlers(IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-
-        services.AddSingleton<IActivationHandler, ToastNotificationActivationHandler>();
+        _ = services.AddSingleton<IActivationHandler, ToastNotificationActivationHandler>();
     }
 
 
@@ -333,20 +306,16 @@ public partial class App : Application
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddSingleton<IOllamaApiClient>(_ => new OllamaApiClient(OllamaEndpoint, OllamaModel));
-        services.AddSingleton<IChatClient>(sp => (IChatClient)sp.GetRequiredService<IOllamaApiClient>());
-        services.AddSingleton(sp => sp.GetRequiredService<IChatClient>().AsAIAgent());
 
-        services.AddSingleton<ISqlChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
-        services.AddSingleton<IChatHistoryProvider, SQLChatHistoryProvider>();
+        IServiceCollection unused4 = services.AddSingleton<ISqlChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
+        IServiceCollection unused3 = services.AddSingleton<IChatHistoryProvider, SQLChatHistoryProvider>();
         services.AddSingleton<ISQLChatHistoryProvider>(sp => (ISQLChatHistoryProvider)sp.GetRequiredService<IChatHistoryProvider>());
-        services.AddSingleton<IRuntimeContextAccessor, RuntimeContextAccessor>();
-        services.AddSingleton<IAgentFactory, AgentFactory>();
+        IServiceCollection unused2 = services.AddSingleton<IAgentFactory, AgentFactory>();
 
         services.AddSingleton<IAgentIdentityProvider>(new FixedAgentIdentityProvider("coding-assistant"));
-        services.AddSingleton<IAIContextHistoryInjector, AIContextHistoryInjector>();
+        IServiceCollection unused1 = services.AddSingleton<IAIContextHistoryInjector, AIContextHistoryInjector>();
         services.AddSingleton<IChatHistoryMemoryProvider>(sp => sp.GetRequiredService<IAIContextHistoryInjector>());
-        services.AddSingleton<AgentRunMiddleWare>();
+        IServiceCollection unused = services.AddSingleton<AgentRunMiddleWare>();
     }
 
 
@@ -356,36 +325,19 @@ public partial class App : Application
 
 
 
-    private static void RegisterApplicationServices(IServiceCollection services, LoggingLevelSwitch loggingLevelSwitch)
+    private static void RegisterApplicationServices(IServiceCollection services, LogLevel loglevel)
     {
         ArgumentNullException.ThrowIfNull(services);
-
-        services.AddSingleton<IToastNotificationsService, ToastNotificationsService>();
-        services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
-        services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
-        services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-        services.AddSingleton<ISystemService, SystemService>();
-        services.AddSingleton<IApplicationIdService, ApplicationIdService>();
-        services.AddSingleton(loggingLevelSwitch);
-        services.AddSingleton<ILoggingLevelService, LoggingLevelService>();
-        services.AddSingleton<ChatHistorySettingsService>();
-        services.AddSingleton<IChatHistorySettingsService>(sp => sp.GetRequiredService<ChatHistorySettingsService>());
-        services.AddSingleton<IOptionsMonitor<ChatHistoryOptions>>(sp => sp.GetRequiredService<ChatHistorySettingsService>());
-        services.AddSingleton<ISampleDataService, SampleDataService>();
-        services.AddSingleton(sp =>
-        {
-            AppSettings appConfig = sp.GetRequiredService<IOptions<AppSettings>>().Value;
-            return new ChatSessionOptions
-            {
-                ConfigurationsFolder = appConfig.ConfigurationsFolder,
-                ChatSessionFileName = appConfig.ChatSessionFileName,
-                MaxContextTokens = 120000
-            };
-        });
-        services.AddSingleton<IChatConversationService, ChatConversationService>();
-        services.AddSingleton<IPageService, PageService>();
-        services.AddSingleton<INavigationService, NavigationService>();
-        services.AddSingleton<IUserDataService, UserDataService>();
+        _ = services.AddSingleton<IToastNotificationsService, ToastNotificationsService>();
+        _ = services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
+        _ = services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
+        _ = services.AddSingleton<ISystemService, SystemService>();
+        _ = services.AddSingleton<LearningHtmlRunner>();
+        _ = services.AddSingleton<ISettingsProvider, SettingsProvider>();
+        _ = services.AddSingleton<IChatConversationService, ChatConversationService>();
+        _ = services.AddSingleton<IPageService, PageService>();
+        _ = services.AddSingleton<INavigationService, NavigationService>();
+        _ = services.AddSingleton<IUserDataService, UserDataService>();
     }
 
 
@@ -398,9 +350,8 @@ public partial class App : Application
     private static void RegisterCoreServices(IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-
-        services.AddSingleton<IIdentityService, IdentityService>();
-        services.AddSingleton<IFileService, FileService>();
+        _ = services.AddSingleton<IIdentityService, IdentityService>();
+        _ = services.AddSingleton<IFileService, FileService>();
     }
 
 
@@ -413,12 +364,9 @@ public partial class App : Application
     private static void RegisterHostServices(IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-
-        services.AddHostedService<ApplicationHostService>();
-        services.AddHostedService<ChatHistoryInitializationService>();
-        services.AddHttpClient("ollama", client => { client.BaseAddress = new Uri(OllamaEndpoint); });
+        _ = services.AddHostedService<ApplicationHostService>();
+        _ = services.AddHostedService<ChatHistoryInitializationService>();
     }
-        // Removed Microsoft Graph client registration
 
 
 
@@ -430,29 +378,21 @@ public partial class App : Application
     private static void RegisterViewsAndViewModels(IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-
-        services.AddTransient<IShellWindow, ShellWindow>();
-        services.AddTransient<ShellViewModel>();
-
-        services.AddTransient<MainViewModel>();
-        services.AddTransient<MainPage>();
-
-        services.AddTransient<BlankViewModel>();
-        services.AddTransient<BlankPage>();
-
-        services.AddTransient<ListDetailsViewModel>();
-        services.AddTransient<ListDetailsPage>();
-
-        services.AddTransient<DataGridViewModel>();
-        services.AddTransient<DataGridPage>();
-
-        services.AddTransient<WebViewViewModel>();
-        services.AddTransient<WebViewPage>();
-
-        services.AddTransient<SettingsViewModel>();
-        services.AddTransient<SettingsPage>();
-
-        services.AddTransient<ILogInWindow, LogInWindow>();
-        services.AddTransient<LogInViewModel>();
+        _ = services.AddTransient<IShellWindow, ShellWindow>();
+        _ = services.AddTransient<ShellViewModel>();
+        _ = services.AddTransient<MainViewModel>();
+        _ = services.AddTransient<MainPage>();
+        _ = services.AddTransient<BlankViewModel>();
+        _ = services.AddTransient<BlankPage>();
+        _ = services.AddTransient<ListDetailsViewModel>();
+        _ = services.AddTransient<ListDetailsPage>();
+        _ = services.AddTransient<DataGridViewModel>();
+        _ = services.AddTransient<DataGridPage>();
+        _ = services.AddTransient<WebViewViewModel>();
+        _ = services.AddTransient<WebViewPage>();
+        _ = services.AddTransient<SettingsViewModel>();
+        _ = services.AddTransient<SettingsPage>();
+        _ = services.AddTransient<ILogInWindow, LogInWindow>();
+        _ = services.AddTransient<LogInViewModel>();
     }
 }

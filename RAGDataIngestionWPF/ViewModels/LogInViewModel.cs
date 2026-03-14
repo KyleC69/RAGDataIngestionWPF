@@ -1,17 +1,15 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         LogInViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 013438
+// Build Num: 175113
 
 
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using RAGDataIngestionWPF.Core.Contracts.Services;
-using RAGDataIngestionWPF.Core.Helpers;
 using RAGDataIngestionWPF.Properties;
 
 

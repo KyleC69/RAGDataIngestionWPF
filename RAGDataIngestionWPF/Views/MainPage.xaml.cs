@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         MainPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 013443
+// Build Num: 175119
 
 
 
@@ -125,7 +125,7 @@ public partial class MainPage : Page
             return;
         }
 
-        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        DispatcherOperation unused = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
         {
             var lastItem = MessagesListBox.Items[^1];
             MessagesListBox.ScrollIntoView(lastItem);

@@ -1,55 +1,149 @@
-using DataIngestionLib.Options;
+// Build Date: 2026/03/13
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         SettingsViewModelTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 175105
+
+
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using Moq;
 
-using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.Core.Models;
-using RAGDataIngestionWPF.Models;
-using RAGDataIngestionWPF.ViewModels;
+
+
 
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class SettingsViewModelTests
 {
+
+    [TestMethod]
+    public void AvailableLogLevels_DoesNotContainNone()
+    {
+        SettingsViewModel viewModel = CreateViewModel();
+
+        Assert.IsFalse(viewModel.AvailableLogLevels.Contains(LogLevel.None));
+    }
+
+
+
+
+
+
+
+
+    private static SettingsViewModel CreateViewModel()
+    {
+        EnsureAppSetting("ChatModelName", "gpt-oss:20b-cloud");
+        EnsureAppSetting("ChatHistoryConnectionString", "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;");
+        EnsureAppSetting("EmbeddingsModelName", "mxbai-embed-large-v1:latest");
+        EnsureAppSetting("MaxContextMessages", "40");
+        EnsureAppSetting("MaxContextTokens", "120000");
+        EnsureAppSetting("RagKnowledgeEnabled", bool.TrueString);
+        EnsureAppSetting("ChatHistoryContextEnabled", bool.TrueString);
+        EnsureAppSetting("MinimumLogLevel", LogLevel.Trace.ToString());
+        EnsureAppSetting("Theme", "Dark");
+        EnsureAppSetting("PrivacyStatement", "https://example.test/privacy");
+
+        LoggingLevelSwitch loggingLevelSwitch = new();
+        Mock<ISystemService> systemServiceMock = new();
+        Mock<IApplicationInfoService> applicationInfoServiceMock = new();
+        applicationInfoServiceMock.Setup(service => service.GetVersion()).Returns(new Version(1, 0, 0, 0));
+
+        Mock<IUserDataService> userDataServiceMock = new();
+        userDataServiceMock.Setup(service => service.GetUser()).Returns(new UserViewModel { Name = "User" });
+
+        return new SettingsViewModel(
+                loggingLevelSwitch,
+                systemServiceMock.Object,
+                applicationInfoServiceMock.Object,
+                userDataServiceMock.Object);
+    }
+
+
+
+
+
+
+
+
+    private static void EnsureAppSetting(string key, string value)
+    {
+        if (System.Configuration.ConfigurationManager.AppSettings[key] is null)
+        {
+            SetAppSetting(key, value);
+        }
+    }
+
+
+
+
+
+
+
+
     [TestMethod]
     public void OnNavigatedTo_LoadsChatModelNameFromChatHistorySettings()
     {
-        SettingsViewModel viewModel = CreateViewModel(
-                chatSettings: new ChatHistoryOptions
-                {
-                    ChatModelName = "model-x",
-                    ConnectionString = "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;",
-                    EmbeddingsModelName = "embed-x",
-                    MaxContextMessages = 50,
-                    MaxContextTokens = 150000,
-                    RAGKnowledgeEnabled = true,
-                    ChatHistoryContextEnabled = true
-                });
+        SetAppSetting("ChatModelName", "model-x");
+        SettingsViewModel viewModel = CreateViewModel();
 
         viewModel.OnNavigatedTo(null!);
 
         Assert.AreEqual("model-x", viewModel.ChatModelName);
     }
 
+
+
+
+
+
+
+
+    [TestMethod]
+    public void OnNavigatedTo_LoadsMinimumLogLevelFromLoggingLevelService()
+    {
+        SetAppSetting("MinimumLogLevel", LogLevel.Warning.ToString());
+
+        SettingsViewModel viewModel = CreateViewModel();
+        viewModel.OnNavigatedTo(null!);
+
+        Assert.AreEqual(LogLevel.Warning, viewModel.MinimumLogLevel);
+    }
+
+
+
+
+
+
+
+
     [TestMethod]
     public void SaveChatHistorySettingsCommand_PersistsChatModelName()
     {
-        Mock<IChatHistorySettingsService> chatSettingsServiceMock = CreateChatHistorySettingsServiceMock();
-        SettingsViewModel viewModel = CreateViewModel(chatSettingsServiceMock: chatSettingsServiceMock);
+        SettingsViewModel viewModel = CreateViewModel();
 
         viewModel.OnNavigatedTo(null!);
         viewModel.ChatModelName = "saved-model";
 
         viewModel.SaveChatHistorySettingsCommand.Execute(null);
 
-        chatSettingsServiceMock.Verify(
-                service => service.SaveSettings(It.Is<ChatHistoryOptions>(options => options.ChatModelName == "saved-model")),
-                Times.Once);
+        Assert.AreEqual("saved-model", System.Configuration.ConfigurationManager.AppSettings["ChatModelName"]);
     }
+
+
+
+
+
+
+
 
     [TestMethod]
     public void SaveChatHistorySettingsCommand_SetsStatusMessage()
@@ -62,115 +156,47 @@ public class SettingsViewModelTests
         Assert.AreEqual(viewModel.ChatHistorySaveStatusText, viewModel.ChatHistorySettingsStatus);
     }
 
-    [TestMethod]
-    public void OnNavigatedTo_LoadsMinimumLogLevelFromLoggingLevelService()
+
+
+
+
+
+
+
+    private static void SetAppSetting(string key, string value)
     {
-        Mock<ILoggingLevelService> loggingLevelServiceMock = new();
-        loggingLevelServiceMock.Setup(s => s.GetMinimumLevel()).Returns(LogLevel.Warning);
+        System.Configuration.Configuration config = System.Configuration.ConfigurationManager.OpenExeConfiguration(System.Configuration.ConfigurationUserLevel.None);
+        if (config.AppSettings.Settings[key] is null)
+        {
+            config.AppSettings.Settings.Add(key, value);
+        }
+        else
+        {
+            config.AppSettings.Settings[key].Value = value;
+        }
 
-        SettingsViewModel viewModel = CreateViewModel(loggingLevelServiceMock: loggingLevelServiceMock);
-        viewModel.OnNavigatedTo(null!);
-
-        Assert.AreEqual(LogLevel.Warning, viewModel.MinimumLogLevel);
+        config.Save(System.Configuration.ConfigurationSaveMode.Modified);
+        System.Configuration.ConfigurationManager.RefreshSection("appSettings");
     }
+
+
+
+
+
+
+
 
     [TestMethod]
     public void SetLogLevelCommand_DelegatesToLoggingLevelService()
     {
-        Mock<ILoggingLevelService> loggingLevelServiceMock = new();
-        loggingLevelServiceMock.Setup(s => s.GetMinimumLevel()).Returns(LogLevel.Trace);
+        SetAppSetting("MinimumLogLevel", LogLevel.Trace.ToString());
 
-        SettingsViewModel viewModel = CreateViewModel(loggingLevelServiceMock: loggingLevelServiceMock);
+        SettingsViewModel viewModel = CreateViewModel();
         viewModel.OnNavigatedTo(null!);
 
         viewModel.MinimumLogLevel = LogLevel.Error;
         viewModel.SetLogLevelCommand.Execute(null);
 
-        loggingLevelServiceMock.Verify(s => s.SetMinimumLevel(LogLevel.Error), Times.Once);
-    }
-
-    [TestMethod]
-    public void AvailableLogLevels_DoesNotContainNone()
-    {
-        SettingsViewModel viewModel = CreateViewModel();
-
-        Assert.IsFalse(viewModel.AvailableLogLevels.Contains(LogLevel.None));
-    }
-
-    private static Mock<IChatHistorySettingsService> CreateChatHistorySettingsServiceMock()
-    {
-        Mock<IChatHistorySettingsService> chatSettingsServiceMock = new();
-        chatSettingsServiceMock
-                .Setup(service => service.GetCurrentSettings())
-                .Returns(new ChatHistoryOptions
-                {
-                    ChatModelName = "gpt-oss:20b-cloud",
-                    ConnectionString = "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;",
-                    EmbeddingsModelName = "mxbai-embed-large-v1:latest",
-                    MaxContextMessages = 40,
-                    MaxContextTokens = 120000,
-                    RAGKnowledgeEnabled = true,
-                    ChatHistoryContextEnabled = true
-                });
-
-        return chatSettingsServiceMock;
-    }
-
-    private static SettingsViewModel CreateViewModel(
-            ChatHistoryOptions? chatSettings = null,
-            Mock<IChatHistorySettingsService>? chatSettingsServiceMock = null,
-            Mock<ILoggingLevelService>? loggingLevelServiceMock = null)
-    {
-        Mock<IThemeSelectorService> themeSelectorServiceMock = new();
-        themeSelectorServiceMock.Setup(service => service.GetCurrentTheme()).Returns(AppTheme.Dark);
-
-        Mock<IOptions<AppSettings>> appConfigMock = new();
-        appConfigMock.SetupGet(options => options.Value).Returns(new AppSettings
-        {
-            PrivacyStatement = "https://example.test/privacy",
-            ConfigurationsFolder = "RAGDataIngestionWPF\\Configurations",
-            ChatSessionFileName = "ChatSession.json",
-            AppPropertiesFileName = "AppProperties.json",
-            UserFileName = "User.json"
-        });
-
-        Mock<ISystemService> systemServiceMock = new();
-        Mock<IApplicationInfoService> applicationInfoServiceMock = new();
-        applicationInfoServiceMock.Setup(service => service.GetVersion()).Returns(new Version(1, 0, 0, 0));
-
-        Mock<IUserDataService> userDataServiceMock = new();
-        userDataServiceMock.Setup(service => service.GetUser()).Returns(new UserViewModel { Name = "User" });
-
-        Mock<IApplicationIdService> applicationIdServiceMock = new();
-        applicationIdServiceMock.Setup(service => service.GetApplicationId()).Returns(Guid.NewGuid());
-
-        Mock<IChatHistorySettingsService> resolvedChatSettingsServiceMock = chatSettingsServiceMock ?? new Mock<IChatHistorySettingsService>();
-        resolvedChatSettingsServiceMock
-                .Setup(service => service.GetCurrentSettings())
-                .Returns(chatSettings ?? new ChatHistoryOptions
-                {
-                    ChatModelName = "gpt-oss:20b-cloud",
-                    ConnectionString = "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;",
-                    EmbeddingsModelName = "mxbai-embed-large-v1:latest",
-                    MaxContextMessages = 40,
-                    MaxContextTokens = 120000,
-                    RAGKnowledgeEnabled = true,
-                    ChatHistoryContextEnabled = true
-                });
-
-        Mock<ILoggingLevelService> resolvedLoggingLevelServiceMock = loggingLevelServiceMock ?? new Mock<ILoggingLevelService>();
-        resolvedLoggingLevelServiceMock
-                .Setup(s => s.GetMinimumLevel())
-                .Returns(LogLevel.Trace);
-
-        return new SettingsViewModel(
-                appConfigMock.Object,
-                themeSelectorServiceMock.Object,
-                systemServiceMock.Object,
-                applicationInfoServiceMock.Object,
-                userDataServiceMock.Object,
-                applicationIdServiceMock.Object,
-                resolvedChatSettingsServiceMock.Object,
-                resolvedLoggingLevelServiceMock.Object);
+        Assert.AreEqual(LogLevel.Error.ToString(), System.Configuration.ConfigurationManager.AppSettings["MinimumLogLevel"]);
     }
 }

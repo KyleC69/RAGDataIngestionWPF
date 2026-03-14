@@ -1,14 +1,9 @@
-// Build Date: 2026/03/12
+// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatHistorySessionState.cs
 // Author: Kyle L. Crowder
-// Build Num: 013451
-
-
-
-using Microsoft.Agents.AI;
-
+// Build Num: 175057
 
 
 

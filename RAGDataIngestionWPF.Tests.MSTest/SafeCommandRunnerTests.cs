@@ -1,14 +1,9 @@
-// Build Date: 2026/03/12
+// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         SafeCommandRunnerTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 013428
-
-
-
-using DataIngestionLib.ToolFunctions;
-
+// Build Num: 175105
 
 
 
@@ -217,7 +212,7 @@ public class SafeCommandRunnerTests
     public void SetUp()
     {
         _sandboxDir = Path.Combine(Path.GetTempPath(), $"SafeCommandRunnerTests_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_sandboxDir);
+        _ = Directory.CreateDirectory(_sandboxDir);
     }
 
 

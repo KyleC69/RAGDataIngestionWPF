@@ -1,14 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AgentLogger.cs
 // Author: Kyle L. Crowder
-// Build Num: 013506
-
-
-
-using System.IO;
-
+// Build Num: 175058
 
 
 

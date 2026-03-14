@@ -1,22 +1,14 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         RagDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: 013457
+// Build Num: 175057
 
 
-
-using System.Collections.ObjectModel;
-using System.Text;
 
 using DataIngestionLib.Data;
-using DataIngestionLib.ExternalKnowledge.RAGModels;
-
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-
-using Newtonsoft.Json;
+using DataIngestionLib.RAGModels;
 
 
 
@@ -51,15 +43,15 @@ public static class RagDataService
         {
             results.Add(new FullTextResults
             {
-                Id = reader.GetInt32(0),
-                Title = reader.GetString(1),
-                Summary = reader.GetString(2),
-                Keywords = reader.GetString(3).Split(','),
-                Score = reader.GetDouble(4)
+                    Id = reader.GetInt32(0),
+                    Title = reader.GetString(1),
+                    Summary = reader.GetString(2),
+                    Keywords = reader.GetString(3).Split(','),
+                    Score = reader.GetDouble(4)
             });
         }
 
-        string json = JsonConvert.SerializeObject(results);
+        var json = JsonConvert.SerializeObject(results);
 
 
         return json;
@@ -117,15 +109,15 @@ public static class RagDataService
         {
             results.Add(new FullTextResults
             {
-                Id = reader.GetInt32(0),
-                Title = reader.GetString(1),
-                Summary = reader.GetString(2),
-                Keywords = reader.GetString(3).Split(','),
-                Score = reader.GetDouble(4)
+                    Id = reader.GetInt32(0),
+                    Title = reader.GetString(1),
+                    Summary = reader.GetString(2),
+                    Keywords = reader.GetString(3).Split(','),
+                    Score = reader.GetDouble(4)
             });
         }
 
-        string json = JsonConvert.SerializeObject(results);
+        var json = JsonConvert.SerializeObject(results);
 
 
         return json;

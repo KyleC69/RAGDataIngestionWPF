@@ -1,14 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         EventLogReader.cs
 // Author: Kyle L. Crowder
-// Build Num: 013508
-
-
-
-using System.Diagnostics;
-
+// Build Num: 175059
 
 
 

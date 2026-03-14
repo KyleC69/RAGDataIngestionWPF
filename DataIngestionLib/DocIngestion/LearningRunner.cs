@@ -28,7 +28,7 @@ namespace DataIngestionLib.DocIngestion;
 
 
 
-public sealed class LearninRunner
+public sealed class LearningRunner
 {
     private readonly IChatClient _chatClient;
 
@@ -36,7 +36,7 @@ public sealed class LearninRunner
     // It is created directly here and will be replaced with injection once the DB connection is configured.
     private readonly KBContext _dbContext = new();
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embed;
-    private readonly ILogger<LearninRunner> _logger;
+    private readonly ILogger<LearningRunner> _logger;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILearnPageParser _parser;
 
@@ -61,14 +61,14 @@ public sealed class LearninRunner
 
 
     /// <summary>
-    ///     Initializes a new instance of <see cref="LearninRunner" /> with required dependencies.
+    ///     Initializes a new instance of <see cref="LearningRunner" /> with required dependencies.
     /// </summary>
     /// <param name="logger">Logger provided by the DI container.</param>
     /// <param name="loggerFactory">Logger factory used to configure enricher pipelines.</param>
     /// <param name="settings">Ingestion configuration options.</param>
     /// <param name="parser">Page parser for reading markdown documentation files.</param>
-    public LearninRunner(
-            ILogger<LearninRunner> logger,
+    public LearningRunner(
+            ILogger<LearningRunner> logger,
             ILoggerFactory loggerFactory,
             IOptions<IngestionSettings> settings,
             ILearnPageParser parser)

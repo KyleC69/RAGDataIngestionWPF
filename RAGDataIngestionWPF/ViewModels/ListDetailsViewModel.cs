@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         ListDetailsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 013438
+// Build Num: 175112
 
 
 
@@ -12,8 +12,6 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 using RAGDataIngestionWPF.Contracts.ViewModels;
-using RAGDataIngestionWPF.Core.Contracts.Services;
-using RAGDataIngestionWPF.Core.Models;
 
 
 
@@ -72,7 +70,10 @@ public class ListDetailsViewModel : ObservableObject, INavigationAware
 
         var data = await _sampleDataService.GetListDetailsDataAsync();
 
-        foreach (SampleOrder item in data) SampleItems.Add(item);
+        foreach (SampleOrder item in data)
+        {
+            SampleItems.Add(item);
+        }
 
         Selected = SampleItems.First();
     }

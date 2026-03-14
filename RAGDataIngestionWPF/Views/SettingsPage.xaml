@@ -7,8 +7,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:converters="clr-namespace:RAGDataIngestionWPF.Converters"
     xmlns:models="clr-namespace:RAGDataIngestionWPF.Models"
-    xmlns:system="clr-namespace:System;assembly=mscorlib"
-    xmlns:logging="clr-namespace:Microsoft.Extensions.Logging;assembly=Microsoft.Extensions.Logging.Abstractions"
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     mc:Ignorable="d" Background="DarkBlue"
@@ -105,38 +103,54 @@
                 </Grid>
 
 
-
-
-              
                 <TextBlock
                     Margin="{StaticResource SmallTopMargin}"
                     Style="{StaticResource SubtitleTextStyle}"
                     Text="{Binding ChatHistoryTitleText, Mode=OneWay}" />
-                <GroupBox Margin="{StaticResource SmallTopBottomMargin}" Header="{x:Static properties:Resources.SettingsPageChatHistoryGroupBoxTitle}">
-                <StackPanel Margin="{StaticResource SmallTopMargin}">
-                    <TextBlock Style="{StaticResource BodyTextStyle}" Text="{Binding ChatModelLabelText, Mode=OneWay}" />
-                    <TextBox Margin="{StaticResource XSmallTopMargin}" Text="{Binding ChatModelName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <GroupBox Margin="{StaticResource SmallTopBottomMargin}"
+                          Header="{x:Static properties:Resources.SettingsPageChatHistoryGroupBoxTitle}">
+                    <StackPanel Margin="{StaticResource SmallTopMargin}">
+                        <TextBlock Style="{StaticResource BodyTextStyle}"
+                                   Text="{Binding ChatModelLabelText, Mode=OneWay}" />
+                        <TextBox Margin="{StaticResource XSmallTopMargin}"
+                                 Text="{Binding ChatModelName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock Margin="{StaticResource SmallTopMargin}" Style="{StaticResource BodyTextStyle}" Text="{Binding EmbeddingsModelLabelText, Mode=OneWay}" />
-                    <TextBox Margin="{StaticResource XSmallTopMargin}" Text="{Binding EmbeddingsModelName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Margin="{StaticResource SmallTopMargin}" Style="{StaticResource BodyTextStyle}"
+                                   Text="{Binding EmbeddingsModelLabelText, Mode=OneWay}" />
+                        <TextBox Margin="{StaticResource XSmallTopMargin}"
+                                 Text="{Binding EmbeddingsModelName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock Margin="{StaticResource SmallTopMargin}" Style="{StaticResource BodyTextStyle}" Text="{Binding ConnectionStringLabelText, Mode=OneWay}" />
-                    <TextBox Margin="{StaticResource XSmallTopMargin}" MinHeight="64" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding ChatHistoryConnectionString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Margin="{StaticResource SmallTopMargin}" Style="{StaticResource BodyTextStyle}"
+                                   Text="{Binding ConnectionStringLabelText, Mode=OneWay}" />
+                        <TextBox Margin="{StaticResource XSmallTopMargin}" MinHeight="64" TextWrapping="Wrap"
+                                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                 Text="{Binding ChatHistoryConnectionString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock Margin="{StaticResource SmallTopMargin}" Style="{StaticResource BodyTextStyle}" Text="{Binding MaxContextMessagesLabelText, Mode=OneWay}" />
-                    <TextBox Margin="{StaticResource XSmallTopMargin}" Text="{Binding MaxContextMessages, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Margin="{StaticResource SmallTopMargin}" Style="{StaticResource BodyTextStyle}"
+                                   Text="{Binding MaxContextMessagesLabelText, Mode=OneWay}" />
+                        <TextBox Margin="{StaticResource XSmallTopMargin}"
+                                 Text="{Binding MaxContextMessages, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock Margin="{StaticResource SmallTopMargin}" Style="{StaticResource BodyTextStyle}" Text="{Binding MaxContextTokensLabelText, Mode=OneWay}" />
-                    <TextBox Margin="{StaticResource XSmallTopMargin}" Text="{Binding MaxContextTokens, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Margin="{StaticResource SmallTopMargin}" Style="{StaticResource BodyTextStyle}"
+                                   Text="{Binding MaxContextTokensLabelText, Mode=OneWay}" />
+                        <TextBox Margin="{StaticResource XSmallTopMargin}"
+                                 Text="{Binding MaxContextTokens, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <CheckBox Margin="{StaticResource SmallTopMargin}" Content="{Binding RagKnowledgeEnabledLabelText, Mode=OneWay}" IsChecked="{Binding RAGKnowledgeEnabled, Mode=TwoWay}" />
-                    <CheckBox Margin="{StaticResource XSmallTopMargin}" Content="{Binding ChatHistoryContextEnabledLabelText, Mode=OneWay}" IsChecked="{Binding ChatHistoryContextEnabled, Mode=TwoWay}" />
+                        <CheckBox Margin="{StaticResource SmallTopMargin}"
+                                  Content="{Binding RagKnowledgeEnabledLabelText, Mode=OneWay}"
+                                  IsChecked="{Binding RAGKnowledgeEnabled, Mode=TwoWay}" />
+                        <CheckBox Margin="{StaticResource XSmallTopMargin}"
+                                  Content="{Binding ChatHistoryContextEnabledLabelText, Mode=OneWay}"
+                                  IsChecked="{Binding ChatHistoryContextEnabled, Mode=TwoWay}" />
 
-                    <StackPanel Margin="{StaticResource SmallTopMargin}" Orientation="Horizontal">
-                        <Button Content="{Binding SaveChatHistoryButtonText, Mode=OneWay}" Command="{Binding SaveChatHistorySettingsCommand}" />
-                        <TextBlock Margin="{StaticResource SmallLeftMargin}" VerticalAlignment="Center" Style="{StaticResource BodyTextStyle}" Text="{Binding ChatHistorySettingsStatus, Mode=OneWay}" />
+                        <StackPanel Margin="{StaticResource SmallTopMargin}" Orientation="Horizontal">
+                            <Button Content="{Binding SaveChatHistoryButtonText, Mode=OneWay}"
+                                    Command="{Binding SaveChatHistorySettingsCommand}" />
+                            <TextBlock Margin="{StaticResource SmallLeftMargin}" VerticalAlignment="Center"
+                                       Style="{StaticResource BodyTextStyle}"
+                                       Text="{Binding ChatHistorySettingsStatus, Mode=OneWay}" />
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
 
                 </GroupBox>
 

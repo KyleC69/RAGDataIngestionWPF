@@ -1,21 +1,17 @@
-// Build Date: 2026/03/12
+// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIContextHistoryInjector.cs
 // Author: Kyle L. Crowder
-// Build Num: 013452
+// Build Num: 175055
 
 
-
-using System.Text.Json;
 
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Models.Extensions;
-using DataIngestionLib.Options;
 
-using Microsoft.Agents.AI;
-using Microsoft.Extensions.Options;
+using SystemConfigurationManager = System.Configuration.ConfigurationManager;
 
 
 
@@ -38,7 +34,6 @@ namespace DataIngestionLib.Services.ContextInjectors;
 public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 {
     private readonly IChatHistoryProvider _chatHistoryProvider;
-    private readonly IOptionsMonitor<ChatHistoryOptions> _optionsMonitor;
     private readonly IChatHistorySummarizer? _summarizer;
 
 
@@ -48,13 +43,11 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
 
 
-    public AIContextHistoryInjector(IChatHistoryProvider chatHistoryProvider, IOptionsMonitor<ChatHistoryOptions> optionsMonitor, IChatHistorySummarizer? summarizer = null)
+    public AIContextHistoryInjector(IChatHistoryProvider chatHistoryProvider, IChatHistorySummarizer? summarizer = null)
     {
         ArgumentNullException.ThrowIfNull(chatHistoryProvider);
-        ArgumentNullException.ThrowIfNull(optionsMonitor);
 
         _chatHistoryProvider = chatHistoryProvider;
-        _optionsMonitor = optionsMonitor;
         _summarizer = summarizer;
     }
 
@@ -94,12 +87,13 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
         ArgumentNullException.ThrowIfNull(currentRequestMessages);
 
-        ChatHistoryOptions options = _optionsMonitor.CurrentValue;
-        IReadOnlyList<PersistedChatMessage> persistedMessages = await _chatHistoryProvider
+        var maxContextMessages = GetMaxContextMessages();
+        var maxContextTokens = GetMaxContextTokens() ?? int.MaxValue;
+        var persistedMessages = await _chatHistoryProvider
                 .GetMessagesAsync(conversationId.Trim(), take: null, cancellationToken)
                 .ConfigureAwait(false);
 
-        HashSet<string> requestMessageKeys = BuildMessageKeySet(currentRequestMessages);
+        var requestMessageKeys = BuildMessageKeySet(currentRequestMessages);
 
         AIChatHistory historicalMessages =
         [
@@ -111,7 +105,7 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
                         .Where(message => !requestMessageKeys.Contains(CreateMessageKey(message)))
         ];
 
-        return await ApplyWindowAsync(conversationId, historicalMessages, options, cancellationToken).ConfigureAwait(false);
+        return await ApplyWindowAsync(historicalMessages, maxContextMessages, maxContextTokens, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -177,29 +171,29 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
         }
 
         DateTimeOffset now = DateTimeOffset.UtcNow;
-        for (int index = 0; index < messagesToStore.Count; index++)
+        for (var index = 0; index < messagesToStore.Count; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             AIChatMessage message = messagesToStore[index];
 
             PersistedChatMessage persistedMessage = new()
             {
-                MessageId = Guid.NewGuid(),
-                ConversationId = conversationId.Trim(),
-                SessionId = sessionId.Trim(),
-                AgentId = agentId.Trim(),
-                UserId = userId.Trim(),
-                ApplicationId = applicationId.Trim(),
-                Role = message.Role.Value,
-                Content = message.Text ?? string.Empty,
-                TimestampUtc = now.AddTicks(index),
-                Metadata = CreateMetadata(message)
+                    MessageId = Guid.NewGuid(),
+                    ConversationId = conversationId.Trim(),
+                    SessionId = sessionId.Trim(),
+                    AgentId = agentId.Trim(),
+                    UserId = userId.Trim(),
+                    ApplicationId = applicationId.Trim(),
+                    Role = message.Role.Value,
+                    Content = message.Text ?? string.Empty,
+                    TimestampUtc = now.AddTicks(index),
+                    Metadata = CreateMetadata(message)
             };
 
             PersistedChatMessage unused1 = await _chatHistoryProvider.CreateMessageAsync(persistedMessage, cancellationToken).ConfigureAwait(false);
         }
 
-        int unused = await PruneConversationAsync(conversationId, cancellationToken).ConfigureAwait(false);
+        var unused = await PruneConversationAsync(conversationId, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -231,17 +225,17 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
             throw new ArgumentException("Conversation id is required.", nameof(conversationId));
         }
 
-        ChatHistoryOptions options = _optionsMonitor.CurrentValue;
-        if (options.MaxContextMessages <= 0)
+        var maxContextMessages = GetMaxContextMessages();
+        if (maxContextMessages <= 0)
         {
             return 0;
         }
 
-        IReadOnlyList<PersistedChatMessage> persistedMessages = await _chatHistoryProvider
+        var persistedMessages = await _chatHistoryProvider
                 .GetMessagesAsync(conversationId.Trim(), take: null, cancellationToken)
                 .ConfigureAwait(false);
 
-        int overflow = persistedMessages.Count - options.MaxContextMessages;
+        var overflow = persistedMessages.Count - maxContextMessages;
         if (overflow <= 0)
         {
             return 0;
@@ -255,11 +249,11 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
                         .Take(overflow)
         ];
 
-        int removedCount = 0;
+        var removedCount = 0;
         foreach (PersistedChatMessage message in messagesToDelete)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            bool removed = await _chatHistoryProvider.DeleteMessageAsync(message.MessageId, cancellationToken).ConfigureAwait(false);
+            var removed = await _chatHistoryProvider.DeleteMessageAsync(message.MessageId, cancellationToken).ConfigureAwait(false);
             if (removed)
             {
                 removedCount++;
@@ -321,18 +315,17 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
 
     /// <summary>
-    ///     Applies a windowing mechanism to the provided historical chat messages, ensuring that the resulting set
-    ///     adheres to the constraints defined in the <see cref="ChatHistoryOptions" />.
+    ///     Applies a windowing mechanism to the provided historical chat messages using configured message and token
+    ///     limits.
     /// </summary>
-    /// <param name="conversationId">
-    ///     The unique identifier of the conversation for which the windowing mechanism is applied.
-    /// </param>
     /// <param name="historicalMessages">
     ///     The collection of historical chat messages to be processed.
     /// </param>
-    /// <param name="options">
-    ///     The configuration options that define the constraints for the windowing mechanism, such as the maximum
-    ///     number of messages and tokens.
+    /// <param name="maxMessages">
+    ///     The maximum number of messages retained in context.
+    /// </param>
+    /// <param name="maxTokens">
+    ///     The maximum estimated token count retained in context.
     /// </param>
     /// <param name="cancellationToken">
     ///     A token to monitor for cancellation requests.
@@ -342,9 +335,7 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
     ///     specified constraints.
     /// </returns>
     /// <remarks>
-    ///     If summarization is enabled in the <paramref name="options" /> and the number of pruned messages exceeds
-    ///     zero, a summary may be generated and included in the resulting window. The method ensures that the
-    ///     resulting set of messages adheres to the constraints even after summarization.
+    ///     The method retains only the newest messages that fit within both limits.
     /// </remarks>
     /// <exception cref="ArgumentNullException">
     ///     Thrown if <paramref name="historicalMessages" /> is <c>null</c>.
@@ -353,9 +344,9 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
     ///     Thrown if the operation is canceled via the <paramref name="cancellationToken" />.
     /// </exception>
     private async ValueTask<AIChatHistory> ApplyWindowAsync(
-            string conversationId,
             AIChatHistory historicalMessages,
-            ChatHistoryOptions options,
+            int maxMessages,
+            int maxTokens,
             CancellationToken cancellationToken)
     {
         if (historicalMessages.Count == 0)
@@ -363,8 +354,8 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
             return [];
         }
 
-        int maxMessages = options.MaxContextMessages <= 0 ? int.MaxValue : options.MaxContextMessages;
-        int maxTokens = options.MaxContextTokens is null or <= 0 ? int.MaxValue : options.MaxContextTokens.Value;
+        maxMessages = maxMessages <= 0 ? int.MaxValue : maxMessages;
+        maxTokens = maxTokens <= 0 ? int.MaxValue : maxTokens;
 
         AIChatHistory window = [.. historicalMessages];
         AIChatHistory prunedMessages = [];
@@ -402,8 +393,8 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
     private static string CreateMessageKey(AIChatMessage message)
     {
-        string role = message.Role.Value.Trim().ToLowerInvariant();
-        string text = message.Text?.Trim() ?? string.Empty;
+        var role = message.Role.Value.Trim().ToLowerInvariant();
+        var text = message.Text?.Trim() ?? string.Empty;
         return $"{role}\u001F{text}";
     }
 
@@ -416,11 +407,11 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
     private static JsonDocument CreateMetadata(AIChatMessage message)
     {
-        string sourceType = message.GetAgentRequestMessageSourceType().ToString();
+        var sourceType = message.GetAgentRequestMessageSourceType().ToString();
 
         return JsonSerializer.SerializeToDocument(new Dictionary<string, string?>
         {
-            ["sourceType"] = sourceType
+                ["sourceType"] = sourceType
         });
     }
 
@@ -450,7 +441,7 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
     {
         return messages.Sum(static message =>
         {
-            string text = message.Text ?? string.Empty;
+            var text = message.Text ?? string.Empty;
             return string.IsNullOrWhiteSpace(text) ? 0 : Math.Max(1, text.Length / 4);
         });
     }
@@ -486,16 +477,42 @@ public sealed class AIContextHistoryInjector : IAIContextHistoryInjector
 
 
 
+    private static int GetMaxContextMessages()
+    {
+        var raw = SystemConfigurationManager.AppSettings["MaxContextMessages"] ?? string.Empty;
+        return int.TryParse(raw, out var parsed) && parsed > 0 ? parsed : 40;
+    }
+
+
+
+
+
+
+
+
+    private static int? GetMaxContextTokens()
+    {
+        var raw = SystemConfigurationManager.AppSettings["MaxContextTokens"] ?? string.Empty;
+        return string.IsNullOrWhiteSpace(raw) ? null : int.TryParse(raw, out var parsed) && parsed > 0 ? parsed : 120000;
+    }
+
+
+
+
+
+
+
+
     private static AIChatRole ParseRole(string role)
     {
         return role.Trim().ToLowerInvariant() switch
         {
-            "assistant" => AIChatRole.Assistant,
-            "rag_context" => AIChatRole.RAGContext,
-            "context" => AIChatRole.AIContext,
-            "system" => AIChatRole.System,
-            "tool" => AIChatRole.Tool,
-            _ => AIChatRole.User
+                "assistant" => AIChatRole.Assistant,
+                "rag_context" => AIChatRole.RAGContext,
+                "context" => AIChatRole.AIContext,
+                "system" => AIChatRole.System,
+                "tool" => AIChatRole.Tool,
+                _ => AIChatRole.User
         };
     }
 

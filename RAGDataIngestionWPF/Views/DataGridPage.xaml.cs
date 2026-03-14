@@ -1,14 +1,13 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         DataGridPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 013442
+// Build Num: 175119
 
 
 
 using System.Windows.Controls;
-using System.Windows;
 
 
 
@@ -25,16 +24,5 @@ public partial class DataGridPage : Page
     {
         InitializeComponent();
 
-    }
-
-
-
-
-
-
-
-
-    private void Button_Click(object sender, RoutedEventArgs e)
-    {
     }
 }

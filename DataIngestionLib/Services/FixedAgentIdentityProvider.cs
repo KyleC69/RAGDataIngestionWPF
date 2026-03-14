@@ -1,9 +1,9 @@
-// Build Date: 2026/03/12
+// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         FixedAgentIdentityProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 013455
+// Build Num: 175057
 
 
 
@@ -49,13 +49,13 @@ public sealed class FixedAgentIdentityProvider : IAgentIdentityProvider
     /// <param name="agentId">
     ///     A non-null, non-whitespace string that uniquely identifies the agent within the application.
     /// </param>
-    /// <exception cref="ArgumentException">
+    /// <exception cref="ArgumentNullException">
     ///     Thrown when <paramref name="agentId" /> is null, empty, or consists only of white-space
     ///     characters.
     /// </exception>
     public FixedAgentIdentityProvider(string agentId)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(agentId);
+        Guard.IsNotNullOrWhiteSpace(agentId);
         _agentId = agentId;
     }
 
@@ -67,5 +67,8 @@ public sealed class FixedAgentIdentityProvider : IAgentIdentityProvider
 
 
     /// <inheritdoc />
-    public string GetAgentId() => _agentId;
+    public string GetAgentId()
+    {
+        return _agentId;
+    }
 }

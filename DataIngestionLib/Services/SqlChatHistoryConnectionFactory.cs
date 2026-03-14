@@ -1,17 +1,9 @@
-// Build Date: 2026/03/12
+// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         SqlChatHistoryConnectionFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 013450
-
-
-
-using DataIngestionLib.Options;
-
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Options;
-
+// Build Num: 175057
 
 
 
@@ -33,37 +25,16 @@ public interface ISqlChatHistoryConnectionFactory
 
 public sealed class SqlChatHistoryConnectionFactory : ISqlChatHistoryConnectionFactory
 {
-    private readonly IOptionsMonitor<ChatHistoryOptions> _optionsMonitor;
-
-
-
-
-
-
-
-
-    public SqlChatHistoryConnectionFactory(IOptionsMonitor<ChatHistoryOptions> optionsMonitor)
-    {
-        ArgumentNullException.ThrowIfNull(optionsMonitor);
-        _optionsMonitor = optionsMonitor;
-    }
-
-
-
-
-
-
-
 
     public async ValueTask<SqlConnection> OpenConnectionAsync(CancellationToken cancellationToken)
     {
-        var connectionString = _optionsMonitor.CurrentValue.ConnectionString?.Trim() ?? string.Empty;
+        var connectionString = ConfigurationManager.AppSettings["ChatHistoryConnectionString"]?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new InvalidOperationException("Chat history connection string is not configured.");
         }
 
-        SqlConnection connection = new SqlConnection(connectionString);
+        SqlConnection connection = new(connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         return connection;
     }

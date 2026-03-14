@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         SystemService.cs
 // Author: Kyle L. Crowder
-// Build Num: 013434
+// Build Num: 175110
 
 
 
@@ -31,6 +31,6 @@ public class SystemService : ISystemService
                 FileName = url,
                 UseShellExecute = true
         };
-        Process.Start(psi);
+        _ = Process.Start(psi);
     }
 }

@@ -1,33 +1,20 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         PagesTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 013421
+// Build Num: 175104
 
 
 
 using System.Reflection;
 
-using DataIngestionLib.Agents;
-using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.Options;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using Moq;
-
-using RAGDataIngestionWPF.Contracts.Services;
-using RAGDataIngestionWPF.Core.Contracts.Services;
-using RAGDataIngestionWPF.Core.Services;
-using RAGDataIngestionWPF.Models;
-using RAGDataIngestionWPF.Services;
-using RAGDataIngestionWPF.ViewModels;
-using RAGDataIngestionWPF.Views;
 
 
 
@@ -69,51 +56,64 @@ public class PagesTests
     private void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
         // Core Services
-        services.AddSingleton<IFileService, FileService>();
-        services.AddSingleton<IIdentityService, IdentityService>();
+        IServiceCollection unused14 = services.AddSingleton<IFileService, FileService>();
+        IServiceCollection unused13 = services.AddSingleton<IIdentityService, IdentityService>();
 
         // Services
-        services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-        services.AddSingleton<ISystemService, SystemService>();
-        services.AddSingleton<ISampleDataService, SampleDataService>();
-        services.AddSingleton(sp =>
-        {
-            AppSettings appConfig = sp.GetRequiredService<IOptions<AppSettings>>().Value;
-            return new ChatSessionOptions
-            {
-                    ConfigurationsFolder = appConfig.ConfigurationsFolder,
-                    ChatSessionFileName = appConfig.ChatSessionFileName,
-                    MaxContextTokens = 120000
-            };
-        });
-        services.AddSingleton<IChatConversationService, ChatConversationService>();
-        services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
-        services.AddSingleton<IUserDataService, UserDataService>();
-        //       services.AddSingleton<IIdentityCacheService, IdentityCacheService>();
-        services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
-        services.AddSingleton<IApplicationIdService, ApplicationIdService>();
-        Mock<IChatHistorySettingsService> chatHistorySettingsServiceMock = new();
-        chatHistorySettingsServiceMock
-                .Setup(service => service.GetCurrentSettings())
-                .Returns(new ChatHistoryOptions());
-        services.AddSingleton(chatHistorySettingsServiceMock.Object);
+        SetAppSetting("Theme", "Dark");
+        SetAppSetting("MinimumLogLevel", LogLevel.Trace.ToString());
+        SetAppSetting("ApplicationId", Guid.NewGuid().ToString("D"));
+        SetAppSetting("ChatModelName", "gpt-oss:20b-cloud");
+        SetAppSetting("EmbeddingsModelName", "mxbai-embed-large-v1:latest");
+        SetAppSetting("ChatHistoryConnectionString", "Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;");
+        SetAppSetting("MaxContextMessages", "40");
+        SetAppSetting("MaxContextTokens", "120000");
+        SetAppSetting("RagKnowledgeEnabled", bool.TrueString);
+        SetAppSetting("ChatHistoryContextEnabled", bool.TrueString);
+        SetAppSetting("PrivacyStatement", "https://example.test/privacy");
 
-        Mock<ILoggingLevelService> loggingLevelServiceMock = new();
-        loggingLevelServiceMock.Setup(s => s.GetMinimumLevel()).Returns(LogLevel.Trace);
-        services.AddSingleton(loggingLevelServiceMock.Object);
-        services.AddSingleton<IPageService, PageService>();
-        services.AddSingleton<INavigationService, NavigationService>();
+        IServiceCollection unused12 = services.AddSingleton<ISystemService, SystemService>();
+        IServiceCollection unused11 = services.AddSingleton<ISampleDataService, SampleDataService>();
+        Mock<IChatConversationService> chatConversationServiceMock = new Mock<IChatConversationService>();
+        chatConversationServiceMock.SetupGet(service => service.ContextTokenCount).Returns(0);
+        services.AddSingleton(chatConversationServiceMock.Object);
+        IServiceCollection unused10 = services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
+        IServiceCollection unused9 = services.AddSingleton<IUserDataService, UserDataService>();
+        IServiceCollection unused8 = services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
+        services.AddSingleton(new LoggingLevelSwitch());
+        IServiceCollection unused7 = services.AddSingleton<IPageService, PageService>();
+        IServiceCollection unused6 = services.AddSingleton<INavigationService, NavigationService>();
 
         // ViewModels
-        services.AddTransient<WebViewViewModel>();
-        services.AddTransient<SettingsViewModel>();
-        services.AddTransient<MainViewModel>();
-        services.AddTransient<ListDetailsViewModel>();
-        services.AddTransient<DataGridViewModel>();
-        services.AddTransient<BlankViewModel>();
+        IServiceCollection unused5 = services.AddTransient<WebViewViewModel>();
+        IServiceCollection unused4 = services.AddTransient<SettingsViewModel>();
+        IServiceCollection unused3 = services.AddTransient<MainViewModel>();
+        IServiceCollection unused2 = services.AddTransient<ListDetailsViewModel>();
+        IServiceCollection unused1 = services.AddTransient<DataGridViewModel>();
+        IServiceCollection unused = services.AddTransient<BlankViewModel>();
+    }
 
-        // Configuration
-        services.Configure<AppSettings>(context.Configuration.GetSection(AppSettings.ConfigurationSectionName));
+
+
+
+
+
+
+
+    private static void SetAppSetting(string key, string value)
+    {
+        System.Configuration.Configuration config = System.Configuration.ConfigurationManager.OpenExeConfiguration(System.Configuration.ConfigurationUserLevel.None);
+        if (config.AppSettings.Settings[key] is null)
+        {
+            config.AppSettings.Settings.Add(key, value);
+        }
+        else
+        {
+            config.AppSettings.Settings[key].Value = value;
+        }
+
+        config.Save(System.Configuration.ConfigurationSaveMode.Modified);
+        System.Configuration.ConfigurationManager.RefreshSection("appSettings");
     }
 
 

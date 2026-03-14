@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         FrameExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: 013430
+// Build Num: 175108
 
 
 
@@ -26,7 +26,7 @@ public static class FrameExtensions
     {
         while (frame.CanGoBack)
         {
-            frame.RemoveBackEntry();
+            _ = frame.RemoveBackEntry();
         }
     }
 

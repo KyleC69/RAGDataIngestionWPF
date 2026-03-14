@@ -1,20 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIChatRole.cs
 // Author: Kyle L. Crowder
-// Build Num: 013502
-
-
-
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-using Microsoft.Extensions.AI;
-
+// Build Num: 175054
 
 
 

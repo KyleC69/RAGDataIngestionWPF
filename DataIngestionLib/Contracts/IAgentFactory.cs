@@ -1,14 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IAgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 013505
-
-
-
-using Microsoft.Agents.AI;
-
+// Build Num: 175051
 
 
 

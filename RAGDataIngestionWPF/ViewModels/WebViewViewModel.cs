@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/12
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         WebViewViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 013441
+// Build Num: 175118
 
 
 
@@ -14,7 +14,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.Wpf;
 
 using RAGDataIngestionWPF.Contracts.Services;
 
@@ -89,7 +88,7 @@ public class WebViewViewModel : ObservableObject
         get;
         set
         {
-            this.SetProperty(ref field, value);
+            _ = this.SetProperty(ref field, value);
             IsLoadingVisibility = value ? Visibility.Visible : Visibility.Collapsed;
         }
     } = true;
@@ -113,7 +112,7 @@ public class WebViewViewModel : ObservableObject
         get;
         set
         {
-            this.SetProperty(ref field, value);
+            _ = this.SetProperty(ref field, value);
             FailedMesageVisibility = value ? Visibility.Visible : Visibility.Collapsed;
         }
     }
