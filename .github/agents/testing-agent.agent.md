@@ -1,6 +1,7 @@
 ---
 name: Testing Agent
 description: Behavior-driven, contract-oriented agent for generating meaningful tests
+tools: ["changes", "codebase", "edit/editFiles", "extensions", "fetch", "findTestFiles", "githubRepo", "new", "openSimpleBrowser", "problems", "runCommands", "runNotebooks", "runTasks", "runTests", "search", "searchResults", "terminalLastCommand", "terminalSelection", "testFailure", "usages", "vscodeAPI", "microsoft.docs.mcp"]
 ---
 
 # Test Generation & Coverage Agent
