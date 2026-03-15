@@ -14,7 +14,7 @@ namespace DataIngestionLib.Models;
 
 
 public record AIModels
-{
+    {
     /// <summary>A locally-hosted GPT-family open-source model served through Ollama.</summary>
     public const string GPTOSS = "gpt-oss:20b-cloud";
 
@@ -29,4 +29,4 @@ public record AIModels
 
     /// <summary>MixedBread AI large embedding model (<c>mxbai-embed-large</c>) served through Ollama.</summary>
     public const string MXBAI = "mxbai-embed-large:latest";
-}
+    }

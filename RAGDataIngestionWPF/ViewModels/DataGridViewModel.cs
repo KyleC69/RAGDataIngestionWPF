@@ -14,7 +14,6 @@ using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.DocIngestion;
 using DataIngestionLib.RAGModels;
-using DataIngestionLib.Services;
 
 using Microsoft.Extensions.Logging;
 
@@ -78,8 +77,6 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
     {
         Source.Clear();
 
-        var entries = RagDataService.GetRagDataEntries();
-        foreach (RemoteRag entry in entries) Source.Add(entry);
     }
 
 

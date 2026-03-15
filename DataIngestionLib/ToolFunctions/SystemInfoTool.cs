@@ -18,27 +18,27 @@ namespace DataIngestionLib.ToolFunctions;
 ///     machine name, processor count, and .NET runtime version.
 /// </summary>
 public sealed class SystemInfoTool
-{
-    public static ToolResult<SystemInfoSnapshot> GetInfo()
     {
-        return ToolResult<SystemInfoSnapshot>.Ok(new()
+    public static ToolResult<SystemInfoSnapshot> GetInfo()
         {
+        return ToolResult<SystemInfoSnapshot>.Ok(new()
+            {
             OS = Environment.OSVersion.ToString(),
             MachineName = Environment.MachineName,
             ProcessorCount = Environment.ProcessorCount,
             DotNetVersion = Environment.Version.ToString()
-        });
+            });
+        }
     }
-}
 
 
 
 
 
 public sealed class SystemInfoSnapshot
-{
+    {
     public string DotNetVersion { get; init; } = "";
     public string MachineName { get; init; } = "";
     public string OS { get; init; } = "";
     public int ProcessorCount { get; init; }
-}
+    }

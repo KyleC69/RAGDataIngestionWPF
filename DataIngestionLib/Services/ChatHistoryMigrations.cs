@@ -14,7 +14,7 @@ namespace DataIngestionLib.Services;
 
 
 internal static class ChatHistoryMigrations
-{
+    {
     public static IReadOnlyList<(string Id, string Sql)> All { get; } =
     [
             (
@@ -60,4 +60,4 @@ internal static class ChatHistoryMigrations
                     """
             )
     ];
-}
+    }

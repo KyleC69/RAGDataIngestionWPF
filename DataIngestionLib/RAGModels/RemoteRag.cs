@@ -19,7 +19,7 @@ namespace DataIngestionLib.RAGModels;
 
 
 public sealed class RemoteRag
-{
+    {
 
     public string Description { get; init; } = null!;
 
@@ -45,4 +45,4 @@ public sealed class RemoteRag
     public DateTime? UpdatedAt { get; init; }
 
     public int? Version { get; init; }
-}
+    }

@@ -14,7 +14,7 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 public interface ISqlVectorStore
-{
+    {
 
 
     /// <summary>
@@ -38,4 +38,4 @@ public interface ISqlVectorStore
     /// <param name="message">Message content to persist.</param>
     /// <param name="timestamp">Message timestamp. Values are normalized to UTC before persistence.</param>
     void SaveChatHistory(string userId, string message, DateTime timestamp);
-}
+    }

@@ -19,6 +19,6 @@ namespace DataIngestionLib.Contracts;
 
 
 public interface IAgentFactory
-{
+    {
     AIAgent GetCodingAssistantAgent();
-}
+    }

@@ -30,7 +30,7 @@ namespace DataIngestionLib.Services;
 ///     Class is responsible for managing the chat conversation round with LLM, self-contained and keeps viewmodel clean.
 /// </summary>
 public sealed class ChatConversationService : IChatConversationService
-{
+    {
     private readonly AIAgent _agent;
     private readonly AgentSession _agentSession;
     private readonly int _maxContextTokens;
@@ -43,7 +43,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
     public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory)
-    {
+        {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(agentFactory);
 
@@ -52,9 +52,9 @@ public sealed class ChatConversationService : IChatConversationService
                 : 120000;
 
         if (_maxContextTokens <= 0)
-        {
+            {
             throw new ArgumentOutOfRangeException(nameof(_maxContextTokens), "Maximum context tokens must be a positive value.");
-        }
+            }
 
         _agent = agentFactory.GetCodingAssistantAgent();
 
@@ -66,7 +66,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    }
+        }
 
 
 
@@ -76,24 +76,26 @@ public sealed class ChatConversationService : IChatConversationService
 
 
     public static string ApplicationId
-    {
+        {
         get { return SystemConfigurationManager.AppSettings["ApplicationId"] ?? AppDomain.CurrentDomain.FriendlyName; }
-    }
+        }
 
 
 
 
 
     public static string UserId
-    {
+        {
         get { return Environment.UserName; }
-    }
+        }
 
 
 
 
 
-    //Duplicate history objects?  We should not need to track sepearately the session holds the context and our sql backed chat history should be handling all the history objects.
+    /// <summary>
+    /// Duplicate history objects?  We should not need to track sepearately the session holds the context and our sql backed chat history should be handling all the history objects.
+    /// </summary>
     public AIChatHistory ChatHistory { get; } = [];
 
 
@@ -101,9 +103,9 @@ public sealed class ChatConversationService : IChatConversationService
 
 
     public int ContextTokenCount
-    {
+        {
         get { return CalculateContextTokenCount(); }
-    }
+        }
 
 
 
@@ -118,19 +120,20 @@ public sealed class ChatConversationService : IChatConversationService
     /// <param name="content">The user message content to answer.</param>
     /// <param name="token">The cancellation token for interrupting generation.</param>
     /// <returns>The generated assistant chat message.</returns>
+    /// <exception cref="ArgumentException"></exception>
     public async ValueTask<AIChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
-    {
-        if (string.IsNullOrWhiteSpace(content))
         {
+        if (string.IsNullOrWhiteSpace(content))
+            {
             throw new ArgumentException("User message cannot be empty.", nameof(content));
-        }
+            }
 
         //Add user message to ChatHistory
         ChatHistory.AddUserMessage(content);
         AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
         var assistantText = response.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(assistantText))
-        {
+            {
 
             //What is this extra item!!!
             //Too much duplication
@@ -140,16 +143,16 @@ public sealed class ChatConversationService : IChatConversationService
                             .Where(static message => message.Role == ChatRole.Assistant)
                             .Select(static message => message.Text?.Trim())
                             .Where(static text => !string.IsNullOrWhiteSpace(text)));
-        }
+            }
 
         AIChatMessage assistantMessage = new(ChatRole.Assistant, assistantText);
         if (!string.IsNullOrWhiteSpace(assistantMessage.Text))
-        {
+            {
             ChatHistory.Add(assistantMessage);
-        }
+            }
 
         return assistantMessage;
-    }
+        }
 
 
 
@@ -159,23 +162,23 @@ public sealed class ChatConversationService : IChatConversationService
 
 
     private int CalculateContextTokenCount()
-    {
+        {
         var tokenCount = 0;
 
         for (var index = ChatHistory.Count - 1; index >= 0; index--)
-        {
+            {
             var content = ChatHistory[index].Text ?? string.Empty;
             var messageTokenCount = EstimateTokenCount(content);
             if (tokenCount + messageTokenCount > _maxContextTokens)
-            {
+                {
                 break;
-            }
+                }
 
             tokenCount += messageTokenCount;
-        }
+            }
 
         return tokenCount;
-    }
+        }
 
 
 
@@ -185,7 +188,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
     private static int EstimateTokenCount(string content)
-    {
+        {
         return string.IsNullOrWhiteSpace(content) ? 0 : Math.Max(1, content.Length / 4);
+        }
     }
-}

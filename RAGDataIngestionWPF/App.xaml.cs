@@ -22,10 +22,8 @@ using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.DocIngestion;
-using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
 using DataIngestionLib.Services.ContextInjectors;
-using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +34,7 @@ using Microsoft.Toolkit.Uwp.Notifications;
 using RAGDataIngestionWPF.Activation;
 using RAGDataIngestionWPF.Contracts.Activation;
 using RAGDataIngestionWPF.Contracts.Services;
+using RAGDataIngestionWPF.Contracts.Settings;
 using RAGDataIngestionWPF.Contracts.Views;
 using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Core.Services;
@@ -313,9 +312,7 @@ public sealed partial class App : Application
         IServiceCollection unused2 = services.AddSingleton<IAgentFactory, AgentFactory>();
 
         services.AddSingleton<IAgentIdentityProvider>(new FixedAgentIdentityProvider("coding-assistant"));
-        IServiceCollection unused1 = services.AddSingleton<IAIContextHistoryInjector, AIContextHistoryInjector>();
-        services.AddSingleton<IChatHistoryMemoryProvider>(sp => sp.GetRequiredService<IAIContextHistoryInjector>());
-        IServiceCollection unused = services.AddSingleton<AgentRunMiddleWare>();
+        IServiceCollection unused1 = services.AddSingleton<AIContextHistoryInjector>();
     }
 
 
@@ -333,7 +330,7 @@ public sealed partial class App : Application
         _ = services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
         _ = services.AddSingleton<ISystemService, SystemService>();
         _ = services.AddSingleton<LearningHtmlRunner>();
-        _ = services.AddSingleton<ISettingsProvider, SettingsProvider>();
+        _ = services.AddSingleton<IAppSettings, AppSettings>();
         _ = services.AddSingleton<IChatConversationService, ChatConversationService>();
         _ = services.AddSingleton<IPageService, PageService>();
         _ = services.AddSingleton<INavigationService, NavigationService>();

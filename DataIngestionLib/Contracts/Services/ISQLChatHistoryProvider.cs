@@ -33,11 +33,11 @@ public sealed record ChatHistorySessionSnapshot(string ConversationId, string Se
 ///     Extends <see cref="IChatHistoryProvider" /> with SQL Server-specific capabilities.
 /// </summary>
 public interface ISQLChatHistoryProvider : IChatHistoryProvider
-{
+    {
     /// <summary>
     ///     Returns the most recent session snapshot (conversation ID and session ID) recorded in the
     ///     database, or <see langword="null" /> when no history exists yet.
     /// </summary>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     ValueTask<ChatHistorySessionSnapshot?> GetLatestSessionSnapshotAsync(CancellationToken cancellationToken = default);
-}
+    }

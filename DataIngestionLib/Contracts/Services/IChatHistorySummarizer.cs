@@ -19,6 +19,6 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 public interface IChatHistorySummarizer
-{
+    {
     ValueTask<AIChatMessage?> SummarizeAsync(string conversationId, AIChatHistory messages, CancellationToken cancellationToken = default);
-}
+    }

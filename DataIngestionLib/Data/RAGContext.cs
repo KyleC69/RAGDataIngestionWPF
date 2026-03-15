@@ -21,8 +21,8 @@ namespace DataIngestionLib.Data;
 
 
 
-public partial class RAGContext : DbContext
-{
+public class RAGContext : DbContext
+    {
 
     public virtual DbSet<Document> Documents { get; init; }
 
@@ -38,12 +38,12 @@ public partial class RAGContext : DbContext
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
         {
+        if (!optionsBuilder.IsConfigured)
+            {
             optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CONN_STRING"));
+            }
         }
-    }
 
 
 
@@ -53,7 +53,7 @@ public partial class RAGContext : DbContext
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
+        {
         modelBuilder.Entity<Document>(entity =>
         {
             entity.HasKey(e => e.DocId);
@@ -67,18 +67,16 @@ public partial class RAGContext : DbContext
                     .IsUnicode(false);
             entity.Property(e => e.Title).HasMaxLength(512);
             entity.Property(e => e.Url).HasMaxLength(350);
-        });
-
-        modelBuilder.Entity<Metadata>(entity =>
+        })
+        .Entity<Metadata>(entity =>
         {
             entity.HasKey(e => e.MetaId).HasName("PK__Metadata__60EE5418A4699143");
 
             entity.HasIndex(e => e.DocId, "IX_Metadata_DocId");
 
             entity.Property(e => e.MetaId).HasDefaultValueSql("(newid())");
-        });
-
-        modelBuilder.Entity<RemoteRag>(entity =>
+        })
+        .Entity<RemoteRag>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__RemoteRA__3214EC075F4501BD");
 
@@ -127,14 +125,28 @@ public partial class RAGContext : DbContext
         });
 
         OnModelCreatingPartial(modelBuilder);
+        }
+
+
+
+
+
+
+
+
+    private static void OnModelCreatingPartial(ModelBuilder modelBuilder)
+        {
+        modelBuilder.Entity<Document>(entity =>
+        {
+            entity.HasIndex(e => e.Hash, "IX_Document_Hash").IsUnique();
+            entity.HasIndex(e => e.Url, "IX_Document_Url").IsUnique();
+        })
+            .Entity<Metadata>(entity => entity.HasOne<Document>().WithMany().HasForeignKey(e => e.DocId).OnDelete(DeleteBehavior.Cascade))
+            .Entity<RemoteRag>(entity =>
+        {
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(1000);
+
+            entity.HasOne<Document>().WithMany().HasForeignKey(e => e.DocumentId).OnDelete(DeleteBehavior.Restrict);
+        });
+        }
     }
-
-
-
-
-
-
-
-
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
-}

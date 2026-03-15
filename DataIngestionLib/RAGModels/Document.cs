@@ -14,7 +14,7 @@ namespace DataIngestionLib.ExternalKnowledge.RAGModels;
 
 
 public sealed class Document
-{
+    {
 
     public string? Breadcrumb { get; init; }
 
@@ -38,4 +38,4 @@ public sealed class Document
     public DateTime? UpdatedAt { get; init; }
 
     public string? Url { get; init; }
-}
+    }

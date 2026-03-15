@@ -19,7 +19,7 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 public interface IChatConversationService
-{
+    {
 
     /// <summary>
     ///     Gets the active Semantic Kernel chat history for the current conversation.
@@ -41,4 +41,4 @@ public interface IChatConversationService
 
 
     //   ChatMessage AddAssistantMessage(string responseCanceled);
-}
+    }

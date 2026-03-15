@@ -21,6 +21,6 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 public interface IRagContextSource
-{
+    {
     ValueTask<AIChatHistory> GetContextMessagesAsync(AIChatHistory requestMessages, AgentSession? session, CancellationToken cancellationToken = default);
-}
+    }

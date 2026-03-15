@@ -18,12 +18,14 @@ namespace DataIngestionLib.Services;
 
 
 
-//Provides SQL connection for RAG knowledge base.
+/// <summary>
+/// Provides SQL connection for RAG knowledge base.
+/// </summary>
 public static class SqlConnectionFactoryRagKB
-{
-    public static SqlConnection CreateConnection()
     {
+    public static SqlConnection CreateConnection()
+        {
         var connectionString = Environment.GetEnvironmentVariable("CONN_STRING2") ?? throw new InvalidOperationException("Environment variable 'CONN_STRING2' is not set.");
         return new SqlConnection(connectionString);
+        }
     }
-}

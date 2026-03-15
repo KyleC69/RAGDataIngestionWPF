@@ -14,10 +14,10 @@ namespace DataIngestionLib.Models;
 
 
 public sealed record ChatSessionState
-{
+    {
 
     public int ContextTokenCount { get; init; }
 
     public AIChatHistory ContextWindow { get; init; } = [];
     public AIChatHistory History { get; init; } = [];
-}
+    }

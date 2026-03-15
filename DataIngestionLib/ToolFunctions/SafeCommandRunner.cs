@@ -19,7 +19,7 @@ namespace DataIngestionLib.ToolFunctions;
 
 
 public sealed class SafeCommandRunner(string sandboxRoot)
-{
+    {
     private readonly string _sandboxRoot = Path.GetFullPath(sandboxRoot);
 
     private static readonly HashSet<string> AllowedCommands = new(StringComparer.OrdinalIgnoreCase)
@@ -35,9 +35,9 @@ public sealed class SafeCommandRunner(string sandboxRoot)
 
 
     private ToolResult<string> ExecuteAllowedCommand(string cmd, string args)
-    {
-        switch (cmd.ToUpperInvariant())
         {
+        switch (cmd.ToUpperInvariant())
+            {
             case "ECHO":
                 return ToolResult<string>.Ok(args);
 
@@ -49,21 +49,21 @@ public sealed class SafeCommandRunner(string sandboxRoot)
             case "TYPE":
                 var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, args));
                 if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
-                {
+                    {
                     return ToolResult<string>.Fail("Access denied.");
-                }
+                    }
 
                 if (!File.Exists(fullPath))
-                {
+                    {
                     return ToolResult<string>.Fail("File not found.");
-                }
+                    }
 
                 return ToolResult<string>.Ok(File.ReadAllText(fullPath));
 
             default:
                 return ToolResult<string>.Fail("Command not implemented.");
+            }
         }
-    }
 
 
 
@@ -73,11 +73,11 @@ public sealed class SafeCommandRunner(string sandboxRoot)
 
 
     public ToolResult<string> Run(string input)
-    {
-        if (string.IsNullOrWhiteSpace(input))
         {
+        if (string.IsNullOrWhiteSpace(input))
+            {
             return ToolResult<string>.Fail("No command provided.");
-        }
+            }
 
         var parts = input.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
         var cmd = parts[0];
@@ -87,5 +87,5 @@ public sealed class SafeCommandRunner(string sandboxRoot)
                 ? ToolResult<string>.Fail($"Command '{cmd}' is not allowed.")
                 : ExecuteAllowedCommand(cmd, args);
 
+        }
     }
-}

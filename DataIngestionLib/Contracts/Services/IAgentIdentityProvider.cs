@@ -22,7 +22,7 @@ namespace DataIngestionLib.Contracts.Services;
 ///     agent framework, or from any other appropriate source.
 /// </remarks>
 public interface IAgentIdentityProvider
-{
+    {
     /// <summary>
     ///     Returns the identifier of the active agent.
     /// </summary>
@@ -30,4 +30,4 @@ public interface IAgentIdentityProvider
     ///     A non-null, non-empty string that uniquely identifies the agent within the application.
     /// </returns>
     string GetAgentId();
-}
+    }

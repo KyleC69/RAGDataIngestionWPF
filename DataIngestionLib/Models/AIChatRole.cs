@@ -33,7 +33,7 @@ namespace DataIngestionLib.Models;
 [JsonConverter(typeof(Converter))]
 [DebuggerDisplay("{Value,nq}")]
 public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
-{
+    {
     /// <summary>Gets the role that instructs or sets the behavior of the system.</summary>
     public static AIChatRole System { get; } = new("system");
 
@@ -87,10 +87,10 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
     /// <param name="value">The value to associate with this <see cref="AIChatRole" />.</param>
     [JsonConstructor]
     public AIChatRole(string value)
-    {
+        {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         Value = value;
-    }
+        }
 
 
 
@@ -110,9 +110,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
     ///     otherwise, <see langword="false" />.
     /// </returns>
     public static bool operator ==(AIChatRole left, AIChatRole right)
-    {
+        {
         return left.Equals(right);
-    }
+        }
 
 
 
@@ -132,9 +132,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
     ///     equivalent values or are both <see langword="null" />.
     /// </returns>
     public static bool operator !=(AIChatRole left, AIChatRole right)
-    {
+        {
         return !(left == right);
-    }
+        }
 
 
 
@@ -144,9 +144,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
 
     public static bool operator ==(AIChatRole left, ChatRole right)
-    {
+        {
         return left.Equals(right);
-    }
+        }
 
 
 
@@ -156,9 +156,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
 
     public static bool operator !=(AIChatRole left, ChatRole right)
-    {
+        {
         return !(left == right);
-    }
+        }
 
 
 
@@ -168,9 +168,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
 
     public static bool operator ==(ChatRole left, AIChatRole right)
-    {
+        {
         return right.Equals(left);
-    }
+        }
 
 
 
@@ -180,9 +180,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
 
     public static bool operator !=(ChatRole left, AIChatRole right)
-    {
+        {
         return !(left == right);
-    }
+        }
 
 
 
@@ -192,9 +192,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
 
     public static implicit operator ChatRole(AIChatRole v)
-    {
+        {
         return new ChatRole(v.Value);
-    }
+        }
 
 
 
@@ -204,9 +204,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
 
     public static implicit operator AIChatRole(ChatRole v)
-    {
+        {
         return new AIChatRole(v.Value);
-    }
+        }
 
 
 
@@ -217,9 +217,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
     /// <inheritdoc />
     public bool Equals(ChatRole other)
-    {
+        {
         return string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
-    }
+        }
 
 
 
@@ -230,10 +230,10 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
     /// <inheritdoc />
     public override bool Equals([NotNullWhen(true)] object? obj)
-    {
+        {
         return (obj is AIChatRole otherRole && Equals(otherRole))
                || (obj is ChatRole chatRole && Equals(chatRole));
-    }
+        }
 
 
 
@@ -244,9 +244,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
     /// <inheritdoc />
     public bool Equals(AIChatRole other)
-    {
+        {
         return string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
-    }
+        }
 
 
 
@@ -257,9 +257,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
     /// <inheritdoc />
     public override int GetHashCode()
-    {
+        {
         return StringComparer.OrdinalIgnoreCase.GetHashCode(Value);
-    }
+        }
 
 
 
@@ -270,9 +270,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
     /// <inheritdoc />
     public override string ToString()
-    {
+        {
         return Value;
-    }
+        }
 
 
 
@@ -282,9 +282,9 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
 
     public ChatRole ToChatRole()
-    {
+        {
         return new ChatRole(Value);
-    }
+        }
 
 
 
@@ -294,10 +294,10 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 
 
     public AIChatRole ToAIChatRole()
-    {
+        {
         return this;
+        }
     }
-}
 
 
 
@@ -306,12 +306,12 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 /// <summary>Provides a <see cref="JsonConverter{AIChatRole}" /> for serializing <see cref="AIChatRole" /> instances.</summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class Converter : JsonConverter<AIChatRole>
-{
+    {
     /// <inheritdoc />
     public static AIChatRole Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
+        {
         return new(reader.GetString()!);
-    }
+        }
 
 
 
@@ -322,9 +322,9 @@ public sealed class Converter : JsonConverter<AIChatRole>
 
     /// <inheritdoc />
     public override AIChatRole ReadJson(JsonReader reader, Type objectType, AIChatRole existingValue, bool hasExistingValue, JsonSerializer serializer)
-    {
+        {
         throw new NotImplementedException();
-    }
+        }
 
 
 
@@ -335,9 +335,9 @@ public sealed class Converter : JsonConverter<AIChatRole>
 
     /// <inheritdoc />
     public static void Write(Utf8JsonWriter writer, AIChatRole value, JsonSerializerOptions options)
-    {
+        {
         writer.WriteStringValue(value.Value);
-    }
+        }
 
 
 
@@ -348,7 +348,7 @@ public sealed class Converter : JsonConverter<AIChatRole>
 
     /// <inheritdoc />
     public override void WriteJson(JsonWriter writer, AIChatRole value, JsonSerializer serializer)
-    {
+        {
         throw new NotImplementedException();
+        }
     }
-}

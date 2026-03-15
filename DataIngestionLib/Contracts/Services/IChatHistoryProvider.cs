@@ -19,7 +19,7 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 public interface IChatHistoryProvider
-{
+    {
 
     ValueTask<PersistedChatMessage> CreateMessageAsync(PersistedChatMessage message, CancellationToken cancellationToken = default);
 
@@ -40,4 +40,4 @@ public interface IChatHistoryProvider
 
 
     ValueTask<PersistedChatMessage?> UpdateMessageAsync(Guid messageId, string content, DateTimeOffset timestampUtc, CancellationToken cancellationToken = default);
-}
+    }

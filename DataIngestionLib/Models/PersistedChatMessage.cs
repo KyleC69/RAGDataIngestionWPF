@@ -19,7 +19,7 @@ namespace DataIngestionLib.Models;
 
 
 public sealed record PersistedChatMessage
-{
+    {
 
     public string AgentId { get; init; } = string.Empty;
 
@@ -39,4 +39,4 @@ public sealed record PersistedChatMessage
     public DateTimeOffset TimestampUtc { get; init; }
 
     public string UserId { get; init; } = string.Empty;
-}
+    }

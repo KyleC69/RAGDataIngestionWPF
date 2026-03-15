@@ -19,11 +19,11 @@ namespace DataIngestionLib.DocIngestion;
 
 
 internal sealed class DocumentExtractionPrompts
-{
-    public static string GetModelInstructions()
     {
+    public static string GetModelInstructions()
+        {
         throw new NotImplementedException();
-    }
+        }
 
 
 
@@ -33,7 +33,7 @@ internal sealed class DocumentExtractionPrompts
 
 
     public static JsonElement GetOutputSchema()
-    {
+        {
         throw new NotImplementedException();
+        }
     }
-}

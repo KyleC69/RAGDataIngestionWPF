@@ -13,14 +13,10 @@ namespace DataIngestionLib.DocIngestion;
 
 
 
-public interface IDocRepository
-{
-}
+public interface IDocRepository;
 
 
 
 
 
-public class DocRepository : IDocRepository
-{
-}
+public class DocRepository : IDocRepository;

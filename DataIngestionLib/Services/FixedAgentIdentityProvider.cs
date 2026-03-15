@@ -34,7 +34,7 @@ namespace DataIngestionLib.Services;
 ///     </code>
 /// </remarks>
 public sealed class FixedAgentIdentityProvider : IAgentIdentityProvider
-{
+    {
     private readonly string _agentId;
 
 
@@ -56,10 +56,10 @@ public sealed class FixedAgentIdentityProvider : IAgentIdentityProvider
     ///     characters.
     /// </exception>
     public FixedAgentIdentityProvider(string agentId)
-    {
+        {
         Guard.IsNotNullOrWhiteSpace(agentId);
         _agentId = agentId;
-    }
+        }
 
 
 
@@ -70,7 +70,7 @@ public sealed class FixedAgentIdentityProvider : IAgentIdentityProvider
 
     /// <inheritdoc />
     public string GetAgentId()
-    {
+        {
         return _agentId;
+        }
     }
-}

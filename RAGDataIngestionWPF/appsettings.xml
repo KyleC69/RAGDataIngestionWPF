@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <Settings>
+    <Personalization>
+      <Theme>Dark</Theme>
+    </Personalization>
+    <Application>
+      <ApplicationId>00000000-0000-0000-0000-000000000001</ApplicationId>
+      <PrivacyStatement>https://example.test/privacy</PrivacyStatement>
+    </Application>
+    <Diagnostics>
+      <MinimumLogLevel>Trace</MinimumLogLevel>
+    </Diagnostics>
+    <Agent>
+      <OllamaHost>http://localhost</OllamaHost>
+      <OllamaPort>11434</OllamaPort>
+      <ChatModelName>gpt-oss:20b-cloud</ChatModelName>
+      <EmbeddingsModelName>mxbai-embed-large-v1:latest</EmbeddingsModelName>
+    </Agent>
+    <ChatHistory>
+      <ConnectionString>Server=.;Database=AIChatHistory;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;</ConnectionString>
+      <MaxContextMessages>40</MaxContextMessages>
+      <MaxContextTokens>120000</MaxContextTokens>
+      <ContextEnabled>true</ContextEnabled>
+    </ChatHistory>
+    <Rag>
+      <ConnectionString>Server=.;Database=RAGKnowledge;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;</ConnectionString>
+      <LearnBaseUrl>https://learn.microsoft.com/en-us/agent-framework/</LearnBaseUrl>
+      <KnowledgeEnabled>true</KnowledgeEnabled>
+    </Rag>
+  </Settings>
+</configuration>

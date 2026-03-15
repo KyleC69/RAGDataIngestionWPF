@@ -14,10 +14,10 @@ namespace DataIngestionLib.ExternalKnowledge.RAGModels;
 
 
 public sealed class Metadata
-{
+    {
 
     public Guid DocId { get; init; }
     public Guid MetaId { get; init; }
 
     public string? Tags { get; init; }
-}
+    }

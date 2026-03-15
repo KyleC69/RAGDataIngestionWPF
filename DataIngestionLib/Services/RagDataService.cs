@@ -8,13 +8,13 @@
 
 
 using System.Collections.ObjectModel;
-using System.Text;
 
 using DataIngestionLib.Data;
 using DataIngestionLib.RAGModels;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 
@@ -27,15 +27,20 @@ namespace DataIngestionLib.Services;
 
 
 
-/// <summary>
-///     various functions for search the RAG knowledge base, including vector search and full text search.
-///     This is the main entry point for RAG search related functions. Not a tool function, but a service function that can
-///     be used by tool functions.
-/// </summary>
-public static class RagDataService
-{
-    public static string FullTextSearch(string query, int topK = 5)
+
+public class RagDataService(ILogger<RagDataService> logger)
     {
+    private readonly ILogger<RagDataService> _logger = logger;
+
+
+
+
+
+
+
+
+    public static string FullTextSearch(string query, int topK = 5)
+        {
         //Database full text search logic here, return the search results as a string. 
         List<FullTextResults> results = [];
         using SqlConnection conn = SqlConnectionFactoryRagKB.CreateConnection();
@@ -46,24 +51,21 @@ public static class RagDataService
 
         conn.Open();
         using SqlDataReader reader = cmd.ExecuteReader();
-        StringBuilder result = new();
         while (reader.Read())
-        {
-            results.Add(new FullTextResults
             {
+            results.Add(new FullTextResults
+                {
                 Id = reader.GetInt32(0),
                 Title = reader.GetString(1),
                 Summary = reader.GetString(2),
                 Keywords = reader.GetString(3).Split(','),
                 Score = reader.GetDouble(4)
-            });
+                });
+            }
+
+        return JsonConvert.SerializeObject(results);
         }
 
-        var json = JsonConvert.SerializeObject(results);
-
-
-        return json;
-    }
 
 
 
@@ -71,27 +73,26 @@ public static class RagDataService
 
 
 
-
-    public static ObservableCollection<RemoteRag> GetRagDataEntries()
-    {
+    public ObservableCollection<RemoteRag> GetRagDataEntries()
+        {
         ObservableCollection<RemoteRag> rags = [];
 
         try
-        {
+            {
 
             RAGContext context = new();
             context.RemoteRags.Load();
             rags = context.RemoteRags.Local.ToObservableCollection();
 
-        }
-        catch (Exception)
-        {
+            }
+        catch (Exception ex)
+            {
 
-            //
-        }
+            _logger.LogError(ex, "Error fetching RAG data entries: {Message}", ex.Message);
+            }
 
         return rags;
-    }
+        }
 
 
 
@@ -101,7 +102,7 @@ public static class RagDataService
 
 
     public static string HybridSearch(string query, int topK = 5)
-    {
+        {
         //Database vector search logic here, return the search results as a string. 
         List<FullTextResults> results = [];
         using SqlConnection conn = SqlConnectionFactoryRagKB.CreateConnection();
@@ -112,36 +113,32 @@ public static class RagDataService
 
         conn.Open();
         using SqlDataReader reader = cmd.ExecuteReader();
-        StringBuilder result = new();
         while (reader.Read())
-        {
-            results.Add(new FullTextResults
             {
+            results.Add(new FullTextResults
+                {
                 Id = reader.GetInt32(0),
                 Title = reader.GetString(1),
                 Summary = reader.GetString(2),
                 Keywords = reader.GetString(3).Split(','),
                 Score = reader.GetDouble(4)
-            });
+                });
+            }
+
+        return JsonConvert.SerializeObject(results);
+
         }
-
-        var json = JsonConvert.SerializeObject(results);
-
-
-        return json;
-
     }
-}
 
 
 
 
 
 public sealed class FullTextResults
-{
+    {
     public int Id { get; init; }
     public string[] Keywords { get; init; } = [];
     public double Score { get; init; }
     public required string Summary { get; init; }
     public required string Title { get; init; }
-}
+    }

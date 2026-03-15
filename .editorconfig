@@ -1,4 +1,10 @@
-﻿[*.cs]
+﻿is_global = true
+
+
+roslynator_compiler_diagnostic_fixes.enabled = true
+dotnet_analyzer_diagnostic.category-roslynator.severity = warning
+roslynator_refactorings.enabled = true
+roslynator_analyzers.enabled_by_default = true
 
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.ca2007.severity = none
@@ -8,7 +14,7 @@ end_of_line = crlf
 insert_final_newline = false
 
 # Microsoft .NET properties
-csharp_indent_braces = false
+csharp_indent_braces = true
 csharp_indent_switch_labels = true
 csharp_new_line_before_catch = true
 csharp_new_line_before_else = true
@@ -2020,12 +2026,3 @@ resharper_xaml_x_key_attribute_disallowed_highlighting = error
 resharper_xunit_xunit_test_with_console_output_highlighting = warning
 resharper_zero_index_from_end_highlighting = warning
 
-[*.{appxmanifest,asax,ascx,aspx,axml,config,cshtml,csproj,dbml,discomap,dtd,htm,html,jsproj,lsproj,master,njsproj,nuspec,proj,props,razor,resw,resx,skin,StyleCop,targets,tasks,vbproj,xml,xsd}]
-indent_style = tab
-indent_size = tab
-tab_width = 4
-
-[*.{axaml,cs,paml,vb,xaml,xamlx,xoml}]
-indent_style = space
-indent_size = 4
-tab_width = 4

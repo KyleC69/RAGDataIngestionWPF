@@ -53,7 +53,7 @@ namespace DataIngestionLib.Services;
 ///     conversation and inject it into the conversation to provide even more context to the agent.
 /// </summary>
 public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistoryProvider
-{
+    {
 
     private readonly ISqlChatHistoryConnectionFactory _connectionFactory;
     private readonly string _defaultAgentId;
@@ -73,13 +73,13 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     public SQLChatHistoryProvider(ISqlChatHistoryConnectionFactory connectionFactory)
-    {
+        {
         ArgumentNullException.ThrowIfNull(connectionFactory);
         _connectionFactory = connectionFactory;
         _defaultAgentId = this.GetType().Name;
         _defaultApplicationId = AppDomain.CurrentDomain.FriendlyName;
         _defaultUserId = Environment.UserName;
-    }
+        }
 
 
 
@@ -89,23 +89,23 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     public async ValueTask EnsureInitializedAsync(CancellationToken cancellationToken = default)
-    {
+        {
         await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         foreach (var (migrationId, migrationSql) in ChatHistoryMigrations.All)
-        {
+            {
             cancellationToken.ThrowIfCancellationRequested();
 
             var isApplied = await MigrationAlreadyAppliedAsync(connection, migrationId, cancellationToken).ConfigureAwait(false);
             if (isApplied)
-            {
+                {
                 continue;
-            }
+                }
 
             await using SqlTransaction transaction = (SqlTransaction)await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
 
             try
-            {
+                {
                 var unused1 = await ExecuteNonQueryAsync(connection, transaction, migrationSql, [], cancellationToken).ConfigureAwait(false);
 
                 SqlParameter[] insertParameters =
@@ -118,16 +118,16 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 var unused = await ExecuteNonQueryAsync(connection, transaction, insertMigrationSql, insertParameters, cancellationToken).ConfigureAwait(false);
 
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-            }
+                }
             catch
-            {
+                {
                 await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                 throw;
+                }
             }
-        }
 
         await EnsureEnabledColumnAsync(connection, cancellationToken).ConfigureAwait(false);
-    }
+        }
 
 
 
@@ -137,7 +137,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     public async ValueTask<PersistedChatMessage> CreateMessageAsync(PersistedChatMessage message, CancellationToken cancellationToken = default)
-    {
+        {
         ArgumentNullException.ThrowIfNull(message);
         PersistedChatMessage normalizedMessage = NormalizeMessage(message);
 
@@ -147,7 +147,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await InsertMessageAsync(connection, normalizedMessage, cancellationToken).ConfigureAwait(false);
 
         return normalizedMessage;
-    }
+        }
 
 
 
@@ -157,11 +157,11 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     public async ValueTask<PersistedChatMessage?> GetMessageAsync(Guid messageId, CancellationToken cancellationToken = default)
-    {
-        if (messageId == Guid.Empty)
         {
+        if (messageId == Guid.Empty)
+            {
             throw new ArgumentException("Message id must be a non-empty GUID.", nameof(messageId));
-        }
+            }
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
@@ -177,7 +177,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
         return await reader.ReadAsync(cancellationToken).ConfigureAwait(false) ? MapMessage(reader) : null;
-    }
+        }
 
 
 
@@ -187,16 +187,16 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     public async ValueTask<IReadOnlyList<PersistedChatMessage>> GetMessagesAsync(string conversationId, int? take, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(conversationId))
         {
+        if (string.IsNullOrWhiteSpace(conversationId))
+            {
             throw new ArgumentException("Conversation id is required.", nameof(conversationId));
-        }
+            }
 
         if (take <= 0)
-        {
+            {
             throw new ArgumentOutOfRangeException(nameof(take), "Take must be positive when specified.");
-        }
+            }
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
@@ -237,9 +237,9 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         ];
 
         if (hasTake)
-        {
+            {
             parameters.Add(new SqlParameter("@Take", take!.Value));
-        }
+            }
 
         List<PersistedChatMessage> messages = [];
 
@@ -248,12 +248,12 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
+            {
             messages.Add(MapMessage(reader));
-        }
+            }
 
         return messages;
-    }
+        }
 
 
 
@@ -263,16 +263,16 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     public async ValueTask<PersistedChatMessage?> UpdateMessageAsync(Guid messageId, string content, DateTimeOffset timestampUtc, CancellationToken cancellationToken = default)
-    {
-        if (messageId == Guid.Empty)
         {
+        if (messageId == Guid.Empty)
+            {
             throw new ArgumentException("Message id must be a non-empty GUID.", nameof(messageId));
-        }
+            }
 
         if (string.IsNullOrWhiteSpace(content))
-        {
+            {
             throw new ArgumentException("Message content cannot be empty.", nameof(content));
-        }
+            }
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
@@ -297,7 +297,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         return affected == 0
                 ? null
                 : await GetMessageAsync(messageId, cancellationToken).ConfigureAwait(false);
-    }
+        }
 
 
 
@@ -307,11 +307,11 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     public async ValueTask<bool> DeleteMessageAsync(Guid messageId, CancellationToken cancellationToken = default)
-    {
-        if (messageId == Guid.Empty)
         {
+        if (messageId == Guid.Empty)
+            {
             throw new ArgumentException("Message id must be a non-empty GUID.", nameof(messageId));
-        }
+            }
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
@@ -325,7 +325,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         var affected = await ExecuteNonQueryAsync(connection, null, deleteSql, [new SqlParameter("@MessageId", messageId)], cancellationToken).ConfigureAwait(false);
         return affected > 0;
-    }
+        }
 
 
 
@@ -335,11 +335,11 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     public async ValueTask<int> DeleteConversationAsync(string conversationId, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(conversationId))
         {
+        if (string.IsNullOrWhiteSpace(conversationId))
+            {
             throw new ArgumentException("Conversation id is required.", nameof(conversationId));
-        }
+            }
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
@@ -367,7 +367,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                         ],
                         cancellationToken)
                 .ConfigureAwait(false);
-    }
+        }
 
 
 
@@ -377,7 +377,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     public async ValueTask<ChatHistorySessionSnapshot?> GetLatestSessionSnapshotAsync(CancellationToken cancellationToken = default)
-    {
+        {
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
         var applicationId = GetApplicationId();
@@ -409,7 +409,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 : new ChatHistorySessionSnapshot(
                         reader.GetString(0),
                         reader.GetString(1));
-    }
+        }
 
 
 
@@ -419,14 +419,14 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static SqlCommand CreateCommand(SqlConnection connection, SqlTransaction? transaction, string sql, SqlParameter[] parameters)
-    {
+        {
         SqlCommand command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = sql;
         command.CommandType = System.Data.CommandType.Text;
         command.Parameters.AddRange(parameters);
         return command;
-    }
+        }
 
 
 
@@ -436,7 +436,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static async ValueTask EnsureEnabledColumnAsync(SqlConnection connection, CancellationToken cancellationToken)
-    {
+        {
         const string ensureSql =
                 """
                 IF COL_LENGTH(N'dbo.ChatHistoryMessages', N'Enabled') IS NULL
@@ -445,7 +445,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 END
                 """;
         _ = await ExecuteNonQueryAsync(connection, null, ensureSql, [], cancellationToken).ConfigureAwait(false);
-    }
+        }
 
 
 
@@ -455,10 +455,10 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static async ValueTask<int> ExecuteNonQueryAsync(SqlConnection connection, SqlTransaction? transaction, string sql, SqlParameter[] parameters, CancellationToken cancellationToken)
-    {
+        {
         await using SqlCommand command = CreateCommand(connection, transaction, sql, parameters);
         return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-    }
+        }
 
 
 
@@ -468,12 +468,12 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private string GetApplicationId()
-    {
+        {
         var configuredApplicationId = SystemConfigurationManager.AppSettings["ApplicationId"] ?? string.Empty;
         return string.IsNullOrWhiteSpace(configuredApplicationId)
                 ? _defaultApplicationId
                 : configuredApplicationId.Trim();
-    }
+        }
 
 
 
@@ -483,16 +483,16 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private async ValueTask<IReadOnlyList<PersistedChatMessage>> GetMessagesAsync(ChatHistoryScope scope, int? take, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(scope.ConversationId))
         {
+        if (string.IsNullOrWhiteSpace(scope.ConversationId))
+            {
             throw new ArgumentException("Conversation id is required.", nameof(scope));
-        }
+            }
 
         if (take <= 0)
-        {
+            {
             throw new ArgumentOutOfRangeException(nameof(take), "Take must be positive when specified.");
-        }
+            }
 
         await EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
@@ -535,9 +535,9 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 new("@AgentId", scope.AgentId)
         ];
         if (hasTake)
-        {
+            {
             parameters.Add(new SqlParameter("@Take", take!.Value));
-        }
+            }
 
         List<PersistedChatMessage> messages = [];
 
@@ -546,12 +546,12 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
+            {
             messages.Add(MapMessage(reader));
-        }
+            }
 
         return messages;
-    }
+        }
 
 
 
@@ -561,10 +561,10 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private string GetUserId()
-    {
+        {
         var configuredUserId = SystemConfigurationManager.AppSettings["UserId"] ?? string.Empty;
         return string.IsNullOrWhiteSpace(configuredUserId) ? _defaultUserId : configuredUserId.Trim();
-    }
+        }
 
 
 
@@ -574,7 +574,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static async ValueTask InsertMessageAsync(SqlConnection connection, PersistedChatMessage message, CancellationToken cancellationToken)
-    {
+        {
         const string insertSql =
                 """
                 INSERT INTO dbo.ChatHistoryMessages
@@ -598,7 +598,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 new("@Enabled", true)
         ];
         _ = await ExecuteNonQueryAsync(connection, null, insertSql, parameters, cancellationToken).ConfigureAwait(false);
-    }
+        }
 
 
 
@@ -608,14 +608,14 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static PersistedChatMessage MapMessage(SqlDataReader reader)
-    {
+        {
         var metadataValue = reader.IsDBNull(9) ? null : reader.GetString(9);
         JsonDocument? metadata = TryParseMetadata(metadataValue, out JsonDocument? parsedMetadata)
                 ? parsedMetadata
                 : null;
 
         return new PersistedChatMessage
-        {
+            {
             MessageId = reader.GetGuid(0),
             ConversationId = reader.GetString(1),
             SessionId = reader.GetString(2),
@@ -626,8 +626,8 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             Content = reader.GetString(7),
             TimestampUtc = reader.GetDateTimeOffset(8),
             Metadata = metadata
-        };
-    }
+            };
+        }
 
 
 
@@ -637,7 +637,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static async ValueTask<bool> MigrationAlreadyAppliedAsync(SqlConnection connection, string migrationId, CancellationToken cancellationToken)
-    {
+        {
         const string sql =
                 """
                 IF OBJECT_ID(N'dbo.__ChatHistoryMigrations', N'U') IS NULL
@@ -657,7 +657,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
         return result is bool boolValue && boolValue;
-    }
+        }
 
 
 
@@ -667,11 +667,11 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static PersistedChatMessage NormalizeMessage(PersistedChatMessage message)
-    {
+        {
         ValidateMessage(message);
 
         return message with
-        {
+            {
             MessageId = message.MessageId == Guid.Empty ? Guid.NewGuid() : message.MessageId,
             ConversationId = message.ConversationId.Trim(),
             SessionId = message.SessionId.Trim(),
@@ -680,8 +680,8 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             ApplicationId = message.ApplicationId.Trim(),
             Role = message.Role.Trim(),
             Content = message.Content.Trim()
-        };
-    }
+            };
+        }
 
 
 
@@ -691,18 +691,18 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static ChatRole ParseRole(string role)
-    {
+        {
         var normalized = role.Trim();
 
         return normalized.ToLowerInvariant() switch
-        {
-            "assistant" => ChatRole.Assistant,
-            "user" => ChatRole.User,
-            "system" => ChatRole.System,
-            "tool" => ChatRole.Tool,
-            _ => ChatRole.User
-        };
-    }
+            {
+                "assistant" => ChatRole.Assistant,
+                "user" => ChatRole.User,
+                "system" => ChatRole.System,
+                "tool" => ChatRole.Tool,
+                _ => ChatRole.User
+                };
+        }
 
 
 
@@ -712,7 +712,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     protected override async ValueTask<IEnumerable<ChatMessage>> ProvideChatHistoryAsync(InvokingContext context, CancellationToken cancellationToken = default)
-    {
+        {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -720,7 +720,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         var persistedMessages = await GetMessagesAsync(scope, DefaultHistoryWindowSize, cancellationToken).ConfigureAwait(false);
 
         return persistedMessages.Select(static persistedMessage => new ChatMessage(ParseRole(persistedMessage.Role), persistedMessage.Content));
-    }
+        }
 
 
 
@@ -730,7 +730,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private ChatHistoryScope ResolveScope(AgentSession? session)
-    {
+        {
         var applicationId = ChatHistorySessionState.GetOrCreateApplicationId(
                 session,
                 GetApplicationId());
@@ -741,7 +741,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         var agentId = ChatHistorySessionState.GetOrCreateAgentId(session, _defaultAgentId);
 
         return new ChatHistoryScope(applicationId, userId, conversationId, sessionId, agentId);
-    }
+        }
 
 
 
@@ -751,15 +751,15 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static bool ShouldPersistRole(string role)
-    {
-        if (string.IsNullOrWhiteSpace(role))
         {
+        if (string.IsNullOrWhiteSpace(role))
+            {
             return false;
-        }
+            }
 
         var normalized = role.Trim().ToLowerInvariant();
         return !(normalized.Contains("context") || normalized.Contains("rag"));
-    }
+        }
 
 
 
@@ -769,14 +769,14 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     protected override async ValueTask StoreChatHistoryAsync(InvokedContext context, CancellationToken cancellationToken = default)
-    {
+        {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
         if (context.InvokeException is not null)
-        {
+            {
             return;
-        }
+            }
 
         ChatHistoryScope scope = ResolveScope(context.Session);
 
@@ -789,22 +789,22 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         var sequence = 0;
 
         foreach (ChatMessage message in newMessages)
-        {
+            {
             cancellationToken.ThrowIfCancellationRequested();
 
             if (string.IsNullOrWhiteSpace(message.Text))
-            {
+                {
                 continue;
-            }
+                }
 
             var role = message.Role.ToString();
             if (!ShouldPersistRole(role))
-            {
+                {
                 continue;
-            }
+                }
 
             PersistedChatMessage persistedMessage = new()
-            {
+                {
                 MessageId = Guid.NewGuid(),
                 ConversationId = scope.ConversationId,
                 SessionId = scope.SessionId,
@@ -814,11 +814,11 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 Role = role,
                 Content = message.Text.Trim(),
                 TimestampUtc = baseTimestamp.AddTicks(sequence++)
-            };
+                };
 
             await InsertMessageAsync(connection, persistedMessage, cancellationToken).ConfigureAwait(false);
+            }
         }
-    }
 
 
 
@@ -828,25 +828,25 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static bool TryParseMetadata(string? value, out JsonDocument? document)
-    {
-        if (string.IsNullOrWhiteSpace(value))
         {
+        if (string.IsNullOrWhiteSpace(value))
+            {
             document = null;
             return true;
-        }
+            }
 
         try
-        {
+            {
             using JsonDocument parsed = JsonDocument.Parse(value);
             document = JsonDocument.Parse(parsed.RootElement.GetRawText());
             return true;
-        }
+            }
         catch (JsonException)
-        {
+            {
             document = null;
             return false;
+            }
         }
-    }
 
 
 
@@ -856,18 +856,18 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static void ValidateKey(string value, int maxLength, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
         {
+        if (string.IsNullOrWhiteSpace(value))
+            {
             throw new ArgumentException("Value is required.", parameterName);
-        }
+            }
 
         var trimmed = value.Trim();
         if (trimmed.Length > maxLength)
-        {
+            {
             throw new ArgumentOutOfRangeException(parameterName, $"Value exceeds maximum length of {maxLength} characters.");
+            }
         }
-    }
 
 
 
@@ -877,7 +877,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private static void ValidateMessage(PersistedChatMessage message)
-    {
+        {
         ValidateKey(message.ConversationId, ConversationKeyLength, nameof(message.ConversationId));
         ValidateKey(message.SessionId, PartitionKeyLength, nameof(message.SessionId));
         ValidateKey(message.AgentId, PartitionKeyLength, nameof(message.AgentId));
@@ -886,15 +886,15 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         ValidateKey(message.Role, RoleLength, nameof(message.Role));
 
         if (string.IsNullOrWhiteSpace(message.Content))
-        {
+            {
             throw new ArgumentException("Message content is required.", nameof(message));
-        }
+            }
 
         if (message.TimestampUtc == default)
-        {
+            {
             throw new ArgumentException("Message timestamp must be set.", nameof(message));
+            }
         }
-    }
 
 
 
@@ -904,4 +904,4 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
     private sealed record ChatHistoryScope(string ApplicationId, string UserId, string ConversationId, string SessionId, string AgentId);
-}
+    }

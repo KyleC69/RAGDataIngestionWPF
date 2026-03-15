@@ -20,7 +20,7 @@ namespace DataIngestionLib.Contracts.Services;
 
 
 public interface IVectorChatHistoryProvider
-{
+    {
     IReadOnlyList<string> StateKeys { get; }
 
 
@@ -37,4 +37,4 @@ public interface IVectorChatHistoryProvider
 
 
     ValueTask<IEnumerable<ChatMessage>> InvokingAsync(ChatHistoryProvider.InvokingContext context, CancellationToken cancellationToken);
-}
+    }

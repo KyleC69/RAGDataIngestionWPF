@@ -35,7 +35,7 @@ namespace DataIngestionLib.Models;
 /// </related>
 [DebuggerDisplay("[{Role}] {ContentForDebuggerDisplay}{EllipsesForDebuggerDisplay,nq}")]
 public sealed class AIChatMessage : IEquatable<AIChatMessage>
-{
+    {
     private string? _authorName;
     private IList<AIContent>? _contents;
 
@@ -50,8 +50,8 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
     /// <remarks>The instance defaults to having a role of <see cref="ChatRole.User" />.</remarks>
     [JsonConstructor]
     public AIChatMessage()
-    {
-    }
+        {
+        }
 
 
 
@@ -62,8 +62,8 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
 
     public AIChatMessage(AIChatRole role, string? content)
             : this(role, content is null ? [] : [new TextContent(content)])
-    {
-    }
+        {
+        }
 
 
 
@@ -77,8 +77,8 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
     /// <param name="content">The text content of the message.</param>
     public AIChatMessage(ChatRole role, string? content)
             : this(role, content is null ? [] : [new TextContent(content)])
-    {
-    }
+        {
+        }
 
 
 
@@ -91,10 +91,10 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
     /// <param name="role">The role of the author of the message.</param>
     /// <param name="contents">The contents for this message.</param>
     public AIChatMessage(ChatRole role, IList<AIContent>? contents)
-    {
+        {
         Role = role;
         _contents = contents;
-    }
+        }
 
 
 
@@ -104,10 +104,10 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
 
 
     public AIChatMessage(AIChatRole role, IList<AIContent>? contents)
-    {
+        {
         Role = role;
         _contents = contents;
-    }
+        }
 
 
 
@@ -125,10 +125,10 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
 
     /// <summary>Gets or sets the name of the author of the message.</summary>
     public string? AuthorName
-    {
+        {
         get { return _authorName; }
         init { _authorName = string.IsNullOrWhiteSpace(value) ? null : value; }
-    }
+        }
 
 
 
@@ -137,16 +137,27 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
     /// <summary>Gets a <see cref="AIContent" /> object to display in the debugger display.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private AIContent? ContentForDebuggerDisplay
-    {
-        get
         {
+        get
+            {
             var text = Text;
-            return
-                    !string.IsNullOrWhiteSpace(text) ? new TextContent(text) :
-                    _contents is { Count: > 0 } ? _contents[0] :
-                    null;
+            if (!string.IsNullOrWhiteSpace(text))
+                {
+                return
+new TextContent(text);
+                }
+            else if (_contents is { Count: > 0 })
+                {
+                return
+_contents[0];
+                }
+            else
+                {
+                return
+null;
+                }
+            }
         }
-    }
 
 
 
@@ -155,10 +166,10 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
     /// <summary>Gets or sets the chat message content items.</summary>
     [AllowNull]
     public IList<AIContent> Contents
-    {
+        {
         get { return _contents ??= []; }
         init { _contents = value; }
-    }
+        }
 
 
 
@@ -174,9 +185,9 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
     /// <summary>Gets an indication for the debugger display of whether there's more content.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string EllipsesForDebuggerDisplay
-    {
+        {
         get { return _contents is { Count: > 1 } ? ", ..." : string.Empty; }
-    }
+        }
 
 
 
@@ -192,9 +203,9 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
     ///     This property is useful for distinguishing messages authored by users from those authored by other roles.
     /// </remarks>
     public bool IsUser
-    {
+        {
         get { return Role == AIChatRole.User; }
-    }
+        }
 
 
 
@@ -225,14 +236,13 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
     /// </remarks>
     [JsonIgnore]
     public string Text
-    {
-        get
         {
+        get
+            {
 
-            var vb = string.Concat(Contents.OfType<TextContent>().Select(c => c.Text));
-            return vb;
+            return string.Concat(Contents.OfType<TextContent>().Select(c => c.Text));
+            }
         }
-    }
 
 
 
@@ -240,9 +250,9 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
 
     /// <summary>Gets a timestamp for the chat message normalized to the local time zone.</summary>
     public static DateTimeOffset TimeStampOffset
-    {
+        {
         get { return DateTime.Now; }
-    }
+        }
 
 
 
@@ -253,13 +263,13 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
 
     /// <inheritdoc />
     public bool Equals(AIChatMessage? other)
-    {
+        {
         return other is not null && (ReferenceEquals(this, other) || (Role == other.Role
                                                                       && string.Equals(Text, other.Text, StringComparison.Ordinal)
                                                                       && string.Equals(AuthorName, other.AuthorName, StringComparison.Ordinal)
                                                                       && Nullable.Equals(CreatedAt, other.CreatedAt)
                                                                       && string.Equals(MessageId, other.MessageId, StringComparison.Ordinal)));
-    }
+        }
 
 
 
@@ -275,9 +285,9 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
     ///     refer to the same objects as the original.
     /// </remarks>
     public AIChatMessage Clone()
-    {
-        return new()
         {
+        return new()
+            {
             AdditionalProperties = AdditionalProperties,
             _authorName = _authorName,
             _contents = _contents,
@@ -285,8 +295,8 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
             RawRepresentation = RawRepresentation,
             Role = Role,
             MessageId = MessageId
-        };
-    }
+            };
+        }
 
 
 
@@ -297,9 +307,9 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-    {
+        {
         return obj is AIChatMessage other && Equals(other);
-    }
+        }
 
 
 
@@ -310,9 +320,9 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
 
     /// <inheritdoc />
     public override int GetHashCode()
-    {
+        {
         return HashCode.Combine(Role, Text, AuthorName, CreatedAt, MessageId);
-    }
+        }
 
 
 
@@ -322,9 +332,9 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
 
 
     public static bool operator ==(AIChatMessage? left, AIChatMessage? right)
-    {
+        {
         return ReferenceEquals(left, right) || (left is not null && right is not null && left.Equals(right));
-    }
+        }
 
 
 
@@ -334,9 +344,9 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
 
 
     public static bool operator !=(AIChatMessage? left, AIChatMessage? right)
-    {
+        {
         return !(left == right);
-    }
+        }
 
 
 
@@ -347,7 +357,7 @@ public sealed class AIChatMessage : IEquatable<AIChatMessage>
 
     /// <inheritdoc />
     public override string ToString()
-    {
+        {
         return Text ?? string.Empty;
+        }
     }
-}
