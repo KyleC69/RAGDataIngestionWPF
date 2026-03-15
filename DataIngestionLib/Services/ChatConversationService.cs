@@ -131,7 +131,7 @@ public sealed class ChatConversationService : IChatConversationService
         //Add user message to ChatHistory
         ChatHistory.AddUserMessage(content);
         AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
-        var assistantText = response.Text.Trim();
+        var assistantText = (response.Text ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(assistantText))
             {
 
@@ -141,7 +141,7 @@ public sealed class ChatConversationService : IChatConversationService
                     Environment.NewLine,
                     response.Messages
                             .Where(static message => message.Role == ChatRole.Assistant)
-                            .Select(static message => message.Text.Trim())
+                            .Select(static message => (message.Text ?? string.Empty).Trim())
                             .Where(static text => !string.IsNullOrWhiteSpace(text)));
             }
 
