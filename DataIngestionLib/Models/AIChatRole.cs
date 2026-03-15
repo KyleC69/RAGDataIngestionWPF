@@ -10,7 +10,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
 using Microsoft.Extensions.AI;
 
@@ -307,11 +306,7 @@ public readonly struct AIChatRole : IEquatable<AIChatRole>, IEquatable<ChatRole>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class Converter : JsonConverter<AIChatRole>
     {
-    /// <inheritdoc />
-    public static AIChatRole Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-        return new(reader.GetString()!);
-        }
+  
 
 
 
@@ -333,11 +328,6 @@ public sealed class Converter : JsonConverter<AIChatRole>
 
 
 
-    /// <inheritdoc />
-    public static void Write(Utf8JsonWriter writer, AIChatRole value, JsonSerializerOptions options)
-        {
-        writer.WriteStringValue(value.Value);
-        }
 
 
 

@@ -24,7 +24,7 @@ public sealed class SampleOrderDetail
     public string CategoryName { get; set; }
 
     public double Discount { get; set; }
-    public long ProductID { get; set; }
+    public long ProductId { get; set; }
 
     public string ProductName { get; set; }
 
@@ -38,7 +38,7 @@ public sealed class SampleOrderDetail
 
     public string ShortDescription
     {
-        get { return $"Product ID: {ProductID} - {ProductName}"; }
+        get { return $"Product ID: {ProductId} - {ProductName}"; }
     }
 
 

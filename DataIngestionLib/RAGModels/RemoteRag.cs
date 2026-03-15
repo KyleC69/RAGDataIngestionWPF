@@ -7,6 +7,8 @@
 
 
 
+using System.ComponentModel.DataAnnotations;
+
 using Microsoft.Data.SqlTypes;
 
 
@@ -36,6 +38,7 @@ public sealed class RemoteRag
 
     public double? Score { get; init; }
 
+    [MaxLength(4000)]
     public string? Summary { get; init; }
 
     public string Title { get; init; } = null!;

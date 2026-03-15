@@ -9,7 +9,6 @@
 
 using System.Net.Http;
 
-using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -27,7 +26,6 @@ public sealed class AgentRunMiddleWare
 
     private readonly IChatClient _baseAgent;
     private readonly ILoggerFactory _factory;
-    private readonly ILogger<AgentRunMiddleWare> _logger;
 
 
 
@@ -40,7 +38,8 @@ public sealed class AgentRunMiddleWare
         {
         _baseAgent = baseAgent;
         _factory = factory;
-        _logger = logger;
+        _ = logger;
+        _ = httpClientFactory;
         }
 
 

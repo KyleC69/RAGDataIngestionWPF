@@ -13,6 +13,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Threading;
 
+using JetBrains.Annotations;
+
 using RAGDataIngestionWPF.ViewModels;
 
 
@@ -24,7 +26,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public sealed partial class MainPage : Page
+public sealed partial class MainPage
 {
     private ScrollViewer _messagesScrollViewer;
 
@@ -51,7 +53,8 @@ public sealed partial class MainPage : Page
 
 
 
-    private static T FindVisualChild<T>(DependencyObject parent)
+    [CanBeNull]
+    private static T FindVisualChild<T>([NotNull] DependencyObject parent)
             where T : DependencyObject
     {
         var childrenCount = VisualTreeHelper.GetChildrenCount(parent);

@@ -15,6 +15,8 @@ using CommunityToolkit.Mvvm.Input;
 
 using ControlzEx.Theming;
 
+using JetBrains.Annotations;
+
 using MahApps.Metro.Theming;
 
 using Microsoft.Extensions.Logging;
@@ -208,6 +210,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
+    [NotNull]
     public ICommand PrivacyStatementCommand
     {
         get { return field ??= new RelayCommand(OnPrivacyStatement); }
@@ -233,6 +236,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
+    [NotNull]
     public ICommand RenewApplicationIdCommand
     {
         get { return field ??= new RelayCommand(OnRenewApplicationId); }
@@ -251,6 +255,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
+    [NotNull]
     public ICommand SaveChatHistorySettingsCommand
     {
         get { return field ??= new RelayCommand(OnSaveChatHistorySettings); }
@@ -260,6 +265,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
+    [NotNull]
     public ICommand SetLogLevelCommand
     {
         get { return field ??= new RelayCommand(OnSetLogLevel); }
@@ -269,6 +275,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
+    [NotNull]
     public ICommand SetThemeCommand
     {
         get { return field ??= new RelayCommand<string>(OnSetTheme); }
@@ -405,7 +412,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static string GetResourceString(string key, string fallback)
+    private static string GetResourceString([NotNull] string key, string fallback)
     {
         return Properties.Resources.ResourceManager.GetString(key) ?? fallback;
     }
@@ -473,7 +480,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private void OnSetTheme(string themeName)
+    private void OnSetTheme([NotNull] string themeName)
     {
         AppTheme theme = Enum.Parse<AppTheme>(themeName);
         ApplyTheme(theme);
@@ -499,7 +506,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static bool ParseBool(string value, bool fallback)
+    private static bool ParseBool([CanBeNull] string value, bool fallback)
     {
         return bool.TryParse(value, out var parsed) ? parsed : fallback;
     }
@@ -511,7 +518,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static int ParseInt(string value, int fallback, int min)
+    private static int ParseInt([CanBeNull] string value, int fallback, int min)
     {
         return int.TryParse(value, out var parsed) && parsed >= min ? parsed : fallback;
     }
@@ -523,7 +530,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static int? ParseNullableInt(string value, int fallback)
+    private static int? ParseNullableInt([CanBeNull] string value, int fallback)
     {
         return string.IsNullOrWhiteSpace(value) ? null : int.TryParse(value, out var parsed) && parsed > 0 ? parsed : fallback;
     }
@@ -535,7 +542,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static AppTheme ParseTheme(string themeName)
+    private static AppTheme ParseTheme([CanBeNull] string themeName)
     {
         return Enum.TryParse(themeName, out AppTheme theme) ? theme : AppTheme.Default;
     }

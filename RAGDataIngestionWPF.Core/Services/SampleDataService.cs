@@ -63,7 +63,7 @@ public sealed class SampleDataService : ISampleDataService
         [
                 new()
                 {
-                        CompanyID = "ALFKI",
+                        CompanyId = "ALFKI",
                         CompanyName = "Company A",
                         ContactName = "Maria Anders",
                         ContactTitle = "Sales Representative",
@@ -77,7 +77,7 @@ public sealed class SampleDataService : ISampleDataService
                         [
                                 new()
                                 {
-                                        OrderID = 10643, // Symbol Globe
+                                        OrderId = 10643, // Symbol Globe
                                         OrderDate = new(1997, 8, 25),
                                         RequiredDate = new(1997, 9, 22),
                                         ShippedDate = new(1997, 9, 22),
@@ -93,7 +93,7 @@ public sealed class SampleDataService : ISampleDataService
                                         [
                                                 new()
                                                 {
-                                                        ProductID = 28,
+                                                        ProductId = 28,
                                                         ProductName = "Rössle Sauerkraut",
                                                         Quantity = 15,
                                                         Discount = 0.25,
@@ -105,7 +105,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 39,
+                                                        ProductId = 39,
                                                         ProductName = "Chartreuse verte",
                                                         Quantity = 21,
                                                         Discount = 0.25,
@@ -117,7 +117,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 46,
+                                                        ProductId = 46,
                                                         ProductName = "Spegesild",
                                                         Quantity = 2,
                                                         Discount = 0.25,
@@ -131,7 +131,7 @@ public sealed class SampleDataService : ISampleDataService
                                 },
                                 new()
                                 {
-                                        OrderID = 10835, // Symbol Music
+                                        OrderId = 10835, // Symbol Music
                                         OrderDate = new(1998, 1, 15),
                                         RequiredDate = new(1998, 2, 12),
                                         ShippedDate = new(1998, 1, 21),
@@ -147,7 +147,7 @@ public sealed class SampleDataService : ISampleDataService
                                         [
                                                 new()
                                                 {
-                                                        ProductID = 59,
+                                                        ProductId = 59,
                                                         ProductName = "Raclette Courdavault",
                                                         Quantity = 15,
                                                         Discount = 0,
@@ -159,7 +159,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 77,
+                                                        ProductId = 77,
                                                         ProductName = "Original Frankfurter grüne Soße",
                                                         Quantity = 2,
                                                         Discount = 0.2,
@@ -173,7 +173,7 @@ public sealed class SampleDataService : ISampleDataService
                                 },
                                 new()
                                 {
-                                        OrderID = 10952, // Symbol Calendar
+                                        OrderId = 10952, // Symbol Calendar
                                         OrderDate = new(1998, 3, 16),
                                         RequiredDate = new(1998, 4, 27),
                                         ShippedDate = new(1998, 3, 24),
@@ -189,7 +189,7 @@ public sealed class SampleDataService : ISampleDataService
                                         [
                                                 new()
                                                 {
-                                                        ProductID = 6,
+                                                        ProductId = 6,
                                                         ProductName = "Grandma's Boysenberry Spread",
                                                         Quantity = 16,
                                                         Discount = 0.05,
@@ -201,7 +201,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 28,
+                                                        ProductId = 28,
                                                         ProductName = "Rössle Sauerkraut",
                                                         Quantity = 2,
                                                         Discount = 0,
@@ -217,7 +217,7 @@ public sealed class SampleDataService : ISampleDataService
                 },
                 new()
                 {
-                        CompanyID = "ANATR",
+                        CompanyId = "ANATR",
                         CompanyName = "Company F",
                         ContactName = "Ana Trujillo",
                         ContactTitle = "Owner",
@@ -231,7 +231,7 @@ public sealed class SampleDataService : ISampleDataService
                         [
                                 new()
                                 {
-                                        OrderID = 10625, // Symbol Camera
+                                        OrderId = 10625, // Symbol Camera
                                         OrderDate = new(1997, 8, 8),
                                         RequiredDate = new(1997, 9, 5),
                                         ShippedDate = new(1997, 8, 14),
@@ -247,7 +247,7 @@ public sealed class SampleDataService : ISampleDataService
                                         [
                                                 new()
                                                 {
-                                                        ProductID = 14,
+                                                        ProductId = 14,
                                                         ProductName = "Tofu",
                                                         Quantity = 3,
                                                         Discount = 0,
@@ -259,7 +259,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 42,
+                                                        ProductId = 42,
                                                         ProductName = "Singaporean Hokkien Fried Mee",
                                                         Quantity = 5,
                                                         Discount = 0,
@@ -271,7 +271,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 60,
+                                                        ProductId = 60,
                                                         ProductName = "Camembert Pierrot",
                                                         Quantity = 10,
                                                         Discount = 0,
@@ -285,7 +285,7 @@ public sealed class SampleDataService : ISampleDataService
                                 },
                                 new()
                                 {
-                                        OrderID = 10926, // Symbol Clock
+                                        OrderId = 10926, // Symbol Clock
                                         OrderDate = new(1998, 3, 4),
                                         RequiredDate = new(1998, 4, 1),
                                         ShippedDate = new(1998, 3, 11),
@@ -301,7 +301,7 @@ public sealed class SampleDataService : ISampleDataService
                                         [
                                                 new()
                                                 {
-                                                        ProductID = 11,
+                                                        ProductId = 11,
                                                         ProductName = "Queso Cabrales",
                                                         Quantity = 2,
                                                         Discount = 0,
@@ -313,7 +313,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 13,
+                                                        ProductId = 13,
                                                         ProductName = "Konbu",
                                                         Quantity = 10,
                                                         Discount = 0,
@@ -325,7 +325,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 19,
+                                                        ProductId = 19,
                                                         ProductName = "Teatime Chocolate Biscuits",
                                                         Quantity = 7,
                                                         Discount = 0,
@@ -337,7 +337,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 72,
+                                                        ProductId = 72,
                                                         ProductName = "Mozzarella di Giovanni",
                                                         Quantity = 10,
                                                         Discount = 0,
@@ -353,7 +353,7 @@ public sealed class SampleDataService : ISampleDataService
                 },
                 new()
                 {
-                        CompanyID = "ANTON",
+                        CompanyId = "ANTON",
                         CompanyName = "Company Z",
                         ContactName = "Antonio Moreno",
                         ContactTitle = "Owner",
@@ -367,7 +367,7 @@ public sealed class SampleDataService : ISampleDataService
                         [
                                 new()
                                 {
-                                        OrderID = 10507, // Symbol Contact
+                                        OrderId = 10507, // Symbol Contact
                                         OrderDate = new(1997, 4, 15),
                                         RequiredDate = new(1997, 5, 13),
                                         ShippedDate = new(1997, 4, 22),
@@ -383,7 +383,7 @@ public sealed class SampleDataService : ISampleDataService
                                         [
                                                 new()
                                                 {
-                                                        ProductID = 43,
+                                                        ProductId = 43,
                                                         ProductName = "Ipoh Coffee",
                                                         Quantity = 15,
                                                         Discount = 0.15,
@@ -395,7 +395,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 48,
+                                                        ProductId = 48,
                                                         ProductName = "Chocolade",
                                                         Quantity = 15,
                                                         Discount = 0.15,
@@ -409,7 +409,7 @@ public sealed class SampleDataService : ISampleDataService
                                 },
                                 new()
                                 {
-                                        OrderID = 10573, // Symbol Star
+                                        OrderId = 10573, // Symbol Star
                                         OrderDate = new(1997, 6, 19),
                                         RequiredDate = new(1997, 7, 17),
                                         ShippedDate = new(1997, 6, 20),
@@ -425,7 +425,7 @@ public sealed class SampleDataService : ISampleDataService
                                         [
                                                 new()
                                                 {
-                                                        ProductID = 17,
+                                                        ProductId = 17,
                                                         ProductName = "Alice Mutton",
                                                         Quantity = 18,
                                                         Discount = 0,
@@ -437,7 +437,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 34,
+                                                        ProductId = 34,
                                                         ProductName = "Sasquatch Ale",
                                                         Quantity = 40,
                                                         Discount = 0,
@@ -449,7 +449,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 53,
+                                                        ProductId = 53,
                                                         ProductName = "Perth Pasties",
                                                         Quantity = 25,
                                                         Discount = 0,
@@ -463,7 +463,7 @@ public sealed class SampleDataService : ISampleDataService
                                 },
                                 new()
                                 {
-                                        OrderID = 10682, // Symbol Home
+                                        OrderId = 10682, // Symbol Home
                                         OrderDate = new(1997, 9, 25),
                                         RequiredDate = new(1997, 10, 23),
                                         ShippedDate = new(1997, 10, 1),
@@ -479,7 +479,7 @@ public sealed class SampleDataService : ISampleDataService
                                         [
                                                 new()
                                                 {
-                                                        ProductID = 33,
+                                                        ProductId = 33,
                                                         ProductName = "Geitost",
                                                         Quantity = 30,
                                                         Discount = 0,
@@ -491,7 +491,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 66,
+                                                        ProductId = 66,
                                                         ProductName = "Louisiana Hot Spiced Okra",
                                                         Quantity = 4,
                                                         Discount = 0,
@@ -503,7 +503,7 @@ public sealed class SampleDataService : ISampleDataService
                                                 },
                                                 new()
                                                 {
-                                                        ProductID = 75,
+                                                        ProductId = 75,
                                                         ProductName = "Rhönbräu Klosterbier",
                                                         Quantity = 30,
                                                         Discount = 0,

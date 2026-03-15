@@ -9,8 +9,6 @@
 
 using System.Windows.Controls;
 
-using MahApps.Metro.Controls;
-
 using RAGDataIngestionWPF.Contracts.Views;
 using RAGDataIngestionWPF.ViewModels;
 
@@ -23,7 +21,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public sealed partial class ShellWindow : MetroWindow, IShellWindow
+public sealed partial class ShellWindow : IShellWindow
 {
     public ShellWindow(ShellViewModel viewModel)
     {
@@ -40,7 +38,7 @@ public sealed partial class ShellWindow : MetroWindow, IShellWindow
 
     public Frame GetNavigationFrame()
     {
-        return shellFrame;
+        return ShellFrame;
     }
 
 

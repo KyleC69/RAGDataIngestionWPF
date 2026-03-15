@@ -13,6 +13,8 @@ using CommunityToolkit.Mvvm.Input;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
+using JetBrains.Annotations;
+
 
 
 
@@ -49,7 +51,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
 
 
-    public MainViewModel(IChatConversationService chatConversationService)
+    public MainViewModel([NotNull] IChatConversationService chatConversationService)
     {
         ArgumentNullException.ThrowIfNull(chatConversationService);
 

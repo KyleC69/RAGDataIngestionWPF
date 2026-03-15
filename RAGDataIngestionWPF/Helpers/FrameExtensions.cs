@@ -10,6 +10,8 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using JetBrains.Annotations;
+
 
 
 
@@ -22,7 +24,7 @@ namespace RAGDataIngestionWPF.Helpers;
 public static class FrameExtensions
 {
 
-    public static void CleanNavigation(this Frame frame)
+    public static void CleanNavigation([NotNull] this Frame frame)
     {
         while (frame.CanGoBack)
         {
@@ -37,7 +39,8 @@ public static class FrameExtensions
 
 
 
-    public static object GetDataContext(this Frame frame)
+    [CanBeNull]
+    public static object GetDataContext([NotNull] this Frame frame)
     {
         return frame.Content is FrameworkElement element ? element.DataContext : null;
 

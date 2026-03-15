@@ -6,8 +6,10 @@
 // Build Num: 202403
 
 
+using System.ComponentModel.DataAnnotations;
 
-namespace DataIngestionLib.ExternalKnowledge.RAGModels;
+
+namespace DataIngestionLib.RAGModels;
 
 
 
@@ -19,5 +21,6 @@ public sealed class Metadata
     public Guid DocId { get; init; }
     public Guid MetaId { get; init; }
 
+    [MaxLength(1024)]
     public string? Tags { get; init; }
     }

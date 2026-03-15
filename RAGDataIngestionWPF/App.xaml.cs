@@ -25,6 +25,8 @@ using DataIngestionLib.DocIngestion;
 using DataIngestionLib.Services;
 using DataIngestionLib.Services.ContextInjectors;
 
+using JetBrains.Annotations;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -53,14 +55,14 @@ namespace RAGDataIngestionWPF;
 
 
 
-public sealed partial class App : Application
+public sealed partial class App
 {
     private IHost? _host;
     private bool _isHostStarted;
 
 
 
-    private LogLevel loglevel;
+    private LogLevel _loglevel;
 
 
 
@@ -71,7 +73,7 @@ public sealed partial class App : Application
 
     private IHost BuildHost()
     {
-        loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel)
+        _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel)
                 ? configLevel
                 : LogLevel.Trace;
         return Host.CreateDefaultBuilder()
@@ -88,8 +90,8 @@ public sealed partial class App : Application
                     // the dynamic filter below. The LoggingLevelSwitch controls the
                     // effective minimum at runtime and is user-configurable from the
                     // Settings page.
-                    ILoggingBuilder unused1 = logging.SetMinimumLevel(loglevel);
-                    ILoggingBuilder unused = logging.AddFilter((_, level) => level >= loglevel);
+                    ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
+                    ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
                 })
                 .Build();
     }
@@ -110,7 +112,7 @@ public sealed partial class App : Application
         RegisterAgentServices(services);
         RegisterActivationHandlers(services);
         RegisterCoreServices(services);
-        RegisterApplicationServices(services, loglevel);
+        RegisterApplicationServices(services);
         RegisterViewsAndViewModels(services);
 
     }
@@ -140,9 +142,13 @@ public sealed partial class App : Application
             await _host.StartAsync();
             _isHostStarted = true;
         }
-        catch
+        catch (Exception ex)
         {
-
+            var logger = _host?.Services.GetService<ILogger<App>>();
+            if (logger != null)
+            {
+                LogUnhandledUiException(logger, ex);
+            }
         }
     }
 
@@ -153,6 +159,7 @@ public sealed partial class App : Application
 
 
 
+    [UsedImplicitly]
     private static string GetAppLocation()
     {
         var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
@@ -178,7 +185,7 @@ public sealed partial class App : Application
         }
 
         IConfiguration configuration = _host.Services.GetRequiredService<IConfiguration>();
-        configuration[ToastNotificationActivationHandler.ActivationArguments] = toastArgument;
+        configuration[ToastNotificationActivationHandler.ACTIVATION_ARGUMENTS] = toastArgument;
         await EnsureHostStartedAsync();
     }
 
@@ -322,7 +329,7 @@ public sealed partial class App : Application
 
 
 
-    private static void RegisterApplicationServices(IServiceCollection services, LogLevel loglevel)
+    private static void RegisterApplicationServices(IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
         _ = services.AddSingleton<IToastNotificationsService, ToastNotificationsService>();

@@ -23,10 +23,10 @@ namespace DataIngestionLib.Contracts.Services;
 /// </summary>
 /// <remarks>
 /// This interface is intentionally narrowed to the two operations required for context injection
-/// (retrieving history for context and storing new messages), rather than exposing the full
-/// management surface of <see cref="IAIContextHistoryInjector" />. Consumers that only need to
-/// read and write history should depend on this interface so they remain decoupled from pruning,
-/// update, and delete operations.
+/// (retrieving history for context and storing new messages), rather than exposing the broader
+/// management surface implemented by the concrete chat-history context injector. Consumers that
+/// only need to read and write history should depend on this interface so they remain decoupled
+/// from pruning, update, and delete operations.
 /// </remarks>
 public interface IChatHistoryMemoryProvider
     {

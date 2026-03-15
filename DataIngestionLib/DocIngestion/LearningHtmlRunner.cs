@@ -84,7 +84,7 @@ public sealed class LearningHtmlRunner
                 {
                 while (reader.Read())
                     {
-                    existingUrls.Add(reader["og_url"]?.ToString() ?? string.Empty);
+                    existingUrls.Add(reader["og_url"].ToString() ?? string.Empty);
                     }
                 }
             }
@@ -101,13 +101,14 @@ public sealed class LearningHtmlRunner
             HtmlDocument htmlDoc = new();
             htmlDoc.LoadHtml(normalized);
 
-            HtmlNode mainContentNode = htmlDoc.DocumentNode.SelectSingleNode("//div[@data-main-column]");
-            string title = htmlDoc.DocumentNode.SelectSingleNode("//title").InnerText.Trim();
-            var description = htmlDoc.DocumentNode.SelectSingleNode("//meta[@name='description']")?.GetAttributeValue("content", "") ?? throw new InvalidOperationException("Description meta tag not found");
-            var documentId = htmlDoc.DocumentNode.SelectSingleNode("//meta[@name='document_id']")?.GetAttributeValue("content", "") ?? throw new InvalidOperationException("Document ID meta tag not found");
-            var updatedAt = htmlDoc.DocumentNode.SelectSingleNode("//meta[@name='updated_at']")?.GetAttributeValue("content", "") ?? throw new InvalidOperationException("Updated At meta tag not found");
-            var msDate = htmlDoc.DocumentNode.SelectSingleNode("//meta[@name='ms.date']")?.GetAttributeValue("content", "") ?? throw new InvalidOperationException("MS Date meta tag not found");
-            var ogUrl = htmlDoc.DocumentNode.SelectSingleNode("//meta[@property='og:url']")?.GetAttributeValue("content", "") ?? throw new InvalidOperationException("OG URL meta tag not found");
+            HtmlNode mainContentNode = htmlDoc.DocumentNode.SelectSingleNode("//div[@data-main-column]")
+                                      ?? throw new InvalidOperationException("Main content node not found.");
+            string title = GetRequiredNodeText(htmlDoc.DocumentNode, "//title", "Title element not found.");
+            var description = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='description']", "Description meta tag not found.");
+            var documentId = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='document_id']", "Document ID meta tag not found.");
+            var updatedAt = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='updated_at']", "Updated At meta tag not found.");
+            var msDate = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@name='ms.date']", "MS Date meta tag not found.");
+            var ogUrl = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@property='og:url']", "OG URL meta tag not found.");
 
 
             AgentResponse? summary = await SummarizeContent(mainContentNode.InnerText);
@@ -376,14 +377,14 @@ public sealed class LearningHtmlRunner
                                 VALUES (@title, @description, @og_url, @document_id, @updated_at, @ms_date, @summary, @keywords, @embedding, @token_count, @version)";
         using (SqlCommand cmd = new(insertQuery, conn))
             {
-            cmd.Parameters.AddWithValue("@title", rag.Title ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@description", rag.Description ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@og_url", rag.OgUrl ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@document_id", rag.DocumentId ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@title", rag.Title);
+            cmd.Parameters.AddWithValue("@description", rag.Description);
+            cmd.Parameters.AddWithValue("@og_url", rag.OgUrl);
+            cmd.Parameters.AddWithValue("@document_id", rag.DocumentId);
             cmd.Parameters.AddWithValue("@updated_at", rag.UpdatedAt == DateTime.MinValue ? DBNull.Value : rag.UpdatedAt);
             cmd.Parameters.AddWithValue("@ms_date", rag.MSDate == DateTime.MinValue ? DBNull.Value : rag.MSDate);
-            cmd.Parameters.AddWithValue("@summary", rag.Summary ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@keywords", rag.Keywords ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@summary", rag.Summary);
+            cmd.Parameters.AddWithValue("@keywords", rag.Keywords);
             // SqlVector<float> is not directly supported by SqlClient, needs conversion or a custom type handler.
             // For simplicity, assuming a method to convert SqlVector to byte array or similar.
             // This part might need further implementation based on how SqlVector is stored.
@@ -433,6 +434,18 @@ public sealed class LearningHtmlRunner
         return null;
         }
 
+    private static string GetRequiredMetaContent(HtmlNode rootNode, string xpath, string errorMessage)
+        {
+        HtmlNode node = rootNode.SelectSingleNode(xpath) ?? throw new InvalidOperationException(errorMessage);
+        return node.GetAttributeValue("content", string.Empty);
+        }
+
+    private static string GetRequiredNodeText(HtmlNode rootNode, string xpath, string errorMessage)
+        {
+        HtmlNode node = rootNode.SelectSingleNode(xpath) ?? throw new InvalidOperationException(errorMessage);
+        return node.InnerText.Trim();
+        }
+
 
 
 
@@ -479,7 +492,7 @@ public static class TocHrefExtractor
             list.Add(item.Href);
             }
 
-        if (item.Children == null)
+        if (item.Children.Count == 0)
             {
             return;
             }

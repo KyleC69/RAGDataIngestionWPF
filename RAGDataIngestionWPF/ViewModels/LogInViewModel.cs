@@ -10,6 +10,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using JetBrains.Annotations;
+
 using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Core.Helpers;
 using RAGDataIngestionWPF.Properties;
@@ -45,6 +47,7 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
 
 
 
+    [NotNull]
     public RelayCommand LoginCommand
     {
         get { return field ??= new RelayCommand(OnLogin, () => !IsBusy); }
@@ -71,7 +74,6 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
             LoginResultType.Unauthorized => Resources.StatusUnauthorized,
             LoginResultType.NoNetworkAvailable => Resources.StatusNoNetworkAvailable,
             LoginResultType.UnknownError => Resources.StatusLoginFails,
-            LoginResultType.Success or LoginResultType.CancelledByUser => string.Empty,
             _ => string.Empty
         };
     }

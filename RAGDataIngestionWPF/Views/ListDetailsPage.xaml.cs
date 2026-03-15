@@ -7,8 +7,6 @@
 
 
 
-using System.Windows.Controls;
-
 using RAGDataIngestionWPF.ViewModels;
 
 
@@ -20,7 +18,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public sealed partial class ListDetailsPage : Page
+public sealed partial class ListDetailsPage
 {
     public ListDetailsPage(ListDetailsViewModel viewModel)
     {

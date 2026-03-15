@@ -22,7 +22,7 @@ public sealed class SampleCompany
     public string Address { get; set; }
 
     public string City { get; set; }
-    public string CompanyID { get; set; }
+    public string CompanyId { get; set; }
 
     public string CompanyName { get; set; }
 

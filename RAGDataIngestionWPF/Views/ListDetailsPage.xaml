@@ -5,8 +5,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:vm="clr-namespace:RAGDataIngestionWPF.ViewModels"
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     mc:Ignorable="d"
+    d:DataContext="{d:DesignInstance Type=vm:ListDetailsViewModel, IsDesignTimeCreatable=False}"
     d:DesignHeight="450" d:DesignWidth="800">
     <Page.Resources>
         <DataTemplate x:Key="ItemTemplate">
@@ -17,7 +19,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock
                     Grid.Column="0"
-                    Text="{Binding Symbol}"
+                    Text="{Binding Selected.Symbol}"
                     Style="{StaticResource MediumIconStyle}"
                     Margin="{StaticResource XSmallLeftMargin}"
                     AutomationProperties.Name="List item icon" />
@@ -25,8 +27,8 @@
                     Grid.Column="1"
                     Margin="{StaticResource SmallLeftMargin}"
                     VerticalAlignment="Center">
-                    <TextBlock Style="{StaticResource ListTitleStyle}" Text="{Binding Company}" />
-                    <TextBlock Style="{StaticResource ListSubTitleStyle}" Text="{Binding Status}" />
+                    <TextBlock Style="{StaticResource ListTitleStyle}" Text="{Binding Selected.Company}" />
+                    <TextBlock Style="{StaticResource ListSubTitleStyle}" Text="{Binding Selected.Status}" />
                 </StackPanel>
             </Grid>
         </DataTemplate>
@@ -39,12 +41,12 @@
                 <StackPanel HorizontalAlignment="Left" Margin="{StaticResource MediumLeftTopRightBottomMargin}">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
                         <TextBlock
-                            Text="{Binding Symbol}"
+                            Text="{Binding Selected.Symbol}"
                             Style="{StaticResource BigIconStyle}"
                             AutomationProperties.Name="Detail icon" />
                         <TextBlock
                             Margin="{StaticResource SmallLeftMargin}"
-                            Text="{Binding Company, Mode=OneWay}"
+                            Text="{Binding Selected.Company, Mode=OneWay}"
                             Style="{StaticResource PageTitleStyle}" />
                     </StackPanel>
                     <StackPanel Margin="{StaticResource SmallTopMargin}">
@@ -53,35 +55,35 @@
                             Text="Status" />
                         <TextBlock
                             Style="{StaticResource BodyTextStyle}"
-                            Text="{Binding Status, Mode=OneWay}" />
+                            Text="{Binding Selected.Status, Mode=OneWay}" />
                         <TextBlock
                             Margin="{StaticResource SmallTopMargin}"
                             Style="{StaticResource SubtitleTextStyle}"
                             Text="Order date" />
                         <TextBlock
                             Style="{StaticResource BodyTextStyle}"
-                            Text="{Binding OrderDate, Mode=OneWay}" />
+                            Text="{Binding Selected.OrderDate, Mode=OneWay}" />
                         <TextBlock
                             Margin="{StaticResource SmallTopMargin}"
                             Style="{StaticResource SubtitleTextStyle}"
                             Text="Company" />
                         <TextBlock
                             Style="{StaticResource BodyTextStyle}"
-                            Text="{Binding Company, Mode=OneWay}" />
+                            Text="{Binding Selected.Company, Mode=OneWay}" />
                         <TextBlock
                             Margin="{StaticResource SmallTopMargin}"
                             Style="{StaticResource SubtitleTextStyle}"
                             Text="Ship to" />
                         <TextBlock
                             Style="{StaticResource BodyTextStyle}"
-                            Text="{Binding ShipTo, Mode=OneWay}" />
+                            Text="{Binding Selected.ShipTo, Mode=OneWay}" />
                         <TextBlock
                             Margin="{StaticResource SmallTopMargin}"
                             Style="{StaticResource SubtitleTextStyle}"
                             Text="Order total" />
                         <TextBlock
                             Style="{StaticResource BodyTextStyle}"
-                            Text="{Binding OrderTotal, Mode=OneWay}" />
+                            Text="{Binding Selected.OrderTotal, Mode=OneWay}" />
 
                         <TextBlock
                             Margin="{StaticResource MediumTopMargin}"

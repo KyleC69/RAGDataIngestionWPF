@@ -15,7 +15,7 @@ namespace RAGDataIngestionWPF.Models;
 
 public class AppSettings
 {
-    public const string ConfigurationSectionName = "AppConfig";
+    public const string CONFIGURATION_SECTION_NAME = "AppConfig";
 
     public string AppPropertiesFileName { get; init; }
 
