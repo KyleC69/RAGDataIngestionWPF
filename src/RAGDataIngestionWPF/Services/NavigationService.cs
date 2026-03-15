@@ -1,0 +1,184 @@
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
+// Author: Kyle L. Crowder
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
+
+
+
+using System.Windows.Controls;
+using System.Windows.Navigation;
+
+using JetBrains.Annotations;
+
+using RAGDataIngestionWPF.Contracts.Services;
+using RAGDataIngestionWPF.Contracts.ViewModels;
+using RAGDataIngestionWPF.Helpers;
+
+
+
+
+namespace RAGDataIngestionWPF.Services;
+
+
+
+
+
+public sealed class NavigationService : INavigationService
+    {
+    private readonly IPageService _pageService;
+    private Frame _frame;
+    private object _lastParameterUsed;
+
+
+
+
+
+
+
+
+    public NavigationService(IPageService pageService)
+        {
+        _pageService = pageService;
+        }
+
+
+
+
+
+
+
+
+    public event EventHandler<string> Navigated;
+
+
+
+
+
+    public bool CanGoBack => _frame.CanGoBack;
+
+
+
+
+
+
+
+
+    public void Initialize(Frame shellFrame)
+        {
+        if (_frame == null)
+            {
+            _frame = shellFrame;
+            _frame.Navigated += this.OnNavigated;
+            }
+        }
+
+
+
+
+
+
+
+
+    public void UnsubscribeNavigation()
+        {
+        _frame.Navigated -= this.OnNavigated;
+        _frame = null;
+        }
+
+
+
+
+
+
+
+
+    public void GoBack()
+        {
+        if (_frame.CanGoBack)
+            {
+            var vmBeforeNavigation = _frame.GetDataContext();
+            _frame.GoBack();
+            if (vmBeforeNavigation is INavigationAware navigationAware)
+                {
+                navigationAware.OnNavigatedFrom();
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+    public bool NavigateTo(string pageKey, [CanBeNull] object parameter = null, bool clearNavigation = false)
+        {
+        Type pageType = _pageService.GetPageType(pageKey);
+
+        if (_frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(_lastParameterUsed)))
+            {
+            _frame.Tag = clearNavigation;
+            Page page = _pageService.GetPage(pageKey);
+            var navigated = _frame.Navigate(page, parameter);
+            if (navigated)
+                {
+                _lastParameterUsed = parameter;
+                var dataContext = _frame.GetDataContext();
+                if (dataContext is INavigationAware navigationAware)
+                    {
+                    navigationAware.OnNavigatedFrom();
+                    }
+                }
+
+            return navigated;
+            }
+
+        return false;
+        }
+
+
+
+
+
+
+
+
+    public void CleanNavigation()
+        {
+        _frame.CleanNavigation();
+        }
+
+
+
+
+
+
+
+
+    private void OnNavigated(object sender, NavigationEventArgs e)
+        {
+        if (sender is Frame frame)
+            {
+            var clearNavigation = (bool)frame.Tag;
+            if (clearNavigation)
+                {
+                frame.CleanNavigation();
+                }
+
+            var dataContext = frame.GetDataContext();
+            if (dataContext is INavigationAware navigationAware)
+                {
+                navigationAware.OnNavigatedTo(e.ExtraData);
+                }
+
+            Navigated?.Invoke(sender, dataContext?.GetType().FullName);
+            }
+        }
+    }

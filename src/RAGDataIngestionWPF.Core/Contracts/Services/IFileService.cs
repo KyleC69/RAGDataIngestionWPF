@@ -1,0 +1,30 @@
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
+// Author: Kyle L. Crowder
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
+
+
+
+namespace RAGDataIngestionWPF.Core.Contracts.Services;
+
+
+
+
+
+public interface IFileService
+    {
+
+    void Delete(string folderPath, string fileName);
+
+
+    T Read<T>(string folderPath, string fileName);
+
+
+    void Save<T>(string folderPath, string fileName, T content);
+    }

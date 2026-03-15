@@ -1,0 +1,47 @@
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
+// Author: Kyle L. Crowder
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
+
+
+
+using DataIngestionLib.Models;
+
+
+
+
+namespace DataIngestionLib.Contracts.Services;
+
+
+
+
+
+public interface IChatHistoryProvider
+    {
+
+    ValueTask<PersistedChatMessage> CreateMessageAsync(PersistedChatMessage message, CancellationToken cancellationToken = default);
+
+
+    ValueTask<int> DeleteConversationAsync(string conversationId, CancellationToken cancellationToken = default);
+
+
+    ValueTask<bool> DeleteMessageAsync(Guid messageId, CancellationToken cancellationToken = default);
+
+
+    ValueTask EnsureInitializedAsync(CancellationToken cancellationToken = default);
+
+
+    ValueTask<PersistedChatMessage?> GetMessageAsync(Guid messageId, CancellationToken cancellationToken = default);
+
+
+    ValueTask<IReadOnlyList<PersistedChatMessage>> GetMessagesAsync(string conversationId, int? take, CancellationToken cancellationToken = default);
+
+
+    ValueTask<PersistedChatMessage?> UpdateMessageAsync(Guid messageId, string content, DateTimeOffset timestampUtc, CancellationToken cancellationToken = default);
+    }

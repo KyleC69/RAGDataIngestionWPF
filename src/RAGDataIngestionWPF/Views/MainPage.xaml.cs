@@ -1,0 +1,142 @@
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
+// Author: Kyle L. Crowder
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
+//
+//
+//
+
+
+
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
+using System.Windows.Threading;
+
+using JetBrains.Annotations;
+
+using RAGDataIngestionWPF.ViewModels;
+
+
+
+
+namespace RAGDataIngestionWPF.Views;
+
+
+
+
+
+public sealed partial class MainPage
+    {
+    private ScrollViewer _messagesScrollViewer;
+
+
+
+
+
+
+
+
+    public MainPage(MainViewModel viewModel)
+        {
+        this.InitializeComponent();
+        DataContext = viewModel;
+
+        Loaded += this.OnLoaded;
+        Unloaded += this.OnUnloaded;
+        }
+
+
+
+
+
+
+
+
+    [CanBeNull]
+    private static T FindVisualChild<T>([NotNull] DependencyObject parent)
+            where T : DependencyObject
+        {
+        var childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (var index = 0; index < childrenCount; index++)
+            {
+            DependencyObject child = VisualTreeHelper.GetChild(parent, index);
+            if (child is T typedChild)
+                {
+                return typedChild;
+                }
+
+            T nestedChild = FindVisualChild<T>(child);
+            if (nestedChild is not null)
+                {
+                return nestedChild;
+                }
+            }
+
+        return null;
+        }
+
+
+
+
+
+
+
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+        _messagesScrollViewer ??= FindVisualChild<ScrollViewer>(MessagesListBox);
+        MessagesListBox.ItemContainerGenerator.ItemsChanged += this.OnMessagesItemsChanged;
+        this.ScrollMessagesToBottom();
+        }
+
+
+
+
+
+
+
+
+    private void OnMessagesItemsChanged(object sender, ItemsChangedEventArgs e)
+        {
+        this.ScrollMessagesToBottom();
+        }
+
+
+
+
+
+
+
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+        MessagesListBox.ItemContainerGenerator.ItemsChanged -= this.OnMessagesItemsChanged;
+        }
+
+
+
+
+
+
+
+
+    private void ScrollMessagesToBottom()
+        {
+        if (MessagesListBox.Items.Count == 0)
+            {
+            return;
+            }
+
+        DispatcherOperation unused = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        {
+            var lastItem = MessagesListBox.Items[^1];
+            MessagesListBox.ScrollIntoView(lastItem);
+            _messagesScrollViewer?.ScrollToEnd();
+        }));
+        }
+    }
