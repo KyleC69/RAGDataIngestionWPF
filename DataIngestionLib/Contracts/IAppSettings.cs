@@ -20,4 +20,10 @@ public interface IAppSettings
     string EmbeddingModel { get; }
     string LearnBaseUrl { get; }
     string LogDirectory { get; }
-    }
+    
+    string ChatHistoryConnectionString { get; }
+
+    string RemoteRAGConnectionString { get; }
+
+
+}

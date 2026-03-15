@@ -1,4 +1,4 @@
-// Build Date: 2026/03/13
+﻿// Build Date: 2026/03/13
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         SqlChatHistoryProvider.cs
@@ -9,6 +9,7 @@
 
 using System.Text.Json;
 
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
@@ -55,10 +56,11 @@ namespace DataIngestionLib.Services;
 public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistoryProvider
     {
 
-    private readonly ISqlChatHistoryConnectionFactory _connectionFactory;
+    private readonly IAppSettings _appSettings;
     private readonly string _defaultAgentId;
     private readonly string _defaultApplicationId;
     private readonly string _defaultUserId;
+    private readonly SqlChatHistoryConnectionFactory _connectionFactory;
 
     private const int ConversationKeyLength = 128;
     private const int DefaultHistoryWindowSize = 200;
@@ -72,14 +74,16 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-    public SQLChatHistoryProvider(ISqlChatHistoryConnectionFactory connectionFactory)
+    public SQLChatHistoryProvider(IAppSettings appSettings,SqlChatHistoryConnectionFactory connection)
         {
-        ArgumentNullException.ThrowIfNull(connectionFactory);
-        _connectionFactory = connectionFactory;
+            ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(appSettings);
         _defaultAgentId = this.GetType().Name;
         _defaultApplicationId = AppDomain.CurrentDomain.FriendlyName;
         _defaultUserId = Environment.UserName;
-        }
+        _appSettings = appSettings; 
+        _connectionFactory = connection;
+    }
 
 
 
@@ -90,7 +94,7 @@ public sealed class SQLChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
     public async ValueTask EnsureInitializedAsync(CancellationToken cancellationToken = default)
         {
-        await using SqlConnection connection = await _connectionFactory.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlConnection connection = new SqlConnection(_appSettings.ChatHistoryConnectionString);
 
         foreach (var (migrationId, migrationSql) in ChatHistoryMigrations.All)
             {

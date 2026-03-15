@@ -10,6 +10,7 @@ using DataIngestionLib.Contracts;
 
 
 
+
 namespace RAGDataIngestionWPF.Contracts.Settings;
 
 
@@ -36,4 +37,11 @@ public class AppSettings : IAppSettings
 
     /// <inheritdoc />
     public string LogDirectory => Properties.Settings.Default.LogDirectory;
+
+    /// <inheritdoc />
+    public string ChatHistoryConnectionString => Environment.GetEnvironmentVariable("CHAT_HISTORY") ?? string.Empty;
+    
+    public string RemoteRAGConnectionString => Environment.GetEnvironmentVariable("REMOTE_RAG") ?? string.Empty;
+
+
 }

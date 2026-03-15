@@ -28,7 +28,6 @@
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
     <File Path="auto-commit.log" />
-    <File Path="docs/ProjectWarnings.md" />
     <File Path="docs/RAG Search Strategy.md" />
     <File Path="README.md" />
   </Folder>

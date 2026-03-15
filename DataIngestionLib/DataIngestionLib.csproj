@@ -57,10 +57,7 @@
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
 	  <PackageReference Include="OllamaSharp" Version="5.4.23" />
 	  <PackageReference Include="PuppeteerSharp" Version="24.39.0" />
-	  <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
-	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	    <PrivateAssets>all</PrivateAssets>
-	  </PackageReference>
+
   </ItemGroup>
 
 
