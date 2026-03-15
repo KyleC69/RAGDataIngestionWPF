@@ -12,7 +12,6 @@ using System.Windows;
 using Microsoft.Extensions.Configuration;
 
 using RAGDataIngestionWPF.Contracts.Activation;
-using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.Views;
 
 
@@ -31,9 +30,7 @@ public sealed class ToastNotificationActivationHandler : IActivationHandler
 {
 
     private readonly IConfiguration _config;
-    private readonly INavigationService _navigationService;
-    private readonly IServiceProvider _serviceProvider;
-    public const string ActivationArguments = "ToastNotificationActivationArguments";
+    public const string ACTIVATION_ARGUMENTS = "ToastNotificationActivationArguments";
 
 
 
@@ -42,11 +39,9 @@ public sealed class ToastNotificationActivationHandler : IActivationHandler
 
 
 
-    public ToastNotificationActivationHandler(IConfiguration config, IServiceProvider serviceProvider, INavigationService navigationService)
+    public ToastNotificationActivationHandler(IConfiguration config)
     {
         _config = config;
-        _serviceProvider = serviceProvider;
-        _navigationService = navigationService;
     }
 
 
@@ -58,7 +53,7 @@ public sealed class ToastNotificationActivationHandler : IActivationHandler
 
     public bool CanHandle()
     {
-        return !string.IsNullOrEmpty(_config[ActivationArguments]);
+        return !string.IsNullOrEmpty(_config[ACTIVATION_ARGUMENTS]);
     }
 
 
@@ -77,11 +72,15 @@ public sealed class ToastNotificationActivationHandler : IActivationHandler
         }
         else
         {
-            _ = App.Current.MainWindow.Activate();
-            if (App.Current.MainWindow.WindowState == WindowState.Minimized)
+            if (Application.Current.MainWindow != null)
             {
-                App.Current.MainWindow.WindowState = WindowState.Normal;
+                _ = Application.Current.MainWindow.Activate();
+                if (Application.Current.MainWindow.WindowState == WindowState.Minimized)
+                {
+                    Application.Current.MainWindow.WindowState = WindowState.Normal;
+                }
             }
+
         }
 
         await Task.CompletedTask;

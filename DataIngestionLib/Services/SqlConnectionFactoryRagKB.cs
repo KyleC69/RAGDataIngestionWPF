@@ -21,7 +21,7 @@ namespace DataIngestionLib.Services;
 /// <summary>
 /// Provides SQL connection for RAG knowledge base.
 /// </summary>
-public static class SqlConnectionFactoryRagKB
+public static class SqlConnectionFactoryRagKb
     {
     public static SqlConnection CreateConnection()
         {

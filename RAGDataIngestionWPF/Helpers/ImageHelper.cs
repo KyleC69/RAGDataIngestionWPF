@@ -10,6 +10,8 @@
 using System.IO;
 using System.Windows.Media.Imaging;
 
+using JetBrains.Annotations;
+
 
 
 
@@ -22,6 +24,7 @@ namespace RAGDataIngestionWPF.Helpers;
 public static class ImageHelper
 {
 
+    [NotNull]
     public static BitmapImage ImageFromAssetsFile(string fileName)
     {
         Uri imageUri = new($"pack://application:,,,/Assets/{fileName}");
@@ -36,7 +39,8 @@ public static class ImageHelper
 
 
 
-    public static BitmapImage ImageFromString(string data)
+    [NotNull]
+    public static BitmapImage ImageFromString([NotNull] string data)
     {
         BitmapImage image = new();
         var binaryData = Convert.FromBase64String(data);

@@ -7,7 +7,6 @@
 
 
 
-using DataIngestionLib.ExternalKnowledge.RAGModels;
 using DataIngestionLib.RAGModels;
 
 using Microsoft.EntityFrameworkCore;

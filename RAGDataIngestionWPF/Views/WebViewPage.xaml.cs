@@ -7,8 +7,6 @@
 
 
 
-using System.Windows.Controls;
-
 using Microsoft.Web.WebView2.Core;
 
 using RAGDataIngestionWPF.ViewModels;
@@ -22,7 +20,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public sealed partial class WebViewPage : Page
+public sealed partial class WebViewPage
 {
     private readonly WebViewViewModel _viewModel;
 
@@ -38,7 +36,7 @@ public sealed partial class WebViewPage : Page
         InitializeComponent();
         DataContext = viewModel;
         _viewModel = viewModel;
-        _viewModel.Initialize(webView);
+        _viewModel.Initialize(WebView);
     }
 
 

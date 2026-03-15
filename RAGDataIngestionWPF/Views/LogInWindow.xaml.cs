@@ -7,8 +7,6 @@
 
 
 
-using MahApps.Metro.Controls;
-
 using RAGDataIngestionWPF.Contracts.Views;
 using RAGDataIngestionWPF.ViewModels;
 
@@ -21,7 +19,7 @@ namespace RAGDataIngestionWPF.Views;
 
 
 
-public sealed partial class LogInWindow : MetroWindow, ILogInWindow
+public sealed partial class LogInWindow : ILogInWindow
 {
     public LogInWindow(LogInViewModel viewModel)
     {

@@ -179,6 +179,7 @@ public sealed class IdentityService : IIdentityService
 
     private async Task<bool> AcquireTokenSilentAsync(string[] scopes)
     {
+        _ = scopes;
         await Task.CompletedTask;
         return false;
     }

@@ -7,18 +7,13 @@
 
 
 
-using System.Windows.Controls;
-
-
-
-
 namespace RAGDataIngestionWPF.Views;
 
 
 
 
 
-public sealed partial class DataGridPage : Page
+public sealed partial class DataGridPage
 {
     public DataGridPage()
     {

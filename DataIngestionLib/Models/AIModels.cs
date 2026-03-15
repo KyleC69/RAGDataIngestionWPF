@@ -22,10 +22,10 @@ public record AIModels
     public const string GPT4 = "gpt-4";
 
     /// <summary>Meta Llama 3.2 1-billion parameter variant served through Ollama.</summary>
-    public const string Llama1B = "llama3.2:1b";
+    public const string LLAMA1_B = "llama3.2:1b";
 
     /// <summary>Meta Llama 3.2 3-billion parameter variant served through Ollama.</summary>
-    public const string Llama323B = "llama3.2:3b";
+    public const string LLAMA323_B = "llama3.2:3b";
 
     /// <summary>MixedBread AI large embedding model (<c>mxbai-embed-large</c>) served through Ollama.</summary>
     public const string MXBAI = "mxbai-embed-large:latest";

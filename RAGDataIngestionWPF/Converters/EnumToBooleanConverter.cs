@@ -21,7 +21,7 @@ namespace RAGDataIngestionWPF.Converters;
 
 public sealed class EnumToBooleanConverter : IValueConverter
 {
-    public Type EnumType { get; init; }
+    public Type EnumType { get; init; } = typeof(Enum);
 
 
 
@@ -34,7 +34,7 @@ public sealed class EnumToBooleanConverter : IValueConverter
     {
         if (parameter is string enumString)
         {
-            if (Enum.IsDefined(EnumType, value))
+            if (value != null && Enum.IsDefined(EnumType, value))
             {
                 var enumValue = Enum.Parse(EnumType, enumString);
 
@@ -54,7 +54,7 @@ public sealed class EnumToBooleanConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return parameter is string enumString ? Enum.Parse(EnumType, enumString) : null;
+        return parameter is string enumString ? Enum.Parse(EnumType, enumString) : Binding.DoNothing;
 
     }
 }

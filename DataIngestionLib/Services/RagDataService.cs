@@ -43,7 +43,7 @@ public class RagDataService(ILogger<RagDataService> logger)
         {
         //Database full text search logic here, return the search results as a string. 
         List<FullTextResults> results = [];
-        using SqlConnection conn = SqlConnectionFactoryRagKB.CreateConnection();
+        using SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
 
         using SqlCommand cmd = new("EXEC sp_Search_FullText @query, @topK", conn);
         SqlParameter unused1 = cmd.Parameters.AddWithValue("@query", query);
@@ -105,7 +105,7 @@ public class RagDataService(ILogger<RagDataService> logger)
         {
         //Database vector search logic here, return the search results as a string. 
         List<FullTextResults> results = [];
-        using SqlConnection conn = SqlConnectionFactoryRagKB.CreateConnection();
+        using SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
 
         using SqlCommand cmd = new("EXEC sp_Search_hybrid @query, @topK", conn);
         SqlParameter unused1 = cmd.Parameters.AddWithValue("@query", query);

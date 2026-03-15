@@ -11,6 +11,8 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 
+using JetBrains.Annotations;
+
 using RAGDataIngestionWPF.Core.Contracts.Services;
 
 
@@ -35,6 +37,7 @@ internal sealed class IdentityCacheService : IIdentityCacheService
 
 
 
+    [CanBeNull]
     public byte[] ReadMsalToken()
     {
         lock (_fileLock)
@@ -57,7 +60,7 @@ internal sealed class IdentityCacheService : IIdentityCacheService
 
 
 
-    public void SaveMsalToken(byte[] token)
+    public void SaveMsalToken([NotNull] byte[] token)
     {
         lock (_fileLock)
         {

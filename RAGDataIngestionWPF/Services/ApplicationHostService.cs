@@ -11,8 +11,11 @@ using System.Windows;
 
 using ControlzEx.Theming;
 
+using JetBrains.Annotations;
+
 using MahApps.Metro.Theming;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using RAGDataIngestionWPF.Contracts.Activation;
@@ -135,7 +138,7 @@ public sealed class ApplicationHostService : IHostedService
         if (!Application.Current.Windows.OfType<IShellWindow>().Any())
         {
             // Default activation that navigates to the apps default page
-            _shellWindow = _serviceProvider.GetService(typeof(IShellWindow)) as IShellWindow;
+            _shellWindow = _serviceProvider.GetRequiredService<IShellWindow>();
             _navigationService.Initialize(_shellWindow.GetNavigationFrame());
             _shellWindow.ShowWindow();
             var unused = _navigationService.NavigateTo(typeof(MainViewModel).FullName);
@@ -167,7 +170,7 @@ public sealed class ApplicationHostService : IHostedService
 
 
 
-    private static AppTheme ParseTheme(string themeName)
+    private static AppTheme ParseTheme([CanBeNull] string themeName)
     {
         return Enum.TryParse(themeName, out AppTheme theme) ? theme : AppTheme.Dark;
     }

@@ -26,7 +26,7 @@ public sealed class SampleOrder
     public double Freight { get; set; }
 
     public DateTime OrderDate { get; set; }
-    public long OrderID { get; set; }
+    public long OrderId { get; set; }
 
     public double OrderTotal { get; set; }
 
@@ -46,7 +46,7 @@ public sealed class SampleOrder
 
     public string ShortDescription
     {
-        get { return $"Order ID: {OrderID}"; }
+        get { return $"Order ID: {OrderId}"; }
     }
 
 

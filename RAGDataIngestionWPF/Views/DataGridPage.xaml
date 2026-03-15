@@ -8,10 +8,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:properties="clr-namespace:RAGDataIngestionWPF.Properties"
     mc:Ignorable="d"
+    d:DataContext="{d:DesignInstance Type=vm:DataGridViewModel, IsDesignTimeCreatable=False}"
     d:DesignHeight="450" d:DesignWidth="800">
-    <Page.DataContext>
-        <vm:DataGridViewModel />
-    </Page.DataContext>
     <Grid DataContext="{Binding}">
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
@@ -52,7 +50,7 @@
                                    FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                                    MinHeight="20" />
                             <TextBox Width="85"
-                                     AutomationProperties.LabeledBy="{Binding ElementName=Label2, Mode=OneWay}"
+                                      AutomationProperties.LabeledBy="{Binding ElementName=Label3, Mode=OneWay}"
                                      VerticalAlignment="Top" MinHeight="20" Background="{x:Null}" Foreground="White"
                                      Text="0" FontSize="14" BorderThickness="0,0,0,0" />
                         </StackPanel>
@@ -89,23 +87,12 @@
                         Remove this column definitions and define columns for your data.
                         Consider adding header properties to Resources.resw
                     -->
-                    <DataGridTextColumn Binding="{Binding OrderID}" Header="OrderID" />
-                    <DataGridTextColumn Binding="{Binding OrderDate}" Header="OrderDate" />
-                    <DataGridTextColumn Binding="{Binding Company}" Header="Company" />
-                    <DataGridTextColumn Binding="{Binding ShipTo}" Header="ShipTo" />
-                    <DataGridTextColumn Binding="{Binding OrderTotal}" Header="OrderTotal" />
-                    <DataGridTextColumn Binding="{Binding Status}" Header="Status" />
-                    <DataGridTemplateColumn Header="Symbol">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock
-                                    Margin="{StaticResource SmallLeftRightMargin}"
-                                    HorizontalAlignment="Left"
-                                    Style="{StaticResource SmallIconStyle}"
-                                    Text="{Binding Symbol}" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Binding="{Binding Title}" Header="Title" />
+                    <DataGridTextColumn Binding="{Binding OgUrl}" Header="URL" />
+                    <DataGridTextColumn Binding="{Binding UpdatedAt}" Header="Updated" />
+                    <DataGridTextColumn Binding="{Binding MsDate}" Header="MS Date" />
+                    <DataGridTextColumn Binding="{Binding Score}" Header="Score" />
+                    <DataGridTextColumn Binding="{Binding Summary}" Header="Summary" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

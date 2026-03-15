@@ -358,6 +358,6 @@ null;
     /// <inheritdoc />
     public override string ToString()
         {
-        return Text ?? string.Empty;
+        return Text;
         }
     }

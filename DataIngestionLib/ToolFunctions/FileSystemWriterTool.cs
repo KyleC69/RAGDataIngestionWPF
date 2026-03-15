@@ -34,7 +34,7 @@ public sealed class FileSystemWriterTool
 
         try
             {
-            File.WriteAllText(path, content ?? string.Empty);
+            File.WriteAllText(path, content);
             return ToolResult<string>.Ok($"Wrote file {path}");
             }
         catch (UnauthorizedAccessException ex)

@@ -10,6 +10,8 @@
 using System.Windows.Controls;
 using System.Windows.Navigation;
 
+using JetBrains.Annotations;
+
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.ViewModels;
 using RAGDataIngestionWPF.Helpers;
@@ -115,7 +117,7 @@ public sealed class NavigationService : INavigationService
 
 
 
-    public bool NavigateTo(string pageKey, object parameter = null, bool clearNavigation = false)
+    public bool NavigateTo(string pageKey, [CanBeNull] object parameter = null, bool clearNavigation = false)
     {
         Type pageType = _pageService.GetPageType(pageKey);
 
@@ -175,7 +177,7 @@ public sealed class NavigationService : INavigationService
                 navigationAware.OnNavigatedTo(e.ExtraData);
             }
 
-            Navigated?.Invoke(sender, dataContext.GetType().FullName);
+            Navigated?.Invoke(sender, dataContext?.GetType().FullName);
         }
     }
 }

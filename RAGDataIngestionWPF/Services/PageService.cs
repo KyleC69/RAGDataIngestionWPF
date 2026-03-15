@@ -11,6 +11,8 @@ using System.Windows.Controls;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
+using JetBrains.Annotations;
+
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.ViewModels;
 using RAGDataIngestionWPF.Views;
@@ -54,7 +56,7 @@ public sealed class PageService : IPageService
 
 
 
-    public Type GetPageType(string key)
+    public Type GetPageType([NotNull] string key)
     {
         Type pageType;
         lock (_pages)
@@ -75,10 +77,12 @@ public sealed class PageService : IPageService
 
 
 
-    public Page GetPage(string key)
+    [NotNull]
+    public Page GetPage([NotNull] string key)
     {
         Type pageType = GetPageType(key);
-        return _serviceProvider.GetService(pageType) as Page;
+        Page page = _serviceProvider.GetService(pageType) as Page;
+        return page ?? throw new InvalidOperationException($"Page service could not resolve page type {pageType.FullName}.");
     }
 
 
@@ -94,7 +98,7 @@ public sealed class PageService : IPageService
     {
         lock (_pages)
         {
-            var key = typeof(TVm).FullName;
+            var key = typeof(TVm).FullName ?? typeof(TVm).Name;
             if (_pages.ContainsKey(key))
             {
                 throw new ArgumentException($"The key {key} is already configured in PageService");
