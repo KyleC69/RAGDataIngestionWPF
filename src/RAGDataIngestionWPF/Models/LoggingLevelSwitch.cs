@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         LoggingLevelSwitch.cs
 // Author: Kyle L. Crowder
-// Build Num: 091011
+// Build Num: 182423
 
 
 
@@ -26,10 +26,6 @@ namespace RAGDataIngestionWPF.Models;
 public sealed class LoggingLevelSwitch
 {
     private volatile int _minimumLevel = (int)LogLevel.Trace;
-
-
-
-
 
     /// <summary>
     ///     Gets or sets the current minimum <see cref="LogLevel" />.

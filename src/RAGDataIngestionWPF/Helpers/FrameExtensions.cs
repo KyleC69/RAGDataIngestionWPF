@@ -3,15 +3,13 @@
 // Project:   RAGDataIngestionWPF
 // File:         FrameExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: 091010
+// Build Num: 182422
 
 
 
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
-
-using JetBrains.Annotations;
 
 
 

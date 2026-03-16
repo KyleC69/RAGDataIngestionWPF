@@ -3,14 +3,11 @@
 // Project:   DataIngestionLib
 // File:         IChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 090936
+// Build Num: 182438
 
 
-
-using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 
 
@@ -29,15 +26,10 @@ public interface IChatConversationService
     /// </summary>
     List<ChatMessage> ChatHistory { get; }
 
-
-
-
-
     /// <summary>
     ///     Gets the current context token count for the active chat history.
     /// </summary>
     int ContextTokenCount { get; }
-
 
 
     ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);

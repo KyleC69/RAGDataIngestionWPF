@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         MainPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 091024
+// Build Num: 182432
 
 
 
@@ -51,7 +51,6 @@ public sealed partial class MainPage
 
 
 
-    
     private static T FindVisualChild<T>(DependencyObject parent)
             where T : DependencyObject
     {

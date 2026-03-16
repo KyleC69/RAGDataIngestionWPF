@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         RAGContext.cs
 // Author: Kyle L. Crowder
-// Build Num: 090943
+// Build Num: 182439
 
 
 
@@ -23,19 +23,6 @@ namespace DataIngestionLib.Data;
 
 public class RAGContext : DbContext
 {
-
-    public virtual DbSet<Document> Documents { get; init; }
-
-    public virtual DbSet<Metadata> Metadata { get; init; }
-
-    public virtual DbSet<RemoteRag> RemoteRags { get; init; }
-
-
-
-
-
-
-
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -126,6 +113,19 @@ public class RAGContext : DbContext
 
         OnModelCreatingPartial(modelBuilder);
     }
+
+
+
+
+
+
+
+
+    public virtual DbSet<Document> Documents { get; init; }
+
+    public virtual DbSet<Metadata> Metadata { get; init; }
+
+    public virtual DbSet<RemoteRag> RemoteRags { get; init; }
 
 
 

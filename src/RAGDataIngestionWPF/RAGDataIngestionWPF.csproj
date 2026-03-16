@@ -9,7 +9,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AnalysisLevel>none</AnalysisLevel>
 		<LangVersion>latest</LangVersion>
-		<BaseOutputPath>e:\Released\RAGWPF</BaseOutputPath>
 		<RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
 		<EnableNETAnalyzers>False</EnableNETAnalyzers>
 		<RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>

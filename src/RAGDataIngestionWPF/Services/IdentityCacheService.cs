@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         IdentityCacheService.cs
 // Author: Kyle L. Crowder
-// Build Num: 091012
+// Build Num: 182424
 
 
 
@@ -35,7 +35,6 @@ internal sealed class IdentityCacheService : IIdentityCacheService
 
 
 
-    
     public byte[] ReadMsalToken()
     {
         lock (_fileLock)

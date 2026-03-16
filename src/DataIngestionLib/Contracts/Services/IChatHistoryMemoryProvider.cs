@@ -3,11 +3,9 @@
 // Project:   DataIngestionLib
 // File:         IChatHistoryMemoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 090936
+// Build Num: 182438
 
 
-
-using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;

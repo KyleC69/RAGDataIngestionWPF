@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         ListDetailsPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 091023
+// Build Num: 182432
 
 
 

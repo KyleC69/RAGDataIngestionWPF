@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         WebViewViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 091022
+// Build Num: 182431
 
 
 
@@ -33,6 +33,12 @@ public sealed partial class WebViewViewModel : ObservableObject
     private readonly ISystemService _systemService;
     private WebView2 _webView;
 
+    [ObservableProperty] private Visibility failedMesageVisibility = Visibility.Collapsed;
+
+    [ObservableProperty] private Visibility isLoadingVisibility = Visibility.Visible;
+
+    [ObservableProperty] private string source = DefaultUrl;
+
     // TODO: Set the URI of the page to show by default
     private const string DefaultUrl = "https://docs.microsoft.com/windows/apps/";
 
@@ -56,31 +62,15 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
 
-  
     public RelayCommand BrowserBackCommand
     {
         get { return field ??= new RelayCommand(() => _webView?.GoBack(), () => _webView?.CanGoBack ?? false); }
     }
 
-
-
-
-
-  
     public RelayCommand BrowserForwardCommand
     {
         get { return field ??= new RelayCommand(() => _webView?.GoForward(), () => _webView?.CanGoForward ?? false); }
     }
-
-
-
-
-
-    [ObservableProperty] private Visibility failedMesageVisibility = Visibility.Collapsed;
-
-
-
-
 
     public bool IsLoading
     {
@@ -92,16 +82,6 @@ public sealed partial class WebViewViewModel : ObservableObject
         }
     } = true;
 
-
-
-
-
-    [ObservableProperty] private Visibility isLoadingVisibility = Visibility.Visible;
-
-
-
-
-
     public bool IsShowingFailedMessage
     {
         get;
@@ -112,31 +92,15 @@ public sealed partial class WebViewViewModel : ObservableObject
         }
     }
 
-
-
-
-
-  
     public ICommand OpenInBrowserCommand
     {
-        get { return field ??= new RelayCommand(this.OnOpenInBrowser); }
+        get { return field ??= new RelayCommand(OnOpenInBrowser); }
     }
 
-
-
-
-
-  
     public ICommand RefreshCommand
     {
-        get { return field ??= new RelayCommand(this.OnRefresh); }
+        get { return field ??= new RelayCommand(OnRefresh); }
     }
-
-
-
-
-
-    [ObservableProperty] private string source = DefaultUrl;
 
 
 
@@ -157,7 +121,7 @@ public sealed partial class WebViewViewModel : ObservableObject
 
 
 
-    public void OnNavigationCompleted(object sender,  CoreWebView2NavigationCompletedEventArgs e)
+    public void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
     {
         IsLoading = false;
         if (e != null && !e.IsSuccess)

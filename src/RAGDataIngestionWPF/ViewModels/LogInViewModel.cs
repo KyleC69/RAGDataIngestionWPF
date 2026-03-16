@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         LogInViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 091017
+// Build Num: 182428
 
 
 
@@ -27,9 +27,7 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
 {
     private readonly IIdentityService _identityService = identityService;
 
-
-
-
+    [ObservableProperty] private string statusMessage = string.Empty;
 
     public bool IsBusy
     {
@@ -41,21 +39,10 @@ public sealed partial class LogInViewModel(IIdentityService identityService) : O
         }
     }
 
-
-
-
-
-  
     public RelayCommand LoginCommand
     {
         get { return field ??= new RelayCommand(OnLogin, () => !IsBusy); }
     }
-
-
-
-
-
-    [ObservableProperty] private string statusMessage = string.Empty;
 
 
 

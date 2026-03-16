@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         ChatMessageExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: 090947
+// Build Num: 182443
 
 
 

@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         IAppSettings.cs
 // Author: Kyle L. Crowder
-// Build Num: 155936
+// Build Num: 182439
 
 
 
@@ -22,25 +22,19 @@ public interface IAppSettings
 {
     string ApplicationId { get; set; }
 
-
     string ChatHistoryConnectionString { get; }
-
 
     string ChatModel { get; }
 
-
     string EmbeddingModel { get; }
 
-
     string LearnBaseUrl { get; }
-
 
     string LogDirectory { get; }
     int MaximumContext { get; }
     int MetaBudget { get; }
 
     string OllamaHost { get; }
-
 
     int OllamaPort { get; }
     int RAGBudget { get; }

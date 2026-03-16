@@ -3,15 +3,13 @@
 // Project:   RAGDataIngestionWPF
 // File:         ApplicationHostService.cs
 // Author: Kyle L. Crowder
-// Build Num: 091011
+// Build Num: 182423
 
 
 
 using System.Windows;
 
 using ControlzEx.Theming;
-
-using JetBrains.Annotations;
 
 using MahApps.Metro.Theming;
 
@@ -170,7 +168,7 @@ public sealed class ApplicationHostService : IHostedService
 
 
 
-    private static AppTheme ParseTheme( string themeName)
+    private static AppTheme ParseTheme(string themeName)
     {
         return Enum.TryParse(themeName, out AppTheme theme) ? theme : AppTheme.Dark;
     }

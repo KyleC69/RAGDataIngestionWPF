@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Core
 // File:         SampleOrder.cs
 // Author: Kyle L. Crowder
-// Build Num: 091029
+// Build Num: 182436
 
 
 
@@ -18,6 +18,18 @@ namespace RAGDataIngestionWPF.Core.Models;
 // It is the model class we use to display data on pages like Grid, Chart, and List Details.
 public sealed class SampleOrder
 {
+
+    public override string ToString()
+    {
+        return $"{Company} {Status}";
+    }
+
+
+
+
+
+
+
 
     public string Company { get; set; }
 
@@ -40,45 +52,17 @@ public sealed class SampleOrder
 
     public string ShipTo { get; set; }
 
-
-
-
-
     public string ShortDescription
     {
         get { return $"Order ID: {OrderId}"; }
     }
 
-
-
-
-
     public string Status { get; set; }
-
-
-
-
 
     public char Symbol
     {
         get { return (char)SymbolCode; }
     }
 
-
-
-
-
     public int SymbolCode { get; set; }
-
-
-
-
-
-
-
-
-    public override string ToString()
-    {
-        return $"{Company} {Status}";
-    }
 }

@@ -3,14 +3,11 @@
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 091026
+// Build Num: 182433
 
 
 
 #nullable enable
-
-
-
 
 using System.Diagnostics;
 using System.IO;
@@ -24,8 +21,6 @@ using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.DocIngestion;
 using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
-
-using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,8 +54,6 @@ public sealed partial class App
 {
     private IHost? _host;
     private bool _isHostStarted;
-
-
 
     private LogLevel _loglevel;
 
@@ -312,9 +305,7 @@ public sealed partial class App
         ArgumentNullException.ThrowIfNull(services);
 
 
-        IServiceCollection unused4 = services.AddSingleton<ISqlChatHistoryConnectionFactory, SqlChatHistoryConnectionFactory>();
         IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
-        IServiceCollection unused = services.AddSingleton(sp => (ISQLChatHistoryProvider)sp.GetRequiredService<IChatHistoryProvider>());
         IServiceCollection unused2 = services.AddSingleton<IAgentFactory, AgentFactory>();
 
         IServiceCollection unused1 = services.AddSingleton<AIContextHistoryInjector>();
@@ -367,7 +358,6 @@ public sealed partial class App
     {
         ArgumentNullException.ThrowIfNull(services);
         _ = services.AddHostedService<ApplicationHostService>();
-        _ = services.AddHostedService<ChatHistoryInitializationService>();
     }
 
 

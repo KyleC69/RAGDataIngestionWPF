@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         FileSystemReaderTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 090959
+// Build Num: 182446
 
 
 
@@ -25,8 +25,6 @@ namespace DataIngestionLib.ToolFunctions;
 [Description("Reads files from the file system. The input is a path to a file, and the output is the contents of the file.")]
 public sealed class FileSystemReaderTool
 {
-
-
 
     public static ToolResult<string> ReadFile(string relativePath)
     {

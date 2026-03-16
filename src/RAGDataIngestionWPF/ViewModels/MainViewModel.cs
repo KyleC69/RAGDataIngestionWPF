@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         MainViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 091017
+// Build Num: 182428
 
 
 
@@ -11,10 +11,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 
 
@@ -30,20 +28,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IChatConversationService _chatConversationService;
     private CancellationTokenSource _responseCancellationTokenSource;
 
-
-
-
-
-
-
-
-    public MainViewModel()
-    {
-        Messages = [];
-        ContextTokenCount = 0;
-        SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
-        CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
-    }
+    [ObservableProperty] private int contextTokenCount;
 
 
 
@@ -73,16 +58,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     public IRelayCommand CancelMessageCommand { get; }
 
-
-
-
-
-    [ObservableProperty] private int contextTokenCount;
-
-
-
-
-
     public bool IsGenerating
     {
         get;
@@ -96,10 +71,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-
-
-
-
     public string MessageInput
     {
         get;
@@ -112,15 +83,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
     } = string.Empty;
 
-
-
-
-
     public List<ChatMessage> Messages { get; }
-
-
-
-
 
     public IAsyncRelayCommand SendMessageCommand { get; }
 

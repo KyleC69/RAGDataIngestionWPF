@@ -3,11 +3,9 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         SettingsViewModelTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 091006
+// Build Num: 182419
 
 
-
-using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 

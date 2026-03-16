@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         ISqlVectorStore.cs
 // Author: Kyle L. Crowder
-// Build Num: 090937
+// Build Num: 182439
 
 
 
@@ -15,7 +15,6 @@ namespace DataIngestionLib.Contracts.Services;
 
 public interface ISqlVectorStore
 {
-
 
     /// <summary>
     ///     Retrieves persisted chat history for a user in ascending timestamp order.

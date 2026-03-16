@@ -3,11 +3,9 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ChatHistoryBehaviorTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 091002
+// Build Num: 182416
 
 
-
-using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 
@@ -103,7 +101,7 @@ public class ChatHistoryBehaviorTests
 
         Assert.AreEqual(3, history.Count);
         Assert.AreEqual("system", history[0].Text);
-        Assert.AreEqual<ChatRole>(ChatRole.User, history[1].Role);
+        Assert.AreEqual(ChatRole.User, history[1].Role);
         Assert.AreEqual("answer", history.LastMessage?.Text);
     }
 
@@ -120,7 +118,7 @@ public class ChatHistoryBehaviorTests
         AIChatHistory history = new AIChatHistory("You are helpful.");
 
         Assert.AreEqual(1, history.Count);
-        Assert.AreEqual<ChatRole>(ChatRole.System, history[0].Role);
+        Assert.AreEqual(ChatRole.System, history[0].Role);
         Assert.AreEqual("You are helpful.", history[0].Text);
     }
 

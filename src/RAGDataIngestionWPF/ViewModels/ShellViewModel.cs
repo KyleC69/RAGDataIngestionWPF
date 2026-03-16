@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         ShellViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 091021
+// Build Num: 182430
 
 
 
@@ -32,6 +32,10 @@ public sealed partial class ShellViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IUserDataService _userDataService;
 
+    [ObservableProperty] private HamburgerMenuItem selectedMenuItem;
+
+    [ObservableProperty] private HamburgerMenuItem selectedOptionsMenuItem;
+
 
 
 
@@ -52,35 +56,20 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
 
-  
     public RelayCommand GoBackCommand
     {
         get { return field ??= new RelayCommand(OnGoBack, CanGoBack); }
     }
 
-
-
-
-
-  
     public ICommand LoadedCommand
     {
         get { return field ??= new RelayCommand(OnLoaded); }
     }
 
-
-
-
-
-  
     public ICommand MenuItemInvokedCommand
     {
         get { return field ??= new RelayCommand(OnMenuItemInvoked); }
     }
-
-
-
-
 
     // TODO: Change the icons and titles for all HamburgerMenuItems here.
     public ObservableCollection<HamburgerMenuItem> MenuItems { get; } =
@@ -97,33 +86,11 @@ public sealed partial class ShellViewModel : ObservableObject
             new HamburgerMenuGlyphItem { Label = Resources.ShellSettingsPage, Glyph = "\uE713", TargetPageType = typeof(SettingsViewModel) }
     ];
 
-
-
-
-
-  
     public ICommand OptionsMenuItemInvokedCommand
     {
         get { return field ??= new RelayCommand(OnOptionsMenuItemInvoked); }
     }
 
-
-
-
-
-    [ObservableProperty] private HamburgerMenuItem selectedMenuItem;
-
-
-
-
-
-    [ObservableProperty] private HamburgerMenuItem selectedOptionsMenuItem;
-
-
-
-
-
-  
     public ICommand UnloadedCommand
     {
         get { return field ??= new RelayCommand(OnUnloaded); }
@@ -148,7 +115,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
 
 
-    private void NavigateTo( Type targetViewModel)
+    private void NavigateTo(Type targetViewModel)
     {
         if (targetViewModel != null)
         {

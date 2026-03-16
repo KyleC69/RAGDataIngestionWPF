@@ -3,13 +3,11 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         EventLogModels.cs
 // Author: Kyle L. Crowder
-// Build Num: 091003
+// Build Num: 182417
 
 
 
 using System.Diagnostics;
-
-using JetBrains.Annotations;
 
 
 

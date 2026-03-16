@@ -3,11 +3,14 @@
 // Project:   DataIngestionLib
 // File:         ChatSessionState.cs
 // Author: Kyle L. Crowder
-// Build Num: 090951
+// Build Num: 182443
 
 
 
 using Microsoft.SemanticKernel.ChatCompletion;
+
+
+
 
 namespace DataIngestionLib.Models;
 

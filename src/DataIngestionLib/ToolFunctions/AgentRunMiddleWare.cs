@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         AgentRunMiddleWare.cs
 // Author: Kyle L. Crowder
-// Build Num: 090958
+// Build Num: 182446
 
 
 
@@ -53,6 +53,7 @@ public sealed class AgentRunMiddleWare
     {
         _ = new ChatClientBuilder(_baseAgent)
                 .UseLogging(_factory)
-                .UseFunctionInvocation().Build();
+                .UseFunctionInvocation()
+                .Build();
     }
 }

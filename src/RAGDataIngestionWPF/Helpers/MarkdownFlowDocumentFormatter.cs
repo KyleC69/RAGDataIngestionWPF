@@ -1,4 +1,13 @@
-﻿using System.Windows;
+﻿// Build Date: 2026/03/15
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF
+// File:         MarkdownFlowDocumentFormatter.cs
+// Author: Kyle L. Crowder
+// Build Num: 182422
+
+
+
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -7,29 +16,26 @@ using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 
+
+
+
 namespace RAGDataIngestionWPF.Helpers;
+
+
+
+
 
 internal static class MarkdownFlowDocumentFormatter
 {
     private static readonly Thickness BlockMargin = new(0, 0, 0, 8);
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
 
-    internal static FlowDocument Format(string markdown)
-    {
-        FlowDocument document = CreateDocument();
-        if (string.IsNullOrWhiteSpace(markdown))
-        {
-            return document;
-        }
 
-        MarkdownDocument parsedMarkdown = Markdown.Parse(markdown, Pipeline);
-        foreach (Markdig.Syntax.Block block in parsedMarkdown)
-        {
-            AddBlock(document.Blocks, block);
-        }
 
-        return document;
-    }
+
+
+
+
 
     private static void AddBlock(BlockCollection blocks, Markdig.Syntax.Block block)
     {
@@ -77,6 +83,13 @@ internal static class MarkdownFlowDocumentFormatter
         }
     }
 
+
+
+
+
+
+
+
     private static void AddInline(InlineCollection inlines, Markdig.Syntax.Inlines.Inline inline)
     {
         switch (inline)
@@ -92,8 +105,8 @@ internal static class MarkdownFlowDocumentFormatter
             case CodeInline codeInline:
                 inlines.Add(new Span(new Run(codeInline.Content))
                 {
-                    FontFamily = new FontFamily("Consolas"),
-                    Background = CreateCodeBackgroundBrush()
+                        FontFamily = new FontFamily("Consolas"),
+                        Background = CreateCodeBackgroundBrush()
                 });
                 return;
 
@@ -124,6 +137,13 @@ internal static class MarkdownFlowDocumentFormatter
         }
     }
 
+
+
+
+
+
+
+
     private static void AddInlines(InlineCollection inlines, ContainerInline containerInline)
     {
         if (containerInline is null)
@@ -136,6 +156,13 @@ internal static class MarkdownFlowDocumentFormatter
             AddInline(inlines, currentInline);
         }
     }
+
+
+
+
+
+
+
 
     private static void ApplyEmphasis(Span span, EmphasisInline emphasisInline)
     {
@@ -155,40 +182,68 @@ internal static class MarkdownFlowDocumentFormatter
         }
     }
 
+
+
+
+
+
+
+
     private static Brush CreateCodeBackgroundBrush()
     {
         return new SolidColorBrush(Color.FromArgb(32, 255, 255, 255));
     }
 
+
+
+
+
+
+
+
     private static BlockUIContainer CreateCodeBlock(LeafBlock codeBlock)
     {
         return new BlockUIContainer(new Border
         {
-            Padding = new Thickness(8),
-            Background = CreateCodeBackgroundBrush(),
-            CornerRadius = new CornerRadius(4),
-            Child = new TextBlock
-            {
-                Text = codeBlock.Lines.ToString(),
-                FontFamily = new FontFamily("Consolas"),
-                TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(0)
-            }
+                Padding = new Thickness(8),
+                Background = CreateCodeBackgroundBrush(),
+                CornerRadius = new CornerRadius(4),
+                Child = new TextBlock
+                {
+                        Text = codeBlock.Lines.ToString(),
+                        FontFamily = new FontFamily("Consolas"),
+                        TextWrapping = TextWrapping.Wrap,
+                        Margin = new Thickness(0)
+                }
         })
         {
-            Margin = BlockMargin
+                Margin = BlockMargin
         };
     }
+
+
+
+
+
+
+
 
     private static FlowDocument CreateDocument()
     {
         return new FlowDocument
         {
-            PagePadding = new Thickness(0),
-            ColumnWidth = double.PositiveInfinity,
-            Background = Brushes.Transparent
+                PagePadding = new Thickness(0),
+                ColumnWidth = double.PositiveInfinity,
+                Background = Brushes.Transparent
         };
     }
+
+
+
+
+
+
+
 
     private static Paragraph CreateHeading(HeadingBlock headingBlock)
     {
@@ -196,24 +251,31 @@ internal static class MarkdownFlowDocumentFormatter
         heading.FontWeight = FontWeights.SemiBold;
         heading.FontSize = headingBlock.Level switch
         {
-            1 => 22,
-            2 => 20,
-            3 => 18,
-            4 => 16,
-            5 => 14,
-            _ => 13
+                1 => 22,
+                2 => 20,
+                3 => 18,
+                4 => 16,
+                5 => 14,
+                _ => 13
         };
 
         return heading;
     }
 
+
+
+
+
+
+
+
     private static Hyperlink CreateLink(LinkInline linkInline)
     {
         Hyperlink hyperlink = new()
         {
-            Foreground = Brushes.DeepSkyBlue,
-            TextDecorations = TextDecorations.Underline,
-            ToolTip = linkInline.Url
+                Foreground = Brushes.DeepSkyBlue,
+                TextDecorations = TextDecorations.Underline,
+                ToolTip = linkInline.Url
         };
 
         if (!string.IsNullOrWhiteSpace(linkInline.Url) && Uri.TryCreate(linkInline.Url, UriKind.RelativeOrAbsolute, out Uri navigateUri))
@@ -230,12 +292,19 @@ internal static class MarkdownFlowDocumentFormatter
         return hyperlink;
     }
 
-    private static System.Windows.Documents.List CreateList(ListBlock listBlock)
+
+
+
+
+
+
+
+    private static List CreateList(ListBlock listBlock)
     {
-        System.Windows.Documents.List list = new()
+        List list = new()
         {
-            Margin = BlockMargin,
-            MarkerStyle = listBlock.IsOrdered ? TextMarkerStyle.Decimal : TextMarkerStyle.Disc
+                Margin = BlockMargin,
+                MarkerStyle = listBlock.IsOrdered ? TextMarkerStyle.Decimal : TextMarkerStyle.Disc
         };
 
         foreach (Markdig.Syntax.Block block in listBlock)
@@ -257,25 +326,39 @@ internal static class MarkdownFlowDocumentFormatter
         return list;
     }
 
+
+
+
+
+
+
+
     private static Paragraph CreateParagraph(ContainerInline inline)
     {
         Paragraph paragraph = new()
         {
-            Margin = BlockMargin
+                Margin = BlockMargin
         };
 
         AddInlines(paragraph.Inlines, inline);
         return paragraph;
     }
 
+
+
+
+
+
+
+
     private static Section CreateQuote(QuoteBlock quoteBlock)
     {
         Section quoteSection = new()
         {
-            Margin = BlockMargin,
-            Padding = new Thickness(10, 0, 0, 0),
-            BorderThickness = new Thickness(3, 0, 0, 0),
-            BorderBrush = new SolidColorBrush(Color.FromArgb(96, 255, 255, 255))
+                Margin = BlockMargin,
+                Padding = new Thickness(10, 0, 0, 0),
+                BorderThickness = new Thickness(3, 0, 0, 0),
+                BorderBrush = new SolidColorBrush(Color.FromArgb(96, 255, 255, 255))
         };
 
         foreach (Markdig.Syntax.Block childBlock in quoteBlock)
@@ -284,5 +367,29 @@ internal static class MarkdownFlowDocumentFormatter
         }
 
         return quoteSection;
+    }
+
+
+
+
+
+
+
+
+    internal static FlowDocument Format(string markdown)
+    {
+        FlowDocument document = CreateDocument();
+        if (string.IsNullOrWhiteSpace(markdown))
+        {
+            return document;
+        }
+
+        MarkdownDocument parsedMarkdown = Markdown.Parse(markdown, Pipeline);
+        foreach (Markdig.Syntax.Block block in parsedMarkdown)
+        {
+            AddBlock(document.Blocks, block);
+        }
+
+        return document;
     }
 }

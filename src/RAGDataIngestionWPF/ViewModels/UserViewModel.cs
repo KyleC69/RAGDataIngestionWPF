@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         UserViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 091022
+// Build Num: 182431
 
 
 
@@ -24,15 +24,7 @@ public sealed partial class UserViewModel : ObservableObject
 {
     [ObservableProperty] private string name = string.Empty;
 
-
-
-
-
     [ObservableProperty] private BitmapImage photo;
-
-
-
-
 
     [ObservableProperty] private string userPrincipalName = string.Empty;
 }

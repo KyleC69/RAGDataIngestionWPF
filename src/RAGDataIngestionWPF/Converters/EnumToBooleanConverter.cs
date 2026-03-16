@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         EnumToBooleanConverter.cs
 // Author: Kyle L. Crowder
-// Build Num: 091010
+// Build Num: 182421
 
 
 

@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         AIContextRAGInjector.cs
 // Author: Kyle L. Crowder
-// Build Num: 155947
+// Build Num: 182449
 
 
 
@@ -11,8 +11,6 @@ using DataIngestionLib.Contracts.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel.ChatCompletion;
-
 
 
 
@@ -52,7 +50,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(context);
 
-       List<ChatMessage> requestMessages =
+        List<ChatMessage> requestMessages =
         [
                 .. context.RequestMessages
                         .Select(m => new ChatMessage(m.Role, m.Text))
@@ -66,7 +64,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
         foreach (IRagContextSource source in _sources)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            List<ChatMessage> sourceMessages = await source
+            var sourceMessages = await source
                     .GetContextMessagesAsync(requestMessages, context.Session, cancellationToken)
                     .ConfigureAwait(false);
 

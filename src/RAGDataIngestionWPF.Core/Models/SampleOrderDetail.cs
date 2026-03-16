@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF.Core
 // File:         SampleOrderDetail.cs
 // Author: Kyle L. Crowder
-// Build Num: 091029
+// Build Num: 182436
 
 
 
@@ -32,18 +32,10 @@ public sealed class SampleOrderDetail
 
     public string QuantityPerUnit { get; set; }
 
-
-
-
-
     public string ShortDescription
     {
         get { return $"Product ID: {ProductId} - {ProductName}"; }
     }
-
-
-
-
 
     public double Total { get; set; }
 

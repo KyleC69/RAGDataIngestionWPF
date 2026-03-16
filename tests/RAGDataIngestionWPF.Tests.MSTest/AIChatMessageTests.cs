@@ -3,11 +3,9 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         AIChatMessageTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 091001
+// Build Num: 182416
 
 
-
-using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 

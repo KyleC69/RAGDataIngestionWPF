@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         INavigationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 091008
+// Build Num: 182420
 
 
 
@@ -19,16 +19,16 @@ namespace RAGDataIngestionWPF.Contracts.Services;
 
 
 /// <summary>
-/// Provides an interface for handling navigation within the application.
+///     Provides an interface for handling navigation within the application.
 /// </summary>
 /// <remarks>
-/// This service facilitates navigation between different pages, manages navigation history, 
-/// and provides events for navigation-related actions. It is designed to be used with a 
-/// <see cref="System.Windows.Controls.Frame"/> as the navigation container.
+///     This service facilitates navigation between different pages, manages navigation history,
+///     and provides events for navigation-related actions. It is designed to be used with a
+///     <see cref="System.Windows.Controls.Frame" /> as the navigation container.
 /// </remarks>
 public interface INavigationService
 {
-    
+
     bool CanGoBack { get; }
 
 

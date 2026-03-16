@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         DataGridViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 091015
+// Build Num: 182427
 
 
 
@@ -14,8 +14,6 @@ using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.DocIngestion;
 using DataIngestionLib.RAGModels;
-
-using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
@@ -67,11 +65,6 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
     public ObservableCollection<RemoteRag> Source { get; } = [];
 
-
-
-
-
-  
     public IAsyncRelayCommand StartIngestionCommand
     {
         get { return _startIngestionCommand ??= new AsyncRelayCommand(StartIngestion); }
@@ -108,7 +101,6 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-  
     private Task StartIngestion()
     {
         return Task.CompletedTask;

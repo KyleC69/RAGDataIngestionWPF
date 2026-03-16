@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         HeadlessBrowser.cs
 // Author: Kyle L. Crowder
-// Build Num: 090945
+// Build Num: 182441
 
 
 
@@ -23,10 +23,6 @@ namespace DataIngestionLib.DocIngestion;
 
 public interface IHeadlessBrowser
 {
-
-
-
-
 
     Task CaptureScreenshotAsync(string url, CancellationToken cancellationToken = default);
 
@@ -54,10 +50,6 @@ public interface IHeadlessBrowser
 
 public class HeadlessBrowser : IDisposable, IHeadlessBrowser
 {
-
-
-
-
 
     /// <inheritdoc />
     public void Dispose()

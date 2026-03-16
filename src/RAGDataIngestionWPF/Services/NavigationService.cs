@@ -3,14 +3,12 @@
 // Project:   RAGDataIngestionWPF
 // File:         NavigationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 091013
+// Build Num: 182425
 
 
 
 using System.Windows.Controls;
 using System.Windows.Navigation;
-
-using JetBrains.Annotations;
 
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.ViewModels;
@@ -51,10 +49,6 @@ public sealed class NavigationService : INavigationService
 
 
     public event EventHandler<string> Navigated;
-
-
-
-
 
     public bool CanGoBack
     {
@@ -117,7 +111,7 @@ public sealed class NavigationService : INavigationService
 
 
 
-    public bool NavigateTo(string pageKey,  object parameter = null, bool clearNavigation = false)
+    public bool NavigateTo(string pageKey, object parameter = null, bool clearNavigation = false)
     {
         Type pageType = _pageService.GetPageType(pageKey);
 

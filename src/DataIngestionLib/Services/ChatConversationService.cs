@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         ChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 090953
+// Build Num: 182444
 
 
 
@@ -15,7 +15,6 @@ using DataIngestionLib.Services.Contracts;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 
 
@@ -66,40 +65,20 @@ public sealed class ChatConversationService : IChatConversationService
         get { return _appSettings.ApplicationId ?? Guid.NewGuid().ToString(); }
     }
 
-
-
-
-
     private TokenBudget ConversationTokenBudget { get; }
 
-
-
-
-
     public bool Initialized { get; set; }
-
-
-
-
 
     public static string UserId
     {
         get { return Environment.UserName; }
     }
 
-
-
-
-
     /// <summary>
     ///     Duplicate history objects?  We should not need to track sepearately the session holds the context and our sql
     ///     backed chat history should be handling all the history objects.
     /// </summary>
     public List<ChatMessage> ChatHistory { get; } = new();
-
-
-
-
 
     public int ContextTokenCount
     {

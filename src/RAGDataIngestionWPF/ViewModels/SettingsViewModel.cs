@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         SettingsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 091019
+// Build Num: 182429
 
 
 
@@ -42,6 +42,33 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
     private readonly LoggingLevelSwitch _loggingLevelSwitch = loggingLevelSwitch;
     private readonly ISystemService _systemService = systemService;
     private readonly IUserDataService _userDataService = userDataService;
+
+    [ObservableProperty] private Guid applicationId;
+
+    [ObservableProperty] private string chatHistoryConnectionString = string.Empty;
+
+    [ObservableProperty] private bool chatHistoryContextEnabled;
+
+    [ObservableProperty] private string chatHistorySettingsStatus = string.Empty;
+
+    [ObservableProperty] private string chatModelName = string.Empty;
+
+    [ObservableProperty] private string embeddingsModelName = string.Empty;
+
+    [ObservableProperty] private int maxContextMessages;
+
+    [ObservableProperty] private int? maxContextTokens;
+
+    /// <summary>Gets or sets the currently selected minimum log level.</summary>
+    [ObservableProperty] private LogLevel minimumLogLevel;
+
+    [ObservableProperty] private bool rAGKnowledgeEnabled;
+
+    [ObservableProperty] private AppTheme theme;
+
+    [ObservableProperty] private UserViewModel user = new();
+
+    [ObservableProperty] private string versionDescription = string.Empty;
     private const string HcDarkTheme = "pack://application:,,,/Styles/Themes/HC.Dark.Blue.xaml";
     private const string HcLightTheme = "pack://application:,,,/Styles/Themes/HC.Light.Blue.xaml";
 
@@ -56,16 +83,6 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
     private const string SettingsPageRagKnowledgeEnabledLabelKey = "SettingsPageRagKnowledgeEnabledLabel";
     private const string SettingsPageSaveChatHistoryButtonTextKey = "SettingsPageSaveChatHistoryButtonText";
 
-
-
-
-
-    [ObservableProperty] private Guid applicationId;
-
-
-
-
-
     /// <summary>
     ///     The available <see cref="LogLevel" /> values displayed in the log-level picker.
     ///     <see cref="LogLevel.None" /> is excluded because selecting it silences all logging,
@@ -74,219 +91,80 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
     public IReadOnlyList<LogLevel> AvailableLogLevels { get; } =
         Enum.GetValues<LogLevel>().Where(l => l != LogLevel.None).ToList();
 
-
-
-
-
-    [ObservableProperty] private string chatHistoryConnectionString = string.Empty;
-
-
-
-
-
-    [ObservableProperty] private bool chatHistoryContextEnabled;
-
-
-
-
-
     public static string ChatHistoryContextEnabledLabelText
     {
         get { return GetResourceString(SettingsPageChatHistoryContextEnabledLabelKey, "Enable Chat History Context Injection"); }
     }
-
-
-
-
 
     public static string ChatHistorySaveStatusText
     {
         get { return GetResourceString(SettingsPageChatHistorySaveStatusKey, "Chat history settings saved."); }
     }
 
-
-
-
-
-    [ObservableProperty] private string chatHistorySettingsStatus = string.Empty;
-
-
-
-
-
     public static string ChatHistoryTitleText
     {
         get { return GetResourceString(SettingsPageChatHistoryTitleKey, "Chat History"); }
     }
-
-
-
-
 
     public static string ChatModelLabelText
     {
         get { return GetResourceString(SettingsPageChatModelLabelKey, "Chat Model"); }
     }
 
-
-
-
-
-    [ObservableProperty] private string chatModelName = string.Empty;
-
-
-
-
-
     public static string ConnectionStringLabelText
     {
         get { return GetResourceString(SettingsPageConnectionStringLabelKey, "Connection String"); }
     }
-
-
-
-
 
     public static string EmbeddingsModelLabelText
     {
         get { return GetResourceString(SettingsPageEmbeddingsModelLabelKey, "Embeddings Model"); }
     }
 
-
-
-
-
-    [ObservableProperty] private string embeddingsModelName = string.Empty;
-
-
-
-
-
-    [ObservableProperty] private int maxContextMessages;
-
-
-
-
-
     public static string MaxContextMessagesLabelText
     {
         get { return GetResourceString(SettingsPageMaxContextMessagesLabelKey, "Max Context Messages"); }
     }
-
-
-
-
-
-    [ObservableProperty] private int? maxContextTokens;
-
-
-
-
 
     public static string MaxContextTokensLabelText
     {
         get { return GetResourceString(SettingsPageMaxContextTokensLabelKey, "Max Context Tokens"); }
     }
 
-
-
-
-
-    /// <summary>Gets or sets the currently selected minimum log level.</summary>
-    [ObservableProperty]
-    private LogLevel minimumLogLevel;
-
-
-
-
-
-  
     public ICommand PrivacyStatementCommand
     {
-        get { return field ??= new RelayCommand(this.OnPrivacyStatement); }
+        get { return field ??= new RelayCommand(OnPrivacyStatement); }
     }
-
-
-
-
-
-    [ObservableProperty] private bool rAGKnowledgeEnabled;
-
-
-
-
 
     public static string RagKnowledgeEnabledLabelText
     {
         get { return GetResourceString(SettingsPageRagKnowledgeEnabledLabelKey, "Enable RAG Knowledge Context Injection"); }
     }
 
-
-
-
-
-  
     public ICommand RenewApplicationIdCommand
     {
-        get { return field ??= new RelayCommand(this.OnRenewApplicationId); }
+        get { return field ??= new RelayCommand(OnRenewApplicationId); }
     }
-
-
-
-
 
     public static string SaveChatHistoryButtonText
     {
         get { return GetResourceString(SettingsPageSaveChatHistoryButtonTextKey, "Save Chat History Settings"); }
     }
 
-
-
-
-
-  
     public ICommand SaveChatHistorySettingsCommand
     {
-        get { return field ??= new RelayCommand(this.OnSaveChatHistorySettings); }
+        get { return field ??= new RelayCommand(OnSaveChatHistorySettings); }
     }
 
-
-
-
-
-  
     public ICommand SetLogLevelCommand
     {
-        get { return field ??= new RelayCommand(this.OnSetLogLevel); }
+        get { return field ??= new RelayCommand(OnSetLogLevel); }
     }
 
-
-
-
-
-  
     public ICommand SetThemeCommand
     {
-        get { return field ??= new RelayCommand<string>(this.OnSetTheme); }
+        get { return field ??= new RelayCommand<string>(OnSetTheme); }
     }
-
-
-
-
-
-    [ObservableProperty] private AppTheme theme;
-
-
-
-
-
-    [ObservableProperty] private UserViewModel user = new();
-
-
-
-
-
-    [ObservableProperty] private string versionDescription = string.Empty;
 
 
 
@@ -494,7 +372,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static bool ParseBool( string value, bool fallback)
+    private static bool ParseBool(string value, bool fallback)
     {
         return bool.TryParse(value, out var parsed) ? parsed : fallback;
     }
@@ -506,7 +384,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static int ParseInt( string value, int fallback, int min)
+    private static int ParseInt(string value, int fallback, int min)
     {
         return int.TryParse(value, out var parsed) && parsed >= min ? parsed : fallback;
     }
@@ -518,7 +396,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static int? ParseNullableInt( string value, int fallback)
+    private static int? ParseNullableInt(string value, int fallback)
     {
         return string.IsNullOrWhiteSpace(value) ? null : int.TryParse(value, out var parsed) && parsed > 0 ? parsed : fallback;
     }
@@ -530,7 +408,7 @@ public sealed partial class SettingsViewModel(LoggingLevelSwitch loggingLevelSwi
 
 
 
-    private static AppTheme ParseTheme( string themeName)
+    private static AppTheme ParseTheme(string themeName)
     {
         return Enum.TryParse(themeName, out AppTheme theme) ? theme : AppTheme.Default;
     }

@@ -1,17 +1,17 @@
 ﻿{
    "CodeGenerationMode": 6,
-   "ContextClassName": "RAGContext",
+   "ContextClassName": "AIHistory",
    "ContextNamespace": "",
    "FilterSchemas": false,
-   "IncludeConnectionString": false,
+   "IncludeConnectionString": true,
    "IrregularWords": null,
    "MinimumProductVersion": "2.6.1382",
    "ModelNamespace": null,
    "OutputContextPath": "Data",
-   "OutputPath": "RAGModels",
+   "OutputPath": "HistoryModels",
    "PluralRules": null,
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "DataIngestionLib.ExternalKnowledge",
+   "ProjectRootNamespace": "DataIngestionLib.History",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,
@@ -19,35 +19,19 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[Documents]",
+         "Name": "[dbo].[ChatHistoryMessages]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[Metadata]",
+         "Name": "[dbo].[ChatHistoryTextChunks]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[RemoteRAG]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[Search_FullText]",
+         "Name": "[dbo].[sp_GenerateEmbedding]",
          "ObjectType": 1
       },
       {
-         "Name": "[dbo].[Search_Hybrid]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[dbo].[Search_RAG_Advanced]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[dbo].[Search_SemanticKeyPhrases]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[dbo].[Search_Vector]",
+         "Name": "[dbo].[sp_GenerateTextChunks]",
          "ObjectType": 1
       },
       {
@@ -55,11 +39,7 @@
          "ObjectType": 1
       },
       {
-         "Name": "[dbo].[sp_SafeCalculateRAGScores]",
-         "ObjectType": 1
-      },
-      {
-         "Name": "[dbo].[sp_VectorizeSearchText]",
+         "Name": "[dbo].[sp_VectorizeSearch]",
          "ObjectType": 1
       }
    ],

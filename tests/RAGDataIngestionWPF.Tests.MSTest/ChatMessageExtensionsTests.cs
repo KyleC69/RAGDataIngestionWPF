@@ -3,12 +3,9 @@
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ChatMessageExtensionsTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 091003
+// Build Num: 182417
 
 
-
-using DataIngestionLib.Models;
-using DataIngestionLib.Models.Extensions;
 
 using Microsoft.Agents.AI;
 

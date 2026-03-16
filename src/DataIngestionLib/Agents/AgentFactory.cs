@@ -3,7 +3,7 @@
 // Project:   DataIngestionLib
 // File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 155934
+// Build Num: 182438
 
 
 
@@ -99,29 +99,31 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         _innerClient = new OllamaApiClient(_appSettings.OllamaHost + ":" + _appSettings.OllamaPort, model);
 
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-        {
-                Id = agentId,
-                Name = agentId,
-                Description = agentDescription,
-                ChatOptions = new ChatOptions
                 {
-                        ConversationId = Guid.NewGuid().ToString(),
-                        Instructions = GetModelInstructions(),
-                        Temperature = 0.7f,
-                        MaxOutputTokens = 10000,
-                        Tools = ToolBuilder.GetAiTools()
-                },
-                AIContextProviders =
-                [
-                        _contextHistoryInjector
-                ],
-                UseProvidedChatClientAsIs = false,
-                ClearOnChatHistoryProviderConflict = false,
-                WarnOnChatHistoryProviderConflict = false,
-                ThrowOnChatHistoryProviderConflict = true,
-                ChatHistoryProvider = _chatHistoryProvider
+                        Id = agentId,
+                        Name = agentId,
+                        Description = agentDescription,
+                        ChatOptions = new ChatOptions
+                        {
+                                ConversationId = Guid.NewGuid().ToString(),
+                                Instructions = GetModelInstructions(),
+                                Temperature = 0.7f,
+                                MaxOutputTokens = 10000,
+                                Tools = ToolBuilder.GetAiTools()
+                        },
+                        AIContextProviders =
+                        [
+                                _contextHistoryInjector
+                        ],
+                        UseProvidedChatClientAsIs = false,
+                        ClearOnChatHistoryProviderConflict = false,
+                        WarnOnChatHistoryProviderConflict = false,
+                        ThrowOnChatHistoryProviderConflict = true,
+                        ChatHistoryProvider = _chatHistoryProvider
 
-        }).AsBuilder().UseLogging(_factory).Build();
+                }).AsBuilder()
+                .UseLogging(_factory)
+                .Build();
 
 
         return outer;

@@ -3,15 +3,13 @@
 // Project:   RAGDataIngestionWPF
 // File:         ImageHelper.cs
 // Author: Kyle L. Crowder
-// Build Num: 091010
+// Build Num: 182422
 
 
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows.Media.Imaging;
-
-using JetBrains.Annotations;
 
 
 

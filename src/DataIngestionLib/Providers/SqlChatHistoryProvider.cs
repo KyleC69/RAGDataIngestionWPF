@@ -3,9 +3,7 @@
 // Project:   DataIngestionLib
 // File:         SqlChatHistoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 155947
-
-
+// Build Num: 182449
 
 
 
@@ -23,10 +21,6 @@ namespace DataIngestionLib.Providers;
 
 public class SqlChatHistoryProvider : ChatHistoryProvider
 {
-
-
-
-
 
     /// <inheritdoc />
     protected override ValueTask<IEnumerable<ChatMessage>> InvokingCoreAsync(InvokingContext context, CancellationToken cancellationToken = new CancellationToken())

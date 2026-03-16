@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         IUserDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: 091008
+// Build Num: 182421
 
 
 
@@ -20,7 +20,6 @@ namespace RAGDataIngestionWPF.Contracts.Services;
 
 public interface IUserDataService
 {
-
 
     UserViewModel GetUser();
 

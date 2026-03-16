@@ -3,7 +3,7 @@
 // Project:   RAGDataIngestionWPF
 // File:         ListDetailsViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 091016
+// Build Num: 182427
 
 
 
@@ -28,6 +28,8 @@ public sealed partial class ListDetailsViewModel : ObservableObject, INavigation
 {
     private readonly ISampleDataService _sampleDataService;
 
+    [ObservableProperty] private SampleOrder selected;
+
 
 
 
@@ -48,12 +50,6 @@ public sealed partial class ListDetailsViewModel : ObservableObject, INavigation
 
 
     public ObservableCollection<SampleOrder> SampleItems { get; } = [];
-
-
-
-
-
-    [ObservableProperty] private SampleOrder selected;
 
 
 
