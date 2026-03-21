@@ -116,7 +116,7 @@ public sealed class ConversationHistoryContextOrchestrator : IConversationHistor
 
         return
         [
-            new ChatMessage(new ChatRole(AIChatRole.RAGContext.Value), body)
+            new ChatMessage(new ChatRole(AIChatRole.AIContext.Value), body)
         ];
     }
 

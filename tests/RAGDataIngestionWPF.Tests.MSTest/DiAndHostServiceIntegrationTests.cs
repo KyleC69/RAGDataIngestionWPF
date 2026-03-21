@@ -64,6 +64,7 @@ public class DiAndHostServiceIntegrationTests
         AssertHasSingleton<IRagContextSource>(services);
         Assert.AreEqual(3, services.Count(d => d.ServiceType == typeof(IRagContextSource) && d.Lifetime == ServiceLifetime.Singleton));
         AssertHasSingleton<DataIngestionLib.Providers.AIContextRAGInjector>(services);
+        AssertHasSingleton<DataIngestionLib.Providers.ConversationContextCacheRecorder>(services);
         AssertHasSingleton<IAgentFactory>(services);
     }
 

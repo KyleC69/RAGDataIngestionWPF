@@ -87,7 +87,7 @@ This reduces token noise and improves retrieval accuracy.
 
 * * *
 
-4. Progress Log (Plan State)
+4. Agent Progress Log (Planning State)
 
 ----------------------------
 

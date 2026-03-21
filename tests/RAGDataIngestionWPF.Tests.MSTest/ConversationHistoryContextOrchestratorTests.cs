@@ -49,7 +49,7 @@ public class ConversationHistoryContextOrchestratorTests
             CancellationToken.None);
 
         Assert.AreEqual(1, messages.Count);
-        Assert.AreEqual(AIChatRole.RAGContext.Value, messages[0].Role.Value);
+        Assert.AreEqual(AIChatRole.AIContext.Value, messages[0].Role.Value);
         StringAssert.Contains(messages[0].Text, "Relevant conversation history:");
         StringAssert.Contains(messages[0].Text, "source=conversation-history");
         StringAssert.Contains(messages[0].Text, "Schema validation should run during startup initialization.");

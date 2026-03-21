@@ -24,7 +24,6 @@ namespace DataIngestionLib.Providers;
 public sealed class AIContextRAGInjector : MessageAIContextProvider
 {
     private readonly IRagContextMessageAssembler _assembler;
-    private readonly IConversationContextCacheStore _cacheStore;
     private readonly IReadOnlyList<IRagContextSource> _sources;
 
 
@@ -36,15 +35,12 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
     public AIContextRAGInjector(
             IEnumerable<IRagContextSource> sources,
-            IRagContextMessageAssembler assembler,
-            IConversationContextCacheStore cacheStore)
+            IRagContextMessageAssembler assembler)
     {
         ArgumentNullException.ThrowIfNull(sources);
         ArgumentNullException.ThrowIfNull(assembler);
-        ArgumentNullException.ThrowIfNull(cacheStore);
         _sources = sources.ToArray();
         _assembler = assembler;
-        _cacheStore = cacheStore;
     }
 
 
@@ -85,14 +81,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
             aggregatedContext.AddRange(sourceMessages.Where(static message => !string.IsNullOrWhiteSpace(message.Text)));
         }
 
-        IReadOnlyList<ChatMessage> assembled = _assembler.Assemble(requestMessages, aggregatedContext);
-        string conversationId = ResolveConversationId(context.Session);
-        if (!string.IsNullOrWhiteSpace(conversationId) && assembled.Count > 0)
-        {
-            await _cacheStore.AppendAsync(conversationId, assembled, cancellationToken).ConfigureAwait(false);
-        }
-
-        return assembled;
+        return _assembler.Assemble(requestMessages, aggregatedContext);
     }
 
 
@@ -105,27 +94,5 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
     protected override ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = default)
     {
         return ValueTask.CompletedTask;
-    }
-
-    private static string ResolveConversationId(AgentSession? session)
-    {
-        if (session is null)
-        {
-            return string.Empty;
-        }
-
-        if (session.StateBag.TryGetValue("ConversationId", out string? conversationId)
-            && !string.IsNullOrWhiteSpace(conversationId))
-        {
-            return conversationId;
-        }
-
-        if (session.StateBag.TryGetValue("ChatHistoryConversationId", out string? chatHistoryConversationId)
-            && !string.IsNullOrWhiteSpace(chatHistoryConversationId))
-        {
-            return chatHistoryConversationId;
-        }
-
-        return string.Empty;
     }
 }

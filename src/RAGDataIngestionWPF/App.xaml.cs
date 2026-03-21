@@ -334,6 +334,7 @@ public sealed partial class App : Application
 
         IServiceCollection unused1 = services.AddSingleton<ChatHistoryContextInjector>();
         _ = services.AddSingleton<AIContextRAGInjector>();
+        _ = services.AddSingleton<ConversationContextCacheRecorder>();
     }
 
 

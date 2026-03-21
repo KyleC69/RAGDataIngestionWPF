@@ -10,9 +10,19 @@ using Microsoft.Extensions.AI;
 
 namespace DataIngestionLib.Services;
 
+
+/// <summary>
+///     Stores cacheable context and tool messages per conversation as JSON for later retrieval.
+/// </summary>
 public sealed class FileConversationContextCacheStore : IConversationContextCacheStore
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+    private static readonly HashSet<string> CacheableRoles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        AIChatRole.AIContext.Value,
+        AIChatRole.RAGContext.Value,
+        AIChatRole.Tool.Value
+    };
     private static readonly HashSet<string> StopWords = new(StringComparer.OrdinalIgnoreCase)
     {
         "the", "and", "for", "with", "that", "this", "from", "into", "about", "what", "when", "where", "which", "while", "have", "does", "how", "why", "can", "should"
@@ -64,9 +74,9 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
                 }
 
                 string role = message.Role.Value?.Trim() ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(role))
+                if (!IsCacheableRole(role))
                 {
-                    role = AIChatRole.RAGContext.Value;
+                    continue;
                 }
 
                 if (!seen.Add(CreateDedupKey(role, text)))
@@ -192,6 +202,13 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
 
         char[] invalid = Path.GetInvalidFileNameChars();
         return new string(trimmed.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
+    }
+
+    private static bool IsCacheableRole(string role)
+    {
+        string normalizedRole = role.Trim();
+        return CacheableRoles.Contains(normalizedRole)
+               || normalizedRole.EndsWith("_context", StringComparison.OrdinalIgnoreCase);
     }
 
     private async ValueTask SaveEntriesAsync(string conversationId, IReadOnlyList<ConversationContextCacheEntry> entries, CancellationToken cancellationToken)

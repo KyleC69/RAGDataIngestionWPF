@@ -83,7 +83,7 @@ public sealed class ConversationCacheContextSource : IRagContextSource
 
             return
             [
-                new ChatMessage(new ChatRole(AIChatRole.RAGContext.Value), body)
+                new ChatMessage(new ChatRole(AIChatRole.AIContext.Value), body)
             ];
         }
         catch (OperationCanceledException)
