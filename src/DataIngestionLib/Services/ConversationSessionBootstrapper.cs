@@ -1,4 +1,4 @@
-using DataIngestionLib.Contracts;
+﻿using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
@@ -96,7 +96,7 @@ public sealed class ConversationSessionBootstrapper : IConversationSessionBootst
 
 
 
-    private string ResolveApplicationId()
+    internal string ResolveApplicationId()
     {
         string applicationId = _appSettings.ApplicationId?.Trim() ?? string.Empty;
         return string.IsNullOrWhiteSpace(applicationId) ? "unknown-application" : applicationId;
@@ -106,7 +106,7 @@ public sealed class ConversationSessionBootstrapper : IConversationSessionBootst
 
 
 
-    private static string ResolveUserId()
+    internal static string ResolveUserId()
     {
         string userId = Environment.UserName?.Trim() ?? string.Empty;
         return string.IsNullOrWhiteSpace(userId) ? "unknown-user" : userId;
@@ -116,7 +116,7 @@ public sealed class ConversationSessionBootstrapper : IConversationSessionBootst
 
 
 
-    private async ValueTask<string> ResolveStartupConversationIdAsync(string agentId, CancellationToken cancellationToken)
+    internal async ValueTask<string> ResolveStartupConversationIdAsync(string agentId, CancellationToken cancellationToken)
     {
         if (_sqlChatHistoryProvider is not null)
         {

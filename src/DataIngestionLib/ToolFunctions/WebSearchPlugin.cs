@@ -52,7 +52,7 @@ public sealed class WebSearchPlugin
 
 
 
-    private async Task<ToolResult<string>> ReRankResults(string documents, CancellationToken cancellationToken)
+    internal async Task<ToolResult<string>> ReRankResults(string documents, CancellationToken cancellationToken)
     {
 
 

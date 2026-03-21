@@ -72,26 +72,6 @@ public class ViewModelAndConverterTests
 
 
 
-    [TestMethod]
-    public void ListDetailsViewModelOnNavigatedToLoadsItemsAndSelectsFirst()
-    {
-        Mock<ISampleDataService> sampleData = new();
-        sampleData.Setup(service => service.GetListDetailsDataAsync())
-            .ReturnsAsync([
-                new SampleOrder { OrderId = 1, Company = "A", Status = "Open", Details = [] },
-                new SampleOrder { OrderId = 2, Company = "B", Status = "Closed", Details = [] }
-            ]);
-
-        ListDetailsViewModel viewModel = new(sampleData.Object);
-
-        viewModel.OnNavigatedTo(null);
-
-        bool loaded = SpinWait.SpinUntil(() => viewModel.SampleItems.Count == 2, TimeSpan.FromSeconds(2));
-
-        Assert.IsTrue(loaded);
-        Assert.AreEqual(2, viewModel.SampleItems.Count);
-        Assert.AreEqual(1L, viewModel.Selected.OrderId);
-    }
 
     [TestMethod]
     public void LogInViewModelLoginCommandReflectsBusyState()

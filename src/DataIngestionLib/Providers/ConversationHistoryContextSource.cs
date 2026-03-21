@@ -1,4 +1,4 @@
-using DataIngestionLib.Contracts.Services;
+﻿using DataIngestionLib.Contracts.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -55,7 +55,7 @@ public sealed class ConversationHistoryContextSource : IRagContextSource
         }
     }
 
-    private static string ResolveConversationId(AgentSession? session)
+    internal static string ResolveConversationId(AgentSession? session)
     {
         if (session is null)
         {

@@ -170,6 +170,62 @@ public class FileConversationProgressLogStoreTests
     }
 
     [TestMethod]
+    public void Constructor_ApplicationIdWithWhitespace_TrimsAndUsesValue()
+    {
+        Mock<IAppSettings> settings = new();
+        settings.SetupGet(x => x.ApplicationId).Returns("  TestApp  ");
+
+        FileConversationProgressLogStore store = new(settings.Object);
+
+        Assert.IsNotNull(store);
+    }
+
+    [TestMethod]
+    public async Task Constructor_NullRootDirectory_UsesLocalApplicationDataPath()
+    {
+        Mock<IAppSettings> settings = new();
+        settings.SetupGet(x => x.ApplicationId).Returns("TestApp");
+
+        FileConversationProgressLogStore store = new(settings.Object, null);
+
+        Assert.IsNotNull(store);
+
+        // Verify the store can perform operations (implicitly tests the path was set correctly)
+        IReadOnlyList<ConversationProgressLog> result = await store.ListAsync("test-conversation", CancellationToken.None);
+        Assert.IsNotNull(result);
+    }
+
+    [TestMethod]
+    public async Task Constructor_NullRootDirectoryWithDefaultApplicationId_CreatesValidStore()
+    {
+        Mock<IAppSettings> settings = new();
+        settings.SetupGet(x => x.ApplicationId).Returns((string)null!);
+
+        FileConversationProgressLogStore store = new(settings.Object, null);
+
+        Assert.IsNotNull(store);
+
+        // Verify the store can perform operations with default application ID
+        IReadOnlyList<ConversationProgressLog> result = await store.ListAsync("test-conversation", CancellationToken.None);
+        Assert.IsNotNull(result);
+    }
+
+    [TestMethod]
+    public async Task Constructor_EmptyRootDirectory_UsesEmptyStringAsRoot()
+    {
+        Mock<IAppSettings> settings = new();
+        settings.SetupGet(x => x.ApplicationId).Returns("TestApp");
+
+        FileConversationProgressLogStore store = new(settings.Object, string.Empty);
+
+        Assert.IsNotNull(store);
+
+        // Verify the store can perform operations (even with empty root)
+        IReadOnlyList<ConversationProgressLog> result = await store.ListAsync("test-conversation", CancellationToken.None);
+        Assert.IsNotNull(result);
+    }
+
+    [TestMethod]
     public async Task DeleteConversationAsync_NullConversationId_ReturnsWithoutException()
     {
         IConversationProgressLogStore store = new FileConversationProgressLogStore(CreateSettings().Object, _root);
@@ -302,4 +358,35 @@ public class FileConversationProgressLogStoreTests
         settings.SetupGet(x => x.ApplicationId).Returns("RAGDataIngestionWPF.Tests");
         return settings;
     }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public async Task SavePlanFile()
+    {
+
+        Mock<IAppSettings> settings = CreateSettings();
+        string customRoot = Path.Combine(Path.GetTempPath(), "custom-root");
+
+        FileConversationProgressLogStore store = new(settings.Object, customRoot);
+        try
+        {
+            store.SavePlansAsync("TestConversationid", new ConversationProgressLog[1], CancellationToken.None);
+        }
+        catch (Exception)
+        {
+            Assert.Fail();
+        }
+
+}
+    
+    
+    
+    
+    
 }

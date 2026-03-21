@@ -1,4 +1,4 @@
-using DataIngestionLib.Contracts.Services;
+﻿using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
 namespace DataIngestionLib.Services;
@@ -170,7 +170,7 @@ public sealed class ConversationProgressLogService : IConversationProgressLogSer
         return updated;
     }
 
-    private async ValueTask<ConversationProgressLog> GetRequiredPlanAsync(string conversationId, Guid planId, CancellationToken cancellationToken)
+    internal async ValueTask<ConversationProgressLog> GetRequiredPlanAsync(string conversationId, Guid planId, CancellationToken cancellationToken)
     {
         ConversationProgressLog? plan = await _store.GetAsync(conversationId, planId, cancellationToken).ConfigureAwait(false);
         if (plan is null)
@@ -181,7 +181,7 @@ public sealed class ConversationProgressLogService : IConversationProgressLogSer
         return plan;
     }
 
-    private static ConversationProgressStep UpdateStep(ConversationProgressStep step, int targetStepId, ConversationProgressStepStatus status)
+    internal static ConversationProgressStep UpdateStep(ConversationProgressStep step, int targetStepId, ConversationProgressStepStatus status)
     {
         if (step.Id == targetStepId)
         {

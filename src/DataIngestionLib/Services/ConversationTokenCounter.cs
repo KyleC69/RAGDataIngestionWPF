@@ -1,4 +1,4 @@
-using DataIngestionLib.Contracts.Services;
+﻿using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services.Contracts;
 
@@ -62,7 +62,7 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
 
 
 
-    private static ConversationTokenSnapshot CalculateFromHistory(IReadOnlyList<ChatMessage> history, TokenBudget budget)
+    internal static ConversationTokenSnapshot CalculateFromHistory(IReadOnlyList<ChatMessage> history, TokenBudget budget)
     {
         var sessionTokens = 0;
         var ragTokens = 0;
@@ -109,7 +109,7 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
 
 
 
-    private static int EstimateTokenCount(string content)
+    internal static int EstimateTokenCount(string content)
     {
         return string.IsNullOrWhiteSpace(content) ? 0 : Math.Max(1, content.Length / 4);
     }
@@ -118,7 +118,7 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
 
 
 
-    private static long GetAdditionalCount(UsageDetails usageDetails, int fallback, params string[] keys)
+    internal static long GetAdditionalCount(UsageDetails usageDetails, int fallback, params string[] keys)
     {
         if (usageDetails.AdditionalCounts is null || usageDetails.AdditionalCounts.Count == 0)
         {
@@ -143,7 +143,7 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
 
 
 
-    private static int ClampToInt(long value)
+    internal static int ClampToInt(long value)
     {
         if (value <= 0)
         {

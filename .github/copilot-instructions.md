@@ -1,4 +1,4 @@
-# Project Guidelines
+﻿# Project Guidelines
 
 ## Architecture
 
@@ -34,3 +34,4 @@
 - Do not add tests against `Models/AIChatHistory.cs` unless project include rules change; that file is explicitly removed from compilation.
 - Tests use MSTest and Moq. Favor deterministic behavior and edge-case coverage, and remember that `EventHandler<T>` mocks need both sender and payload when raised.
 - The repo already contains reusable custom agents in `.github/agents` and prompts in `.github/prompts`; prefer those when they match the task instead of duplicating their purpose in ad hoc instructions.
+- Expose private methods to tests by changing their access modifier to internal for better testing coverage.

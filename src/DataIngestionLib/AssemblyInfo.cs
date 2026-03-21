@@ -28,7 +28,8 @@ using System.Runtime.Versioning;
 // The following GUID is for the ID of the typelib if this project is exposed to COM.
 
 [assembly: Guid("30513d8d-7e9a-4517-8e6b-c7a1249abe07")]
-[assembly: InternalsVisibleTo("RAGDataIngestionWPF.Tests.MSTest")]
+[assembly: InternalsVisibleTo("RAGDataIngestionWPF.Tests.MSTest", AllInternalsVisible = true)]
 [assembly: SupportedOSPlatform("windows")]
 [assembly: AssemblyCompany("Kyle Crowder")]
-[assembly: AssemblyDescription("Agentic AI application in wpf")]
+[assembly: AssemblyDescription("Agentic AI application in WPF")]
+[assembly: AssemblyProduct("RAGDataIngestionWPF")]

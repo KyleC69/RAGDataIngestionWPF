@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
@@ -73,7 +73,7 @@ public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
         }
     }
 
-    private static IEnumerable<ChatMessage> FilterCacheableMessages(IEnumerable<ChatMessage>? messages)
+    internal static IEnumerable<ChatMessage> FilterCacheableMessages(IEnumerable<ChatMessage>? messages)
     {
         return messages?.Where(static message =>
                 !string.IsNullOrWhiteSpace(message.Text)
@@ -81,7 +81,7 @@ public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
             ?? [];
     }
 
-    private static IReadOnlyList<ChatMessage> GetContextMessages(object context, string propertyName)
+    internal static IReadOnlyList<ChatMessage> GetContextMessages(object context, string propertyName)
     {
         PropertyInfo? property = context.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
         if (property?.GetValue(context) is IEnumerable<ChatMessage> messages)
@@ -92,7 +92,7 @@ public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
         return [];
     }
 
-    private static bool IsCacheableRole(ChatRole role)
+    internal static bool IsCacheableRole(ChatRole role)
     {
         string value = role.Value?.Trim() ?? string.Empty;
         return value.Equals(AIChatRole.AIContext.Value, StringComparison.OrdinalIgnoreCase)
@@ -101,7 +101,7 @@ public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
                || value.EndsWith("_context", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string ResolveConversationId(AgentSession? session)
+    internal static string ResolveConversationId(AgentSession? session)
     {
         if (session is null)
         {

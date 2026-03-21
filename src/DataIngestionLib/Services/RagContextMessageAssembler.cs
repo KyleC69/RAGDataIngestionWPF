@@ -1,4 +1,4 @@
-using DataIngestionLib.Contracts;
+﻿using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 
 using Microsoft.Extensions.AI;
@@ -72,7 +72,7 @@ public sealed class RagContextMessageAssembler : IRagContextMessageAssembler
         return assembled;
     }
 
-    private static string NormalizeText(string? text)
+    internal static string NormalizeText(string? text)
     {
         return string.Join(
             " ",

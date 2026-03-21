@@ -34,6 +34,8 @@
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <TextBlock Text="&#xE80F;" FontSize="40" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource MahApps.Brushes.Text}" PresentationTraceSources.TraceLevel= "High"/>
+
         <TextBlock
             Style="{StaticResource PageTitleStyle}"
             Text="{x:Static properties:Resources.MainPageTitle}" />

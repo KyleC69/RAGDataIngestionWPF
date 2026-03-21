@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.IO;
 using System.Text.Json;
 
@@ -26,7 +26,7 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
         }
 
         _rootDirectory = rootDirectory
-                ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), applicationId, "conversation-progress-logs");
+                ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),  "conversation-progress-logs");
     }
 
     public async ValueTask DeleteConversationAsync(string conversationId, CancellationToken cancellationToken = default)
@@ -129,12 +129,19 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
         }
     }
 
-    private string GetFilePath(string conversationId)
+
+
+
+
+
+
+
+    internal string GetFilePath(string conversationId)
     {
         return Path.Combine(_rootDirectory, conversationId + ".json");
     }
 
-    private async ValueTask<List<ConversationProgressLog>> LoadPlansAsync(string conversationId, CancellationToken cancellationToken)
+    internal async ValueTask<List<ConversationProgressLog>> LoadPlansAsync(string conversationId, CancellationToken cancellationToken)
     {
         string filePath = GetFilePath(conversationId);
         if (!File.Exists(filePath))
@@ -147,7 +154,14 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
                ?? [];
     }
 
-    private static string NormalizeConversationId(string conversationId)
+
+
+
+
+
+
+
+    internal static string NormalizeConversationId(string conversationId)
     {
         string trimmed = conversationId?.Trim() ?? string.Empty;
         if (trimmed.Length == 0)
@@ -159,7 +173,14 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
         return new string(trimmed.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
     }
 
-    private async ValueTask SavePlansAsync(string conversationId, IReadOnlyList<ConversationProgressLog> plans, CancellationToken cancellationToken)
+
+
+
+
+
+
+
+    internal async ValueTask SavePlansAsync(string conversationId, IReadOnlyList<ConversationProgressLog> plans, CancellationToken cancellationToken)
     {
         _ = Directory.CreateDirectory(_rootDirectory);
         string filePath = GetFilePath(conversationId);

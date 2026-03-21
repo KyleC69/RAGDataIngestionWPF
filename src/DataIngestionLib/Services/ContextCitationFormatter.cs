@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 
 using DataIngestionLib.Contracts.Services;
@@ -42,7 +42,7 @@ public sealed class ContextCitationFormatter : IContextCitationFormatter
         return heading.Trim() + ":" + Environment.NewLine + Environment.NewLine + string.Join(Environment.NewLine + Environment.NewLine, blocks);
     }
 
-    private static string FormatBlock(int index, ContextCitation citation)
+    internal static string FormatBlock(int index, ContextCitation citation)
     {
         StringBuilder builder = new();
         _ = builder.Append('[').Append(index).Append("] ").Append(citation.Title.Trim());

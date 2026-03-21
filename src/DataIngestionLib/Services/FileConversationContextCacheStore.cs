@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.IO;
 using System.Text.Json;
 
@@ -169,17 +169,17 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         }
     }
 
-    private static string CreateDedupKey(string role, string text)
+    internal static string CreateDedupKey(string role, string text)
     {
         return role.Trim() + "\n" + text.Trim();
     }
 
-    private string GetFilePath(string conversationId)
+    internal string GetFilePath(string conversationId)
     {
         return Path.Combine(_rootDirectory, conversationId + ".json");
     }
 
-    private async ValueTask<List<ConversationContextCacheEntry>> LoadEntriesAsync(string conversationId, CancellationToken cancellationToken)
+    internal async ValueTask<List<ConversationContextCacheEntry>> LoadEntriesAsync(string conversationId, CancellationToken cancellationToken)
     {
         string filePath = GetFilePath(conversationId);
         if (!File.Exists(filePath))
@@ -192,7 +192,7 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
                ?? [];
     }
 
-    private static string NormalizeConversationId(string conversationId)
+    internal static string NormalizeConversationId(string conversationId)
     {
         string trimmed = conversationId?.Trim() ?? string.Empty;
         if (trimmed.Length == 0)
@@ -204,14 +204,14 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         return new string(trimmed.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
     }
 
-    private static bool IsCacheableRole(string role)
+    internal static bool IsCacheableRole(string role)
     {
         string normalizedRole = role.Trim();
         return CacheableRoles.Contains(normalizedRole)
                || normalizedRole.EndsWith("_context", StringComparison.OrdinalIgnoreCase);
     }
 
-    private async ValueTask SaveEntriesAsync(string conversationId, IReadOnlyList<ConversationContextCacheEntry> entries, CancellationToken cancellationToken)
+    internal async ValueTask SaveEntriesAsync(string conversationId, IReadOnlyList<ConversationContextCacheEntry> entries, CancellationToken cancellationToken)
     {
         _ = Directory.CreateDirectory(_rootDirectory);
         string filePath = GetFilePath(conversationId);
@@ -220,7 +220,7 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         await JsonSerializer.SerializeAsync(stream, entries, SerializerOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    private static double Score(ConversationContextCacheEntry entry, string query, IReadOnlyList<string> queryTerms)
+    internal static double Score(ConversationContextCacheEntry entry, string query, IReadOnlyList<string> queryTerms)
     {
         string text = entry.Text?.Trim() ?? string.Empty;
         if (text.Length == 0)
@@ -242,7 +242,7 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         return score;
     }
 
-    private static string[] Tokenize(string text)
+    internal static string[] Tokenize(string text)
     {
         return text
                 .Split([

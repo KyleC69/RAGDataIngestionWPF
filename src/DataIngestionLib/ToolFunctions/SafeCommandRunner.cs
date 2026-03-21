@@ -32,7 +32,7 @@ public sealed class SafeCommandRunner(string sandboxRoot)
 
 
 
-    private ToolResult<string> ExecuteAllowedCommand(string cmd, string args)
+    internal ToolResult<string> ExecuteAllowedCommand(string cmd, string args)
     {
         switch (cmd.ToUpperInvariant())
         {

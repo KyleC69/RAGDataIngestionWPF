@@ -1,4 +1,4 @@
-using DataIngestionLib.Contracts;
+﻿using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
@@ -91,7 +91,7 @@ public sealed class LocalRagContextOrchestrator : IRagContextOrchestrator
         ];
     }
 
-    private static IReadOnlyList<RagSearchResult> Fuse(IReadOnlyList<IReadOnlyList<RagSearchResult>> resultSets)
+    internal static IReadOnlyList<RagSearchResult> Fuse(IReadOnlyList<IReadOnlyList<RagSearchResult>> resultSets)
     {
         Dictionary<int, (RagSearchResult Result, double Score)> fused = [];
 

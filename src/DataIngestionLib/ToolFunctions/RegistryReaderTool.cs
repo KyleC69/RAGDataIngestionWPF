@@ -157,7 +157,7 @@ public class RegistryReaderTool
 
 
 
-    private static bool TryResolveBaseKey(string hiveName, out Microsoft.Win32.RegistryKey? baseKey)
+    internal static bool TryResolveBaseKey(string hiveName, out Microsoft.Win32.RegistryKey? baseKey)
     {
         baseKey = hiveName.ToUpperInvariant() switch
         {

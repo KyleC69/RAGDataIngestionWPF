@@ -1,4 +1,4 @@
-// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatConversationService.cs
@@ -379,7 +379,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private void UpdateTokenCounts(UsageDetails? usageDetails)
+    internal void UpdateTokenCounts(UsageDetails? usageDetails)
     {
         ConversationTokenSnapshot snapshot = _tokenCounter.Calculate(AIHistory, ConversationTokenBudget, usageDetails);
 
@@ -394,7 +394,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private async ValueTask<ConversationSessionContext?> EnsureSessionContextAsync(CancellationToken cancellationToken)
+    internal async ValueTask<ConversationSessionContext?> EnsureSessionContextAsync(CancellationToken cancellationToken)
     {
         if (_sessionContext is not null)
         {
@@ -416,7 +416,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private IConversationProgressLogService GetRequiredProgressLogService()
+    internal IConversationProgressLogService GetRequiredProgressLogService()
     {
         return _progressLogService ?? throw new InvalidOperationException("Task plan tracking is not configured.");
     }
@@ -425,7 +425,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private async ValueTask<Guid?> TryStartAutomaticTaskPlanAsync(string content, CancellationToken cancellationToken)
+    internal async ValueTask<Guid?> TryStartAutomaticTaskPlanAsync(string content, CancellationToken cancellationToken)
     {
         if (_progressLogService is null)
         {
@@ -453,7 +453,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private static string BuildAutomaticTaskPlanName(string content)
+    internal static string BuildAutomaticTaskPlanName(string content)
     {
         string normalized = content.Trim();
         if (normalized.Length > AutomaticTaskPlanNameLength)
@@ -468,7 +468,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private async ValueTask TryMoveAutomaticTaskPlanToStepAsync(Guid? planId, int stepId, CancellationToken cancellationToken)
+    internal async ValueTask TryMoveAutomaticTaskPlanToStepAsync(Guid? planId, int stepId, CancellationToken cancellationToken)
     {
         if (!planId.HasValue || _progressLogService is null)
         {
@@ -490,7 +490,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private async ValueTask TryRecordAutomaticTaskPlanArtifactAsync(Guid? planId, string artifactKey, string artifactValue, CancellationToken cancellationToken)
+    internal async ValueTask TryRecordAutomaticTaskPlanArtifactAsync(Guid? planId, string artifactKey, string artifactValue, CancellationToken cancellationToken)
     {
         if (!planId.HasValue || _progressLogService is null)
         {
@@ -512,7 +512,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private async ValueTask TryCompleteAutomaticTaskPlanAsync(Guid? planId, CancellationToken cancellationToken)
+    internal async ValueTask TryCompleteAutomaticTaskPlanAsync(Guid? planId, CancellationToken cancellationToken)
     {
         if (!planId.HasValue || _progressLogService is null)
         {
@@ -534,7 +534,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private async ValueTask TryAbandonAutomaticTaskPlanAsync(Guid? planId, string reason, CancellationToken cancellationToken)
+    internal async ValueTask TryAbandonAutomaticTaskPlanAsync(Guid? planId, string reason, CancellationToken cancellationToken)
     {
         if (!planId.HasValue || _progressLogService is null)
         {
@@ -556,7 +556,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private async ValueTask<string> EnsureConversationIdAsync(CancellationToken cancellationToken)
+    internal async ValueTask<string> EnsureConversationIdAsync(CancellationToken cancellationToken)
     {
         ConversationSessionContext? sessionContext = await EnsureSessionContextAsync(cancellationToken).ConfigureAwait(false);
         if (sessionContext is null || string.IsNullOrWhiteSpace(sessionContext.Value.ConversationId))
@@ -579,7 +579,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    private void PublishTokenCounts()
+    internal void PublishTokenCounts()
     {
         ConversationBudgetEvaluation evaluation = _budgetEvaluator.Evaluate(ContextTokenCount, ConversationTokenBudget);
         _budgetEventPublisher.Publish(

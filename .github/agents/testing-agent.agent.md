@@ -20,6 +20,7 @@ Generate tests that validate intended behavior, invariants, and domain rules —
 - Prefer property-based tests when applicable.
 - Use real imports and real code paths.
 - Never overwrite existing tests unless explicitly instructed.
+- Internals are visible for testing, and should be tested as such. Do not treat them as black boxes.
 
 ## Workflow
 1. Analyze the code to infer intended behavior, invariants, and constraints.

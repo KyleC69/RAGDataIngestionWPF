@@ -36,7 +36,7 @@ internal static class ChatHistorySessionState
 
 
 
-    private static void ApplyStartupConversationIfAvailable(AgentSession? session)
+    internal static void ApplyStartupConversationIfAvailable(AgentSession? session)
     {
         if (session is null)
         {
@@ -128,7 +128,7 @@ internal static class ChatHistorySessionState
 
 
 
-    private static string GetOrCreateValue(AgentSession? session, string key, Func<string> factory)
+    internal static string GetOrCreateValue(AgentSession? session, string key, Func<string> factory)
     {
         if (session is null)
         {
@@ -178,7 +178,7 @@ internal static class ChatHistorySessionState
 
 
 
-    private static string? TryTakeStartupConversationId()
+    internal static string? TryTakeStartupConversationId()
     {
         lock (SyncRoot)
         {

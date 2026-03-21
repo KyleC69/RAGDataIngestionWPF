@@ -66,6 +66,10 @@ public sealed partial class App : Application
 
     private IHost BuildHost()
     {
+        PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Error | SourceLevels.Warning;
+        PresentationTraceSources.ResourceDictionarySource.Switch.Level = SourceLevels.All;
+        PresentationTraceSources.AnimationSource.Switch.Level = SourceLevels.All;
+        
         _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel)
                 ? configLevel
                 : LogLevel.Trace;
@@ -420,8 +424,6 @@ public sealed partial class App : Application
         _ = services.AddTransient<MainPage>();
         _ = services.AddTransient<BlankViewModel>();
         _ = services.AddTransient<BlankPage>();
-        _ = services.AddTransient<ListDetailsViewModel>();
-        _ = services.AddTransient<ListDetailsPage>();
         _ = services.AddTransient<DataGridViewModel>();
         _ = services.AddTransient<DataGridPage>();
         _ = services.AddTransient<WebViewViewModel>();

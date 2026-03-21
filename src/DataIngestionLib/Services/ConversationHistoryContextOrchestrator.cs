@@ -1,4 +1,4 @@
-using DataIngestionLib.Contracts;
+﻿using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
@@ -120,7 +120,7 @@ public sealed class ConversationHistoryContextOrchestrator : IConversationHistor
         ];
     }
 
-    private static double Score(string content, string query, IReadOnlyList<string> terms)
+    internal static double Score(string content, string query, IReadOnlyList<string> terms)
     {
         double score = 0;
         if (content.Contains(query, StringComparison.OrdinalIgnoreCase))
@@ -139,7 +139,7 @@ public sealed class ConversationHistoryContextOrchestrator : IConversationHistor
         return score;
     }
 
-    private static string[] Tokenize(string text)
+    internal static string[] Tokenize(string text)
     {
         return text
                 .Split([

@@ -1,4 +1,4 @@
-using DataIngestionLib.Contracts;
+﻿using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
@@ -97,7 +97,7 @@ public sealed class ConversationCacheContextSource : IRagContextSource
         }
     }
 
-    private static string ResolveConversationId(AgentSession? session)
+    internal static string ResolveConversationId(AgentSession? session)
     {
         if (session is null)
         {

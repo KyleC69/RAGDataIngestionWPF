@@ -1,4 +1,4 @@
-using DataIngestionLib.Contracts;
+﻿using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 
 using Microsoft.Extensions.AI;
@@ -37,7 +37,7 @@ public sealed class RagQueryExpander : IRagQueryExpander
         return queries;
     }
 
-    private static IReadOnlyList<string> Tokenize(string text)
+    internal static IReadOnlyList<string> Tokenize(string text)
     {
         return text
                 .Split([
