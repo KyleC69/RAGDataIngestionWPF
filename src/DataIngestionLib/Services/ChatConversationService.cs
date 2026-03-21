@@ -1,4 +1,4 @@
-﻿// Build Date: 2026/03/19
+// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatConversationService.cs
@@ -31,15 +31,18 @@ namespace DataIngestionLib.Services;
 /// </summary>
 public sealed class ChatConversationService : IChatConversationService
 {
-    private readonly IAgentFactory _agentFactory;
-    private readonly IAgentIdentityProvider _agentIdentityProvider;
+    private const int AutomaticTaskPlanNameLength = 72;
     private readonly IAppSettings _appSettings;
-    private readonly HistoryIdentity _identity;
-    private readonly SemaphoreSlim _initializeGate = new(1, 1);
+    private readonly IConversationAgentRunner _agentRunner;
+    private readonly IChatBusyStateScopeFactory _busyStateScopeFactory;
+    private readonly IConversationBudgetEvaluator _budgetEvaluator;
+    private readonly IConversationBudgetEventPublisher _budgetEventPublisher;
+    private readonly IConversationHistoryLoader _historyLoader;
+    private readonly IConversationProgressLogService? _progressLogService;
     private readonly ILogger<ChatConversationService> _logger;
-    private readonly ISQLChatHistoryProvider? _sqlChatHistoryProvider;
-    private AIAgent? _agent;
-    private AgentSession? _agentSession;
+    private readonly IConversationSessionBootstrapper _sessionBootstrapper;
+    private readonly IConversationTokenCounter _tokenCounter;
+    private ConversationSessionContext? _sessionContext;
     private int _contextTokenCount;
     private int _ragTokenCount;
     private int _sessionTokenCount;
@@ -50,29 +53,68 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-
-
-    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings, IAgentIdentityProvider agentIdentityProvider, ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
+    public ChatConversationService(
+            ILoggerFactory factory,
+            IAgentFactory agentFactory,
+            IAppSettings settings,
+            IAgentIdentityProvider agentIdentityProvider,
+            IConversationAgentRunner? agentRunner = null,
+            IConversationProgressLogService? progressLogService = null,
+            ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
+            : this(
+                    factory,
+                    settings,
+                    new ConversationSessionBootstrapper(agentFactory, settings, agentIdentityProvider, sqlChatHistoryProvider),
+                    new ConversationHistoryLoader(sqlChatHistoryProvider),
+                    new ConversationTokenCounter(),
+                    new ConversationBudgetEvaluator(),
+                    new ChatBusyStateScopeFactory(),
+                    new ConversationBudgetEventPublisher(),
+                    agentRunner ?? new ConversationAgentRunner(),
+                    progressLogService)
     {
-        ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(agentFactory);
-        ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(agentIdentityProvider);
-
-        _appSettings = settings;
-        ConversationTokenBudget = settings.GetTokenBudget();
-        _agentFactory = agentFactory;
-        _agentIdentityProvider = agentIdentityProvider;
-        _sqlChatHistoryProvider = sqlChatHistoryProvider;
-        _logger = factory.CreateLogger<ChatConversationService>();
-        _identity = new HistoryIdentity();
-
-
     }
 
 
 
+
+
+    public ChatConversationService(
+            ILoggerFactory factory,
+            IAppSettings settings,
+            IConversationSessionBootstrapper sessionBootstrapper,
+            IConversationHistoryLoader historyLoader,
+            IConversationTokenCounter tokenCounter,
+            IConversationBudgetEvaluator budgetEvaluator,
+            IChatBusyStateScopeFactory busyStateScopeFactory,
+            IConversationBudgetEventPublisher budgetEventPublisher,
+                IConversationAgentRunner agentRunner,
+            IConversationProgressLogService? progressLogService = null)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(sessionBootstrapper);
+        ArgumentNullException.ThrowIfNull(historyLoader);
+        ArgumentNullException.ThrowIfNull(tokenCounter);
+        ArgumentNullException.ThrowIfNull(budgetEvaluator);
+        ArgumentNullException.ThrowIfNull(busyStateScopeFactory);
+        ArgumentNullException.ThrowIfNull(budgetEventPublisher);
+        ArgumentNullException.ThrowIfNull(agentRunner);
+
+        _appSettings = settings;
+        ConversationTokenBudget = settings.GetTokenBudget();
+        _sessionBootstrapper = sessionBootstrapper;
+        _historyLoader = historyLoader;
+        _tokenCounter = tokenCounter;
+        _budgetEvaluator = budgetEvaluator;
+        _busyStateScopeFactory = busyStateScopeFactory;
+        _budgetEventPublisher = budgetEventPublisher;
+        _agentRunner = agentRunner;
+        _progressLogService = progressLogService;
+        _logger = factory.CreateLogger<ChatConversationService>();
+    }
 
 
 
@@ -84,11 +126,6 @@ public sealed class ChatConversationService : IChatConversationService
     public string ApplicationId
     {
         get { return _appSettings.ApplicationId; }
-    }
-
-    private string AgentId
-    {
-        get { return _agentIdentityProvider.GetAgentId(); }
     }
 
     /// <summary>
@@ -116,7 +153,7 @@ public sealed class ChatConversationService : IChatConversationService
     ///     This allows for more efficient token usage while still maintaining enough context for coherent conversations.
     ///     This is actually managed by the sqlChatHistoryProvider and the Context Injectors.
     /// </summary>
-    public List<ChatMessage> AIHistory { get; } = new List<ChatMessage>();
+    public List<ChatMessage> AIHistory { get; } = [];
 
     /// <summary>
     ///     An estimate of the token count in the current conversation. TODO: will be moved to TokenBudget class for source of
@@ -155,9 +192,6 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-
-
     /// <summary>
     ///     Sends request to LLM and waits for a response.
     /// </summary>
@@ -167,9 +201,10 @@ public sealed class ChatConversationService : IChatConversationService
     /// <exception cref="ArgumentException"></exception>
     public async ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
     {
-        await InitializeAsync();
-        BusyStateChanged?.Invoke(this, true);
+        ConversationSessionContext? sessionContext = await EnsureSessionContextAsync(CancellationToken.None).ConfigureAwait(false);
+        using IDisposable busyScope = _busyStateScopeFactory.Enter(busy => BusyStateChanged?.Invoke(this, busy));
         UsageDetails? usageDetails = null;
+        Guid? planId = null;
         try
         {
             if (string.IsNullOrWhiteSpace(content))
@@ -177,46 +212,53 @@ public sealed class ChatConversationService : IChatConversationService
                 throw new ArgumentException("User message cannot be empty.", nameof(content));
             }
 
-            if (_agent is null || _agentSession is null)
+            if (sessionContext is null)
             {
                 throw new InvalidOperationException("Agent session is not initialized.");
             }
 
-            _identity.AgentId = _agentSession.StateBag.GetValue<string>("AgentId") ?? string.Empty;
-
-
-            //Add user message to ChatHistory
+            planId = await TryStartAutomaticTaskPlanAsync(content, token).ConfigureAwait(false);
             AIHistory.Add(new ChatMessage(ChatRole.User, content));
+            await TryRecordAutomaticTaskPlanArtifactAsync(planId, "user_request", content, token).ConfigureAwait(false);
+            await TryMoveAutomaticTaskPlanToStepAsync(planId, 2, token).ConfigureAwait(false);
 
+            ConversationAgentRunResult response = await _agentRunner
+                .RunAsync(sessionContext.Value.Agent, content, sessionContext.Value.Session, token)
+                .ConfigureAwait(false);
 
-            AgentResponse response = await _agent.RunAsync(content, _agentSession, null, token);
-
-            usageDetails = response.Usage;
+            usageDetails = response.UsageDetails;
             if (usageDetails is not null)
             {
                 _logger.LogUsages(usageDetails.InputTokenCount, usageDetails.CachedInputTokenCount, usageDetails.OutputTokenCount, usageDetails.ReasoningTokenCount, usageDetails.AdditionalCounts, usageDetails.TotalTokenCount);
             }
 
+            string assistantText = response.Text?.Trim() ?? string.Empty;
 
-
-
-            //TODO: Need to test that context additions are being removed before getting here.
-            var assistantText = response.Text?.Trim() ?? string.Empty;
-
-            ChatMessage msg = new ChatMessage(ChatRole.Assistant, assistantText);
+            ChatMessage msg = new(ChatRole.Assistant, assistantText);
             AIHistory.Add(msg);
-
+            await TryMoveAutomaticTaskPlanToStepAsync(planId, 3, token).ConfigureAwait(false);
+            await TryRecordAutomaticTaskPlanArtifactAsync(planId, "assistant_response", assistantText, token).ConfigureAwait(false);
+            await TryCompleteAutomaticTaskPlanAsync(planId, token).ConfigureAwait(false);
 
             return msg;
+        }
+        catch (OperationCanceledException)
+        {
+            await TryAbandonAutomaticTaskPlanAsync(planId, "cancelled", token).ConfigureAwait(false);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await TryRecordAutomaticTaskPlanArtifactAsync(planId, "last_error", ex.Message, token).ConfigureAwait(false);
+            await TryAbandonAutomaticTaskPlanAsync(planId, "failed", token).ConfigureAwait(false);
+            throw;
         }
         finally
         {
             UpdateTokenCounts(usageDetails);
             PublishTokenCounts();
-            BusyStateChanged?.Invoke(this, false);
         }
     }
-
 
 
 
@@ -226,16 +268,16 @@ public sealed class ChatConversationService : IChatConversationService
     public async ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
-        await InitializeAsync().ConfigureAwait(false);
+        ConversationSessionContext? sessionContext = await EnsureSessionContextAsync(CancellationToken.None).ConfigureAwait(false);
 
-        if (_sqlChatHistoryProvider is null || _agentSession is null)
+        if (sessionContext is null)
         {
             AIHistory.Clear();
             UpdateTokenCounts(null);
             return [];
         }
 
-        string conversationId = _agentSession.StateBag.GetValue<string>("ConversationId") ?? string.Empty;
+        string conversationId = sessionContext.Value.ConversationId;
         if (string.IsNullOrWhiteSpace(conversationId))
         {
             AIHistory.Clear();
@@ -245,27 +287,9 @@ public sealed class ChatConversationService : IChatConversationService
 
         ConversationId = conversationId;
 
-        IReadOnlyList<PersistedChatMessage> persistedMessages = await _sqlChatHistoryProvider
-                .GetMessagesAsync(conversationId, null, token)
+        IReadOnlyList<ChatMessage> historyMessages = await _historyLoader
+                .LoadConversationHistoryAsync(conversationId, token)
                 .ConfigureAwait(false);
-
-        List<ChatMessage> historyMessages = [];
-        foreach (PersistedChatMessage persistedMessage in persistedMessages)
-        {
-            if (string.IsNullOrWhiteSpace(persistedMessage.Content))
-            {
-                continue;
-            }
-
-            string roleValue = persistedMessage.Role?.Trim() ?? string.Empty;
-            ChatRole role = roleValue.Length == 0 ? ChatRole.User : new ChatRole(roleValue);
-
-            historyMessages.Add(new ChatMessage(role, persistedMessage.Content)
-            {
-                    CreatedAt = persistedMessage.TimestampUtc,
-                    MessageId = persistedMessage.MessageId.ToString("D")
-            });
-        }
 
         AIHistory.Clear();
         AIHistory.AddRange(historyMessages);
@@ -278,6 +302,73 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
+    public async ValueTask<IReadOnlyList<ConversationProgressLog>> LoadTaskPlansAsync(CancellationToken token = default)
+    {
+        string conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().ListPlansAsync(conversationId, token).ConfigureAwait(false);
+    }
+
+
+
+
+
+    public async ValueTask<ConversationProgressLog?> GetTaskPlanAsync(Guid planId, CancellationToken token = default)
+    {
+        string conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().GetPlanAsync(conversationId, planId, token).ConfigureAwait(false);
+    }
+
+
+
+
+
+    public async ValueTask<ConversationProgressLog> StartTaskPlanAsync(string planName, IReadOnlyList<string> stepTitles, CancellationToken token = default)
+    {
+        string conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().CreatePlanAsync(conversationId, planName, stepTitles, token).ConfigureAwait(false);
+    }
+
+
+
+
+
+    public async ValueTask<ConversationProgressLog> UpdateTaskPlanStepAsync(Guid planId, int stepId, ConversationProgressStepStatus status, CancellationToken token = default)
+    {
+        string conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().SetCurrentStepAsync(conversationId, planId, stepId, status, token).ConfigureAwait(false);
+    }
+
+
+
+
+
+    public async ValueTask<ConversationProgressLog> RecordTaskPlanArtifactAsync(Guid planId, string artifactKey, string artifactValue, CancellationToken token = default)
+    {
+        string conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().RecordArtifactAsync(conversationId, planId, artifactKey, artifactValue, token).ConfigureAwait(false);
+    }
+
+
+
+
+
+    public async ValueTask<ConversationProgressLog> CompleteTaskPlanAsync(Guid planId, CancellationToken token = default)
+    {
+        string conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().CompletePlanAsync(conversationId, planId, token).ConfigureAwait(false);
+    }
+
+
+
+
+
+    public async ValueTask AbandonTaskPlanAsync(Guid planId, string? reason = null, CancellationToken token = default)
+    {
+        string conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
+        await GetRequiredProgressLogService().AbandonPlanAsync(conversationId, planId, reason, token).ConfigureAwait(false);
+    }
+
+
 
 
 
@@ -288,231 +379,194 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-
-
-    private TokenBuckets CalculateContextTokenBuckets()
-    {
-        var sessionTokens = 0;
-        var ragTokens = 0;
-        var toolTokens = 0;
-        var systemTokens = 0;
-        var totalTokens = 0;
-
-        for (var index = AIHistory.Count - 1; index >= 0; index--)
-        {
-            var content = AIHistory[index].Text;
-            var messageTokenCount = EstimateTokenCount(content);
-            if (totalTokens + messageTokenCount > ConversationTokenBudget.SessionBudget)
-            {
-                break;
-            }
-
-            var role = AIHistory[index].Role.Value;
-            if (string.Equals(role, AIChatRole.System.Value, StringComparison.OrdinalIgnoreCase))
-            {
-                systemTokens += messageTokenCount;
-            }
-            else if (string.Equals(role, AIChatRole.Tool.Value, StringComparison.OrdinalIgnoreCase))
-            {
-                toolTokens += messageTokenCount;
-            }
-            else if (string.Equals(role, AIChatRole.RAGContext.Value, StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(role, AIChatRole.AIContext.Value, StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(role, "rag", StringComparison.OrdinalIgnoreCase))
-            {
-                ragTokens += messageTokenCount;
-            }
-            else
-            {
-                sessionTokens += messageTokenCount;
-            }
-
-            totalTokens += messageTokenCount;
-        }
-
-        return new TokenBuckets(totalTokens, sessionTokens, ragTokens, toolTokens, systemTokens);
-    }
-
-
-
-
-
-
-
-
-    private static int EstimateTokenCount(string content)
-    {
-        return string.IsNullOrWhiteSpace(content) ? 0 : Math.Max(1, content.Length / 4);
-    }
-
-
-
-
-
-
     private void UpdateTokenCounts(UsageDetails? usageDetails)
     {
-        TokenBuckets buckets = CalculateContextTokenBuckets();
+        ConversationTokenSnapshot snapshot = _tokenCounter.Calculate(AIHistory, ConversationTokenBudget, usageDetails);
 
-        _contextTokenCount = buckets.Total;
-        _sessionTokenCount = buckets.Session;
-        _ragTokenCount = buckets.Rag;
-        _toolTokenCount = buckets.Tool;
-        _systemTokenCount = buckets.System;
-
-        if (usageDetails?.AdditionalCounts is null)
-        {
-            return;
-        }
-
-        long ragUsageTokens = GetAdditionalCount(
-                usageDetails,
-                "rag",
-                "rag_tokens",
-                "rag_token_count",
-                "rag_context",
-                "retrieval",
-                "retrieval_tokens",
-                "context",
-                "context_tokens");
-        long toolUsageTokens = GetAdditionalCount(
-                usageDetails,
-                "tool",
-                "tool_tokens",
-                "tool_token_count",
-                "function",
-                "function_tokens");
-        long systemUsageTokens = GetAdditionalCount(
-                usageDetails,
-                "system",
-                "system_tokens",
-                "system_token_count",
-                "instruction",
-                "instruction_tokens");
-
-        _ragTokenCount = ClampToInt(ragUsageTokens, _ragTokenCount);
-        _toolTokenCount = ClampToInt(toolUsageTokens, _toolTokenCount);
-        _systemTokenCount = ClampToInt(systemUsageTokens, _systemTokenCount);
-
-        int reserved = _ragTokenCount + _toolTokenCount + _systemTokenCount;
-        _sessionTokenCount = Math.Max(0, _contextTokenCount - reserved);
+        _contextTokenCount = snapshot.Total;
+        _sessionTokenCount = snapshot.Session;
+        _ragTokenCount = snapshot.Rag;
+        _toolTokenCount = snapshot.Tool;
+        _systemTokenCount = snapshot.System;
     }
 
 
 
 
 
-
-    private static int ClampToInt(long value, int fallback)
+    private async ValueTask<ConversationSessionContext?> EnsureSessionContextAsync(CancellationToken cancellationToken)
     {
-        if (value <= 0)
+        if (_sessionContext is not null)
         {
-            return fallback;
+            return _sessionContext;
         }
 
-        return value >= int.MaxValue ? int.MaxValue : (int)value;
-    }
-
-
-
-
-
-
-    private static long GetAdditionalCount(UsageDetails usageDetails, params string[] keys)
-    {
-        if (usageDetails.AdditionalCounts is null || usageDetails.AdditionalCounts.Count == 0)
-        {
-            return 0;
-        }
-
-        foreach (string key in keys)
-        {
-            foreach ((string countKey, long countValue) in usageDetails.AdditionalCounts)
-            {
-                if (string.Equals(countKey, key, StringComparison.OrdinalIgnoreCase))
-                {
-                    return countValue;
-                }
-            }
-        }
-
-        return 0;
-    }
-
-
-
-
-
-
-    private async ValueTask<string> ResolveStartupConversationIdAsync(CancellationToken cancellationToken)
-    {
-        if (_sqlChatHistoryProvider is not null)
-        {
-            string applicationId = string.IsNullOrWhiteSpace(ApplicationId) ? "unknown-application" : ApplicationId;
-            string userId = string.IsNullOrWhiteSpace(UserId) ? "unknown-user" : UserId;
-            string? latestConversationId = await _sqlChatHistoryProvider
-                    .GetLatestConversationIdAsync(AgentId, userId, applicationId, cancellationToken)
-                    .ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(latestConversationId))
-            {
-                return latestConversationId.Trim();
-            }
-        }
-
-        string configuredConversationId = _appSettings.LastConversationId?.Trim() ?? string.Empty;
-        if (!string.IsNullOrWhiteSpace(configuredConversationId))
-        {
-            return configuredConversationId;
-        }
-
-        return Guid.NewGuid().ToString("N");
-    }
-
-
-
-
-
-
-
-
-    private async Task InitializeAsync()
-    {
         if (Initialized)
         {
-            return;
+            return null;
         }
 
-        await _initializeGate.WaitAsync().ConfigureAwait(false);
-        try
-        {
-            if (Initialized)
-            {
-                return;
-            }
-
-            _agent = _agentFactory.GetCodingAssistantAgent(AgentId, AIModels.GPTOSS, "Agentic-Max Description");
-
-            _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
-            _agentSession.StateBag.SetValue("ApplicationId", ApplicationId);
-            _agentSession.StateBag.SetValue("UserId", UserId);
-            _agentSession.StateBag.SetValue("AgentId", AgentId);
-
-            ConversationId = await ResolveStartupConversationIdAsync(CancellationToken.None).ConfigureAwait(false);
-            _agentSession.StateBag.SetValue("ConversationId", ConversationId);
-
-            Initialized = true;
-        }
-        finally
-        {
-            _initializeGate.Release();
-        }
-
+        _sessionContext = await _sessionBootstrapper.EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
+        ConversationId = _sessionContext.Value.ConversationId;
+        Initialized = true;
+        return _sessionContext;
     }
 
 
 
+
+
+    private IConversationProgressLogService GetRequiredProgressLogService()
+    {
+        return _progressLogService ?? throw new InvalidOperationException("Task plan tracking is not configured.");
+    }
+
+
+
+
+
+    private async ValueTask<Guid?> TryStartAutomaticTaskPlanAsync(string content, CancellationToken cancellationToken)
+    {
+        if (_progressLogService is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            string conversationId = await EnsureConversationIdAsync(cancellationToken).ConfigureAwait(false);
+            ConversationProgressLog plan = await _progressLogService.CreatePlanAsync(
+                conversationId,
+                BuildAutomaticTaskPlanName(content),
+                ["Queue request", "Run agent", "Finalize response"],
+                cancellationToken).ConfigureAwait(false);
+            return plan.PlanId;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Unable to start automatic task plan for chat request.");
+            return null;
+        }
+    }
+
+
+
+
+
+    private static string BuildAutomaticTaskPlanName(string content)
+    {
+        string normalized = content.Trim();
+        if (normalized.Length > AutomaticTaskPlanNameLength)
+        {
+            normalized = normalized[..AutomaticTaskPlanNameLength].TrimEnd() + "...";
+        }
+
+        return $"Chat request: {normalized}";
+    }
+
+
+
+
+
+    private async ValueTask TryMoveAutomaticTaskPlanToStepAsync(Guid? planId, int stepId, CancellationToken cancellationToken)
+    {
+        if (!planId.HasValue || _progressLogService is null)
+        {
+            return;
+        }
+
+        try
+        {
+            string conversationId = await EnsureConversationIdAsync(cancellationToken).ConfigureAwait(false);
+            await _progressLogService.SetCurrentStepAsync(conversationId, planId.Value, stepId, ConversationProgressStepStatus.InProgress, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Unable to update automatic task plan step for chat request.");
+        }
+    }
+
+
+
+
+
+    private async ValueTask TryRecordAutomaticTaskPlanArtifactAsync(Guid? planId, string artifactKey, string artifactValue, CancellationToken cancellationToken)
+    {
+        if (!planId.HasValue || _progressLogService is null)
+        {
+            return;
+        }
+
+        try
+        {
+            string conversationId = await EnsureConversationIdAsync(cancellationToken).ConfigureAwait(false);
+            await _progressLogService.RecordArtifactAsync(conversationId, planId.Value, artifactKey, artifactValue, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Unable to record automatic task plan artifact for chat request.");
+        }
+    }
+
+
+
+
+
+    private async ValueTask TryCompleteAutomaticTaskPlanAsync(Guid? planId, CancellationToken cancellationToken)
+    {
+        if (!planId.HasValue || _progressLogService is null)
+        {
+            return;
+        }
+
+        try
+        {
+            string conversationId = await EnsureConversationIdAsync(cancellationToken).ConfigureAwait(false);
+            await _progressLogService.CompletePlanAsync(conversationId, planId.Value, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Unable to complete automatic task plan for chat request.");
+        }
+    }
+
+
+
+
+
+    private async ValueTask TryAbandonAutomaticTaskPlanAsync(Guid? planId, string reason, CancellationToken cancellationToken)
+    {
+        if (!planId.HasValue || _progressLogService is null)
+        {
+            return;
+        }
+
+        try
+        {
+            string conversationId = await EnsureConversationIdAsync(cancellationToken).ConfigureAwait(false);
+            await _progressLogService.AbandonPlanAsync(conversationId, planId.Value, reason, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Unable to abandon automatic task plan for chat request.");
+        }
+    }
+
+
+
+
+
+    private async ValueTask<string> EnsureConversationIdAsync(CancellationToken cancellationToken)
+    {
+        ConversationSessionContext? sessionContext = await EnsureSessionContextAsync(cancellationToken).ConfigureAwait(false);
+        if (sessionContext is null || string.IsNullOrWhiteSpace(sessionContext.Value.ConversationId))
+        {
+            throw new InvalidOperationException("Conversation is not initialized.");
+        }
+
+        ConversationId = sessionContext.Value.ConversationId;
+        return ConversationId;
+    }
 
 
 
@@ -525,29 +579,16 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-
-
     private void PublishTokenCounts()
     {
-        int sessionTokens = ContextTokenCount;
-
-
-        if (sessionTokens >= ConversationTokenBudget.SessionBudget)
-        {
-            SessionBugetExceeded?.Invoke(this, EventArgs.Empty);
-            TokenBudgetExceeded?.Invoke(this, EventArgs.Empty);
-            return;
-        }
-
-        if (sessionTokens >= ConversationTokenBudget.MaximumContext)
-        {
-            MaximumContextWarning?.Invoke(this, sessionTokens);
-        }
+        ConversationBudgetEvaluation evaluation = _budgetEvaluator.Evaluate(ContextTokenCount, ConversationTokenBudget);
+        _budgetEventPublisher.Publish(
+                evaluation,
+                ContextTokenCount,
+                () => SessionBugetExceeded?.Invoke(this, EventArgs.Empty),
+                () => TokenBudgetExceeded?.Invoke(this, EventArgs.Empty),
+                count => MaximumContextWarning?.Invoke(this, count));
     }
-
-
-
 
 
 
@@ -558,11 +599,4 @@ public sealed class ChatConversationService : IChatConversationService
 
     /// <inheritdoc />
     public event EventHandler? TokenBudgetExceeded;
-
-
-
-
-
-
-    private readonly record struct TokenBuckets(int Total, int Session, int Rag, int Tool, int System);
 }

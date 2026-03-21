@@ -7,6 +7,7 @@
 using System.Collections.Specialized;
 
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 
@@ -30,6 +31,9 @@ public class MainViewModelTests
     {
         var chatConversationServiceMock = new Mock<IChatConversationService>();
         chatConversationServiceMock.SetupGet(service => service.ContextTokenCount).Returns(8);
+        chatConversationServiceMock
+            .Setup(service => service.LoadTaskPlansAsync(It.IsAny<CancellationToken>()))
+            .Returns(new ValueTask<IReadOnlyList<ConversationProgressLog>>([]));
         chatConversationServiceMock
                 .Setup(service => service.SendRequestToModelAsync("hello", It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<ChatMessage>(new ChatMessage(ChatRole.Assistant, "hi there")));
@@ -58,6 +62,9 @@ public class MainViewModelTests
         var chatConversationServiceMock = new Mock<IChatConversationService>();
         chatConversationServiceMock.SetupGet(service => service.ContextTokenCount).Returns(8);
         chatConversationServiceMock
+            .Setup(service => service.LoadTaskPlansAsync(It.IsAny<CancellationToken>()))
+            .Returns(new ValueTask<IReadOnlyList<ConversationProgressLog>>([]));
+        chatConversationServiceMock
                 .Setup(service => service.SendRequestToModelAsync("hello", It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<ChatMessage>(new ChatMessage(ChatRole.Assistant, "hi there")));
 
@@ -82,6 +89,9 @@ public class MainViewModelTests
         chatConversationServiceMock.SetupGet(service => service.RagTokenCount).Returns(3);
         chatConversationServiceMock.SetupGet(service => service.ToolTokenCount).Returns(2);
         chatConversationServiceMock.SetupGet(service => service.SystemTokenCount).Returns(1);
+        chatConversationServiceMock
+            .Setup(service => service.LoadTaskPlansAsync(It.IsAny<CancellationToken>()))
+            .Returns(new ValueTask<IReadOnlyList<ConversationProgressLog>>([]));
         chatConversationServiceMock
                 .Setup(service => service.SendRequestToModelAsync("hello", It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new OperationCanceledException());
@@ -145,10 +155,31 @@ public class MainViewModelTests
                 new ChatMessage(ChatRole.User, "previous question"),
                 new ChatMessage(ChatRole.Assistant, "previous answer")
         ];
+        IReadOnlyList<ConversationProgressLog> taskPlans =
+        [
+            new ConversationProgressLog
+            {
+                ConversationId = "conversation-1",
+                PlanId = Guid.NewGuid(),
+                PlanName = "Refactor chat service",
+                CurrentStepId = 2,
+                Status = ConversationProgressStatus.InProgress,
+                Steps =
+                [
+                    new ConversationProgressStep { Id = 1, Title = "Extract seams", Status = ConversationProgressStepStatus.Completed },
+                    new ConversationProgressStep { Id = 2, Title = "Wire UI", Status = ConversationProgressStepStatus.InProgress }
+                ],
+                Artifacts = new Dictionary<string, string> { ["notes"] = "ready" },
+                UpdatedAtUtc = new DateTimeOffset(2026, 3, 21, 12, 0, 0, TimeSpan.Zero)
+            }
+        ];
 
         chatConversationServiceMock
                 .Setup(service => service.LoadConversationHistoryAsync(It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IReadOnlyList<ChatMessage>>(persistedMessages));
+        chatConversationServiceMock
+                .Setup(service => service.LoadTaskPlansAsync(It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyList<ConversationProgressLog>>(taskPlans));
         chatConversationServiceMock.SetupGet(service => service.ContextTokenCount).Returns(22);
         chatConversationServiceMock.SetupGet(service => service.SessionTokenCount).Returns(11);
         chatConversationServiceMock.SetupGet(service => service.RagTokenCount).Returns(5);
@@ -167,5 +198,42 @@ public class MainViewModelTests
         Assert.AreEqual(5, viewModel.RagTokenCount);
         Assert.AreEqual(4, viewModel.ToolTokenCount);
         Assert.AreEqual(2, viewModel.SystemTokenCount);
+        Assert.AreEqual(1, viewModel.TaskPlans.Count);
+        Assert.AreEqual("Refactor chat service", viewModel.TaskPlans[0].PlanName);
+        Assert.AreEqual(viewModel.TaskPlans[0], viewModel.SelectedTaskPlan);
+    }
+
+    [TestMethod]
+    public async Task WhenSendMessageCompletesThenTaskPlansAreRefreshed()
+    {
+        var chatConversationServiceMock = new Mock<IChatConversationService>();
+        chatConversationServiceMock.SetupGet(service => service.ContextTokenCount).Returns(8);
+        chatConversationServiceMock
+                .Setup(service => service.SendRequestToModelAsync("hello", It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<ChatMessage>(new ChatMessage(ChatRole.Assistant, "hi there")));
+        chatConversationServiceMock
+                .Setup(service => service.LoadTaskPlansAsync(It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyList<ConversationProgressLog>>(
+                [
+                    new ConversationProgressLog
+                    {
+                        ConversationId = "conversation-1",
+                        PlanId = Guid.NewGuid(),
+                        PlanName = "Refresh plans",
+                        CurrentStepId = 1,
+                        Steps = [new ConversationProgressStep { Id = 1, Title = "Update", Status = ConversationProgressStepStatus.InProgress }]
+                    }
+                ]));
+
+        MainViewModel viewModel = new(chatConversationServiceMock.Object)
+        {
+                MessageInput = "hello"
+        };
+
+        await viewModel.SendMessageCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(1, viewModel.TaskPlans.Count);
+        Assert.AreEqual("Refresh plans", viewModel.TaskPlans[0].PlanName);
+        chatConversationServiceMock.Verify(service => service.LoadTaskPlansAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

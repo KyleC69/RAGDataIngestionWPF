@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 
 using Moq;
@@ -39,9 +40,31 @@ public class DiAndHostServiceIntegrationTests
         AssertHasSingleton<IPageService>(services);
         AssertHasSingleton<INavigationService>(services);
         AssertHasSingleton<IUserDataService>(services);
+        AssertHasSingleton<IConversationAgentRunner>(services);
 
         Assert.IsTrue(services.Any(d => d.ServiceType == typeof(IShellWindow) && d.Lifetime == ServiceLifetime.Transient));
         Assert.IsTrue(services.Any(d => d.ServiceType == typeof(RAGDataIngestionWPF.ViewModels.MainViewModel) && d.Lifetime == ServiceLifetime.Transient));
+    }
+
+    [TestMethod]
+    public void RegisterAgentServicesRegistersRagContextPipeline()
+    {
+        ServiceCollection services = [];
+
+        InvokeAppRegistration("RegisterAgentServices", services);
+
+        AssertHasSingleton<IConversationContextCacheStore>(services);
+        AssertHasSingleton<IConversationProgressLogStore>(services);
+        AssertHasSingleton<IConversationProgressLogService>(services);
+        AssertHasSingleton<IContextCitationFormatter>(services);
+        AssertHasSingleton<IRagQueryExpander>(services);
+        AssertHasSingleton<IRagRetrievalService>(services);
+        AssertHasSingleton<IConversationHistoryContextOrchestrator>(services);
+        AssertHasSingleton<IRagContextMessageAssembler>(services);
+        AssertHasSingleton<IRagContextSource>(services);
+        Assert.AreEqual(3, services.Count(d => d.ServiceType == typeof(IRagContextSource) && d.Lifetime == ServiceLifetime.Singleton));
+        AssertHasSingleton<DataIngestionLib.Providers.AIContextRAGInjector>(services);
+        AssertHasSingleton<IAgentFactory>(services);
     }
 
     [TestMethod]

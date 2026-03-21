@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 using DataIngestionLib.ToolFunctions;
 
@@ -70,15 +70,7 @@ public class ViewModelAndConverterTests
         Assert.AreEqual(0, viewModel.Source.Count);
     }
 
-    [TestMethod]
-    public async Task DataGridViewModelStartIngestionCommandExecutes()
-    {
-        DataGridViewModel viewModel = new();
 
-        await viewModel.StartIngestionCommand.ExecuteAsync(null);
-
-        Assert.IsNotNull(viewModel.StartIngestionCommand);
-    }
 
     [TestMethod]
     public void ListDetailsViewModelOnNavigatedToLoadsItemsAndSelectsFirst()

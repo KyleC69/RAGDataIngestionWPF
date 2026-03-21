@@ -62,6 +62,27 @@ public class ChatConversationServiceTests
         return new ChatConversationService(NullLoggerFactory.Instance, agentFactory, settings, new AgentIdentityProvider(settings));
     }
 
+    private static ChatConversationService CreateService(
+        IConversationSessionBootstrapper sessionBootstrapper,
+        IConversationHistoryLoader historyLoader,
+        IConversationAgentRunner agentRunner = null,
+        IConversationProgressLogService progressLogService = null,
+        IAppSettings settings = null)
+    {
+        settings = settings ?? MakeSettingsMock().Object;
+        return new ChatConversationService(
+            NullLoggerFactory.Instance,
+            settings,
+            sessionBootstrapper,
+            historyLoader,
+            new ConversationTokenCounter(),
+            new ConversationBudgetEvaluator(),
+            new ChatBusyStateScopeFactory(),
+            new ConversationBudgetEventPublisher(),
+            agentRunner ?? Mock.Of<IConversationAgentRunner>(),
+            progressLogService);
+    }
+
     // -------------------------------------------------------------------------
     // Constructor guard tests
     // -------------------------------------------------------------------------
@@ -252,6 +273,185 @@ public class ChatConversationServiceTests
         Assert.AreEqual(2, events.Count);
         Assert.IsTrue(events[0]);
         Assert.IsFalse(events[1]);
+    }
+
+    [TestMethod]
+    public async Task LoadConversationHistoryUsesInjectedLoaderAndUpdatesState()
+    {
+        var bootstrapper = new Mock<IConversationSessionBootstrapper>();
+        bootstrapper
+            .Setup(x => x.EnsureInitializedAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationSessionContext(null!, null!, "conversation-42"));
+
+        var expectedHistory = new List<ChatMessage>
+        {
+            new(ChatRole.User, "hello")
+            {
+                MessageId = Guid.NewGuid().ToString("D")
+            },
+            new(ChatRole.Assistant, "world")
+            {
+                MessageId = Guid.NewGuid().ToString("D")
+            }
+        };
+
+        var historyLoader = new Mock<IConversationHistoryLoader>();
+        historyLoader
+            .Setup(x => x.LoadConversationHistoryAsync("conversation-42", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedHistory);
+
+        var service = CreateService(bootstrapper.Object, historyLoader.Object);
+
+        IReadOnlyList<ChatMessage> result = await service.LoadConversationHistoryAsync(CancellationToken.None);
+
+        Assert.AreEqual("conversation-42", service.ConversationId);
+        Assert.AreEqual(2, service.AIHistory.Count);
+        Assert.AreEqual("hello", service.AIHistory[0].Text);
+        Assert.AreEqual("world", service.AIHistory[1].Text);
+        Assert.AreEqual(2, result.Count);
+
+        bootstrapper.Verify(x => x.EnsureInitializedAsync(It.IsAny<CancellationToken>()), Times.Once);
+        historyLoader.Verify(x => x.LoadConversationHistoryAsync("conversation-42", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task StartTaskPlanUsesConversationScopedProgressLogService()
+    {
+        var bootstrapper = new Mock<IConversationSessionBootstrapper>();
+        bootstrapper
+            .Setup(x => x.EnsureInitializedAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationSessionContext(null!, null!, "conversation-42"));
+
+        var historyLoader = new Mock<IConversationHistoryLoader>();
+        var progressLogService = new Mock<IConversationProgressLogService>();
+        progressLogService
+            .Setup(x => x.CreatePlanAsync("conversation-42", "rewrite", It.Is<IReadOnlyList<string>>(steps => steps.Count == 2), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationProgressLog
+            {
+                ConversationId = "conversation-42",
+                PlanId = Guid.NewGuid(),
+                PlanName = "rewrite"
+            });
+
+        var service = CreateService(bootstrapper.Object, historyLoader.Object, progressLogService: progressLogService.Object);
+
+        ConversationProgressLog plan = await service.StartTaskPlanAsync("rewrite", ["extract seams", "validate"], CancellationToken.None);
+
+        Assert.AreEqual("conversation-42", service.ConversationId);
+        Assert.AreEqual("rewrite", plan.PlanName);
+        progressLogService.Verify(x => x.CreatePlanAsync("conversation-42", "rewrite", It.IsAny<IReadOnlyList<string>>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task SendRequestCreatesAndCompletesAutomaticTaskPlan()
+    {
+        var bootstrapper = new Mock<IConversationSessionBootstrapper>();
+        bootstrapper
+            .Setup(x => x.EnsureInitializedAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationSessionContext(null!, null!, "conversation-42"));
+
+        var historyLoader = new Mock<IConversationHistoryLoader>();
+        var agentRunner = new Mock<IConversationAgentRunner>();
+        agentRunner
+            .Setup(x => x.RunAsync(It.IsAny<Microsoft.Agents.AI.AIAgent>(), "hello", It.IsAny<Microsoft.Agents.AI.AgentSession>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationAgentRunResult("hi there", null));
+
+        Guid planId = Guid.NewGuid();
+        var progressLogService = new Mock<IConversationProgressLogService>();
+        progressLogService
+            .Setup(x => x.CreatePlanAsync("conversation-42", It.Is<string>(name => name.StartsWith("Chat request:")), It.IsAny<IReadOnlyList<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationProgressLog { ConversationId = "conversation-42", PlanId = planId, PlanName = "Chat request: hello" });
+        progressLogService
+            .Setup(x => x.SetCurrentStepAsync("conversation-42", planId, It.IsAny<int>(), ConversationProgressStepStatus.InProgress, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationProgressLog { ConversationId = "conversation-42", PlanId = planId });
+        progressLogService
+            .Setup(x => x.RecordArtifactAsync("conversation-42", planId, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationProgressLog { ConversationId = "conversation-42", PlanId = planId });
+        progressLogService
+            .Setup(x => x.CompletePlanAsync("conversation-42", planId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationProgressLog { ConversationId = "conversation-42", PlanId = planId, Status = ConversationProgressStatus.Completed });
+
+        var service = CreateService(bootstrapper.Object, historyLoader.Object, agentRunner.Object, progressLogService.Object);
+
+        ChatMessage result = await service.SendRequestToModelAsync("hello", CancellationToken.None);
+
+        Assert.AreEqual("hi there", result.Text);
+        Assert.AreEqual(2, service.AIHistory.Count);
+        progressLogService.Verify(x => x.CreatePlanAsync("conversation-42", It.IsAny<string>(), It.Is<IReadOnlyList<string>>(steps => steps.Count == 3), It.IsAny<CancellationToken>()), Times.Once);
+        progressLogService.Verify(x => x.SetCurrentStepAsync("conversation-42", planId, 2, ConversationProgressStepStatus.InProgress, It.IsAny<CancellationToken>()), Times.Once);
+        progressLogService.Verify(x => x.SetCurrentStepAsync("conversation-42", planId, 3, ConversationProgressStepStatus.InProgress, It.IsAny<CancellationToken>()), Times.Once);
+        progressLogService.Verify(x => x.RecordArtifactAsync("conversation-42", planId, "user_request", "hello", It.IsAny<CancellationToken>()), Times.Once);
+        progressLogService.Verify(x => x.RecordArtifactAsync("conversation-42", planId, "assistant_response", "hi there", It.IsAny<CancellationToken>()), Times.Once);
+        progressLogService.Verify(x => x.CompletePlanAsync("conversation-42", planId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task SendRequestAbandonsAutomaticTaskPlanWhenCancelled()
+    {
+        var bootstrapper = new Mock<IConversationSessionBootstrapper>();
+        bootstrapper
+            .Setup(x => x.EnsureInitializedAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationSessionContext(null!, null!, "conversation-42"));
+
+        var historyLoader = new Mock<IConversationHistoryLoader>();
+        var agentRunner = new Mock<IConversationAgentRunner>();
+        agentRunner
+            .Setup(x => x.RunAsync(It.IsAny<Microsoft.Agents.AI.AIAgent>(), "hello", It.IsAny<Microsoft.Agents.AI.AgentSession>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        Guid planId = Guid.NewGuid();
+        var progressLogService = new Mock<IConversationProgressLogService>();
+        progressLogService
+            .Setup(x => x.CreatePlanAsync("conversation-42", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationProgressLog { ConversationId = "conversation-42", PlanId = planId, PlanName = "Chat request: hello" });
+        progressLogService
+            .Setup(x => x.SetCurrentStepAsync("conversation-42", planId, It.IsAny<int>(), ConversationProgressStepStatus.InProgress, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationProgressLog { ConversationId = "conversation-42", PlanId = planId });
+        progressLogService
+            .Setup(x => x.RecordArtifactAsync("conversation-42", planId, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationProgressLog { ConversationId = "conversation-42", PlanId = planId });
+        progressLogService
+            .Setup(x => x.AbandonPlanAsync("conversation-42", planId, "cancelled", It.IsAny<CancellationToken>()))
+            .Returns(ValueTask.CompletedTask);
+
+        var service = CreateService(bootstrapper.Object, historyLoader.Object, agentRunner.Object, progressLogService.Object);
+
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(() => service.SendRequestToModelAsync("hello", CancellationToken.None).AsTask());
+
+        progressLogService.Verify(x => x.AbandonPlanAsync("conversation-42", planId, "cancelled", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task LoadTaskPlansDelegatesToProgressLogServiceForConversation()
+    {
+        var bootstrapper = new Mock<IConversationSessionBootstrapper>();
+        bootstrapper
+            .Setup(x => x.EnsureInitializedAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConversationSessionContext(null!, null!, "conversation-42"));
+
+        var historyLoader = new Mock<IConversationHistoryLoader>();
+        IReadOnlyList<ConversationProgressLog> expectedPlans =
+        [
+            new ConversationProgressLog
+            {
+                ConversationId = "conversation-42",
+                PlanId = Guid.NewGuid(),
+                PlanName = "rewrite"
+            }
+        ];
+
+        var progressLogService = new Mock<IConversationProgressLogService>();
+        progressLogService
+            .Setup(x => x.ListPlansAsync("conversation-42", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedPlans);
+
+        var service = CreateService(bootstrapper.Object, historyLoader.Object, progressLogService: progressLogService.Object);
+
+        IReadOnlyList<ConversationProgressLog> plans = await service.LoadTaskPlansAsync(CancellationToken.None);
+
+        Assert.AreEqual(1, plans.Count);
+        Assert.AreEqual("rewrite", plans[0].PlanName);
+        progressLogService.Verify(x => x.ListPlansAsync("conversation-42", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // -------------------------------------------------------------------------
