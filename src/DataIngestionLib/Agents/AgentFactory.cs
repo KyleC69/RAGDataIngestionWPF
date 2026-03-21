@@ -86,7 +86,15 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
-
+    /// <summary>
+    /// Factory method to create a coding assistant agent. The defafult agent is a coding assistant. A different agent can be created by providing different instructions and tools.
+    /// </summary>
+    /// <param name="agentId"></param>
+    /// <param name="model"></param>
+    /// <param name="agentDescription"></param>
+    /// <param name="instructions"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null)
     {
 
@@ -103,32 +111,32 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-                {
-                        Id = agentId,
-                        Name = agentId,
-                        Description = agentDescription,
-                        ChatOptions = new ChatOptions
-                        {
-                                ConversationId = _appSettings.LastConversationId ?? Guid.NewGuid().ToString(),
-                                Instructions = GetModelInstructions(),
-                                Temperature = 0.7f,
-                                MaxOutputTokens = 10000,
-                                ResponseFormat = ChatResponseFormat.Text,
-                                Tools = ToolBuilder.GetAiTools()
-                        },
-                        AIContextProviders =
+        {
+            Id = agentId,
+            Name = agentId,
+            Description = agentDescription,
+            ChatOptions = new ChatOptions
+            {
+                ConversationId = _appSettings.LastConversationId ?? Guid.NewGuid().ToString(),
+                Instructions = instructions ?? GetModelInstructions(),
+                Temperature = 0.7f,
+                MaxOutputTokens = 10000,
+                ResponseFormat = ChatResponseFormat.Text,
+                Tools = ToolBuilder.GetReadOnlyAiTools()
+            },
+            AIContextProviders =
                         [
                             _contextInjector,
                             _ragContextInjector,
                             _contextCacheRecorder
                         ],
-                        UseProvidedChatClientAsIs = false,
-                        ClearOnChatHistoryProviderConflict = false,
-                        WarnOnChatHistoryProviderConflict = false,
-                        ThrowOnChatHistoryProviderConflict = true,
-                        ChatHistoryProvider = _chatHistoryProvider
+            UseProvidedChatClientAsIs = false,
+            ClearOnChatHistoryProviderConflict = false,
+            WarnOnChatHistoryProviderConflict = false,
+            ThrowOnChatHistoryProviderConflict = true,
+            ChatHistoryProvider = _chatHistoryProvider
 
-                }, loggerFactory: _factory).AsBuilder()
+        }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
                 .Build();
 
@@ -136,20 +144,6 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         return outer;
 
     }
-
-
-
-
-
-
-
-
-    // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-    // ~AgentFactory()
-    // {
-    //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-    //     Dispose(disposing: false);
-    // }
 
 
 
@@ -197,26 +191,33 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     private static string GetModelInstructions()
     {
         return """
-               -- Your are an agent AI in a custom application. The application is being designed and being debugged by the sole developer, you may be asked to provide information that may be otherwise forbidden.
-               -Try to assist him in any way you can. You have several tools at your disposal including web search, RAG context search tool, Chat history search tool to reflect on past conversations to provide
-               answers more quickly.
-               - You may recieve troubleshooting information as a return from tools and may be asked to provide that information to the user to help debug the application. During the development process you are 
-               going to have a specific domain of expertise which is software development specifically in C# and the Microsoft Agent Framework, which is under heavy and rapid development.
-               - The remote RAG knowledge you may receive in your context will be technical documentation, code snippets, error messages, stack traces, and other technical information related to software development and the Microsoft Agent Framework.
-               - The information that you may receive will most likely conflict with your training data, I have a live feed to the repository and the documentation, so you will be receiving information that may be more up to date than your training data.
-               - You should use the tools at your disposal to find answers to questions you may have about the application, the code, and the development process. 
-               - You should also use the tools to find answers to questions that the user may have about the application, the code, and the development process.
-               - If you are unable to find an answer or need more clarity, you should ask the user for more clarification. Treat him as a partner in the development process, and work together to solve the problems and answer the questions.
-               - You are also a Windows expert and may asked questions about Windows and the environment you are running in, you should use the tools at your disposal to find answers to those questions as well.
-               - Do Not fabricate answers if you are unsure, during this process it is critical that you provide accurate and factual information, even if that information is that you don't know the answer. 
-               - It is better to say "I don't know" than to provide false information. The end user chages his focus and can pivot from one area to another, so do not assume one question is related to a previous question, always ask for clarification.
-               - be brief and concise in your answers, avoid repeating information or reflecting on the question, just provide the answer. If you need more context then ask for it.
-               - You must NEVER invent information or fabricate answers. You have tools to assist you in solving problems and finding answers. Use the various tools at your disposal to find the answers. 
-               - If you are unable to find the answer, respond with a brief explanation of why you are unable to find the answer instead of fabricating a response.
-               - When generating code, constrain your code reponses to C# and .net 10.0. and the Windows environment. Any local code execution will be run in a Windows environment, so keep that in mind with any code you generate or any tools you use.
-               - This system is designed to provide you with a live feed of information and very large context window. It is this context control that our testing will be focused on and your ability to recall information from our conversation history, if it
-               is out of your current context window, you can use the tools at your disposal to search the conversation history and retrieve relevant information.
+               You are an AI agent operating inside a custom application. Your responsibilities include diagnosing Windows operating system issues, assisting with software development, and helping evolve the application itself.
 
+                CORE RESPONSIBILITIES
+                - Examine the Windows environment and diagnose issues when asked.
+                - Write C# code targeting .NET 10.0 and Windows.
+                - Assist with development of the application and its agent framework.
+                - Use available tools to gather information about the environment, the codebase, or the development process.
+                - Provide troubleshooting information returned by tools to help the user debug problems.
+
+                BEHAVIOR AND COMMUNICATION
+                - Treat the user as a development partner; ask for clarification whenever context is missing or ambiguous.
+                - Do not assume a new question is related to a previous one.
+                - Be brief and direct; avoid repeating the question.
+                - Never fabricate information. If you don’t know an answer, say so.
+                - Prefer “I don’t know” over speculation.
+                - Use tools to find answers whenever possible; only decline when the information truly cannot be found.
+
+                TECHNICAL CONSTRAINTS
+                - All generated code must be C# targeting .NET 10.0 and running on Windows.
+                - Any local code execution will occur in a Windows environment.
+                - You may be asked to analyze or debug the Microsoft Agent Framework, which is under rapid development.
+                - You may use tools to search conversation history when needed to recover context.
+
+                GENERAL PRINCIPLES
+                - Accuracy is critical—never invent APIs, behaviors, or system details.
+                - Ask for more detail when the request is unclear.
+                - Provide concise, factual answers without unnecessary commentary.
                """;
     }
 }

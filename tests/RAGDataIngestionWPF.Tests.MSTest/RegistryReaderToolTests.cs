@@ -71,4 +71,15 @@ public class RegistryReaderToolTests
         Assert.IsFalse(result.Success);
         StringAssert.StartsWith(result.Error, "Registry key not found:");
     }
+
+    [TestMethod]
+    public void ReadValueWithUnsupportedHiveReturnsFailure()
+    {
+        RegistryReaderTool tool = new(NullLoggerFactory.Instance);
+
+        ToolResult<RegistryValueSnapshot> result = tool.ReadValue("HKEY_UNKNOWN\\Software\\Value");
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("Unsupported registry hive: HKEY_UNKNOWN", result.Error);
+    }
 }

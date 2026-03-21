@@ -91,6 +91,20 @@ public class SafeCommandRunnerTests
     }
 
     [TestMethod]
+    public void RunCatAbsoluteSiblingPathReturnsAccessDenied()
+    {
+        var siblingFile = Path.Combine($"{_sandboxRoot}-escape", "outside.txt");
+        _ = Directory.CreateDirectory(Path.GetDirectoryName(siblingFile)!);
+        File.WriteAllText(siblingFile, "outside");
+        SafeCommandRunner runner = new(_sandboxRoot);
+
+        ToolResult<string> result = runner.Run($"cat {siblingFile}");
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("Access denied.", result.Error);
+    }
+
+    [TestMethod]
     public void RunCatMissingFileReturnsFailure()
     {
         SafeCommandRunner runner = new(_sandboxRoot);

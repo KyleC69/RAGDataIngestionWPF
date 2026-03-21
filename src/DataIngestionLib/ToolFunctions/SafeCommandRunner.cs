@@ -20,7 +20,7 @@ namespace DataIngestionLib.ToolFunctions;
 
 public sealed class SafeCommandRunner(string sandboxRoot)
 {
-    private readonly string _sandboxRoot = Path.GetFullPath(sandboxRoot);
+    private readonly string _sandboxRoot = SandboxPathResolver.NormalizeRoot(sandboxRoot);
 
     private static readonly HashSet<string> AllowedCommands =
         new(StringComparer.OrdinalIgnoreCase) { "dir", "ls", "type", "cat", "echo" };
@@ -45,8 +45,7 @@ public sealed class SafeCommandRunner(string sandboxRoot)
 
             case "CAT":
             case "TYPE":
-                var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, args));
-                if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
+                if (!SandboxPathResolver.TryResolveFilePath(_sandboxRoot, args, out var fullPath, out _))
                 {
                     return ToolResult<string>.Fail("Access denied.");
                 }

@@ -73,6 +73,20 @@ public class SandboxFileReaderTests
 	}
 
 	[TestMethod]
+	public void ReadFileAbsoluteSiblingPathReturnsAccessDenied()
+	{
+		var siblingFile = Path.Combine($"{_sandboxRoot}-escape", "outside.txt");
+		_ = Directory.CreateDirectory(Path.GetDirectoryName(siblingFile)!);
+		File.WriteAllText(siblingFile, "outside");
+		FileSystemReaderTool tool = new(_sandboxRoot);
+
+		ToolResult<string> result = tool.ReadFile(siblingFile);
+
+		Assert.IsFalse(result.Success);
+		Assert.AreEqual("Access denied: path is outside the sandbox.", result.Error);
+	}
+
+	[TestMethod]
 	public void ReadFileMissingFileReturnsFailure()
 	{
 		FileSystemReaderTool tool = new(_sandboxRoot);

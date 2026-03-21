@@ -27,6 +27,7 @@ namespace DataIngestionLib.ToolFunctions;
 /// </remarks>
 public sealed class AgentLogger
 {
+    private const string LogsDirectoryName = "logs";
     private readonly string _logFile;
 
 
@@ -40,10 +41,17 @@ public sealed class AgentLogger
     ///     Initializes a new instance of the <see cref="AgentLogger" /> class.
     /// </summary>
     public AgentLogger()
+        : this(Environment.CurrentDirectory)
     {
-        //TODO: Make log directory configurable via IAppSettings and dependency injection
-        _ = Directory.CreateDirectory("\\logs");
-        _logFile = Path.Combine("\\logs", "agent.log");
+    }
+
+    internal AgentLogger(string sandboxRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sandboxRoot);
+
+        var logRoot = Path.Combine(SandboxPathResolver.NormalizeRoot(sandboxRoot), LogsDirectoryName);
+        _ = Directory.CreateDirectory(logRoot);
+        _logFile = Path.Combine(logRoot, "agent.log");
     }
 
 

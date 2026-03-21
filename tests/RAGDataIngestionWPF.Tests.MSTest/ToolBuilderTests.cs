@@ -20,6 +20,6 @@ public class ToolBuilderTests
 
         Assert.IsInstanceOfType<IList<AITool>>(result);
         IList<AITool> tools = (IList<AITool>)result;
-        Assert.AreEqual(7, tools.Count);
+        Assert.AreEqual(16, tools.Count);
     }
 }

@@ -34,7 +34,7 @@ public sealed class FileSystemReaderTool
             throw new ArgumentException("Sandbox root cannot be empty.", nameof(sandboxRoot));
         }
 
-        _sandboxRoot = Path.GetFullPath(sandboxRoot);
+        _sandboxRoot = SandboxPathResolver.NormalizeRoot(sandboxRoot);
     }
 
     [Description("Read a file's text content. The path is relative to the sandbox root.")]
@@ -42,15 +42,9 @@ public sealed class FileSystemReaderTool
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(relativePath))
+            if (!SandboxPathResolver.TryResolveFilePath(_sandboxRoot, relativePath, out var fullPath, out var error))
             {
-                return ToolResult<string>.Fail("Path cannot be empty.");
-            }
-
-            var fullPath = Path.GetFullPath(Path.Combine(_sandboxRoot, relativePath));
-            if (!fullPath.StartsWith(_sandboxRoot, StringComparison.OrdinalIgnoreCase))
-            {
-                return ToolResult<string>.Fail("Access denied: path is outside the sandbox.");
+                return ToolResult<string>.Fail(error!);
             }
 
             if (!File.Exists(fullPath))

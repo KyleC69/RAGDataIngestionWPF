@@ -73,6 +73,20 @@ public class SandboxFileWriterTests
 	}
 
 	[TestMethod]
+	public void WriteTextAbsoluteSiblingPathReturnsAccessDenied()
+	{
+		var siblingDirectory = $"{_sandboxRoot}-escape";
+		_ = Directory.CreateDirectory(siblingDirectory);
+		FileSystemWriterTool tool = new(_sandboxRoot);
+
+		ToolResult<string> result = tool.WriteText(Path.Combine(siblingDirectory, "outside.txt"), "unsafe");
+
+		Assert.IsFalse(result.Success);
+		Assert.AreEqual("Access denied: path is outside the sandbox.", result.Error);
+		Assert.IsFalse(File.Exists(Path.Combine(siblingDirectory, "outside.txt")));
+	}
+
+	[TestMethod]
 	public void WriteTextMissingIntermediateDirectoryReturnsIoError()
 	{
 		FileSystemWriterTool tool = new(_sandboxRoot);

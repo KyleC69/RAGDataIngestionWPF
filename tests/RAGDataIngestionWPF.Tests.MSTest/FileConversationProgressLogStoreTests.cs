@@ -376,7 +376,7 @@ public class FileConversationProgressLogStoreTests
         FileConversationProgressLogStore store = new(settings.Object, customRoot);
         try
         {
-            store.SavePlansAsync("TestConversationid", new ConversationProgressLog[1], CancellationToken.None);
+           await store.SavePlansAsync("TestConversationid", new ConversationProgressLog[1], CancellationToken.None);
         }
         catch (Exception)
         {
