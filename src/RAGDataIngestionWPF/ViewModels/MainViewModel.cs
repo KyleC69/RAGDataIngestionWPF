@@ -13,6 +13,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 
@@ -33,6 +34,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     private readonly IChatConversationService _chatConversationService;
     private CancellationTokenSource _responseCancellationTokenSource;
     private bool _historyLoaded;
+    [ObservableProperty] private TaskPlanDisplayItem selectedTaskPlan;
 
     //Running Token counts for different categories
     [ObservableProperty] private int ragTokenCount;
@@ -50,6 +52,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
         _chatConversationService = chatConversationService;
         Messages = new ObservableCollection<ChatMessageDisplayItem>();
+        TaskPlans = new ObservableCollection<TaskPlanDisplayItem>();
 
         SendMessageCommand = new AsyncRelayCommand(SendMessageAsync, CanSendMessage);
         CancelMessageCommand = new RelayCommand(CancelMessage, CanCancelMessage);
@@ -108,6 +111,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     public ObservableCollection<ChatMessageDisplayItem> Messages { get; }
 
+    public ObservableCollection<TaskPlanDisplayItem> TaskPlans { get; }
+
     public IAsyncRelayCommand SendMessageCommand { get; }
 
 
@@ -158,6 +163,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             {
                 Messages.Add(CreateUiMessage(historyMessage));
             }
+
+            await RefreshTaskPlansAsync().ConfigureAwait(true);
 
             TotalTokenCount = _chatConversationService.ContextTokenCount;
             SessionTokenCount = _chatConversationService.SessionTokenCount;
@@ -261,6 +268,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         {
             _responseCancellationTokenSource?.Dispose();
             _responseCancellationTokenSource = null;
+            await RefreshTaskPlansAsync().ConfigureAwait(true);
             TotalTokenCount = _chatConversationService.ContextTokenCount;
             SessionTokenCount= _chatConversationService.SessionTokenCount;
             RagTokenCount = _chatConversationService.RagTokenCount;
@@ -270,5 +278,20 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
+    }
+
+    private async Task RefreshTaskPlansAsync()
+    {
+        IReadOnlyList<ConversationProgressLog> plans = await _chatConversationService
+            .LoadTaskPlansAsync()
+            .ConfigureAwait(true);
+
+        TaskPlans.Clear();
+        foreach (ConversationProgressLog plan in plans)
+        {
+            TaskPlans.Add(TaskPlanDisplayItem.Create(plan));
+        }
+
+        SelectedTaskPlan = TaskPlans.FirstOrDefault();
     }
 }

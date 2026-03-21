@@ -317,9 +317,23 @@ public sealed partial class App : Application
         IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
         IServiceCollection unused4 = services.AddSingleton<IChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
         IServiceCollection unused5 = services.AddSingleton<ISQLChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
+        _ = services.AddSingleton<IConversationContextCacheStore, FileConversationContextCacheStore>();
+        _ = services.AddSingleton<IConversationProgressLogStore, FileConversationProgressLogStore>();
+        _ = services.AddSingleton<IConversationProgressLogService, ConversationProgressLogService>();
+        _ = services.AddSingleton<IContextCitationFormatter, ContextCitationFormatter>();
+        _ = services.AddSingleton<RagDataService>();
+        _ = services.AddSingleton<IRagQueryExpander, RagQueryExpander>();
+        _ = services.AddSingleton<IRagRetrievalService>(provider => provider.GetRequiredService<RagDataService>());
+        _ = services.AddSingleton<IConversationHistoryContextOrchestrator, ConversationHistoryContextOrchestrator>();
+        _ = services.AddSingleton<IRagContextOrchestrator, LocalRagContextOrchestrator>();
+        _ = services.AddSingleton<IRagContextMessageAssembler, RagContextMessageAssembler>();
+        _ = services.AddSingleton<IRagContextSource, ConversationCacheContextSource>();
+        _ = services.AddSingleton<IRagContextSource, ConversationHistoryContextSource>();
+        _ = services.AddSingleton<IRagContextSource, LocalRagContextSource>();
         IServiceCollection unused2 = services.AddSingleton<IAgentFactory, AgentFactory>();
 
         IServiceCollection unused1 = services.AddSingleton<ChatHistoryContextInjector>();
+        _ = services.AddSingleton<AIContextRAGInjector>();
     }
 
 
@@ -339,7 +353,24 @@ public sealed partial class App : Application
         _ = services.AddSingleton<LearningHtmlRunner>();
         _ = services.AddSingleton<IAppSettings, AppSettings>();
         _ = services.AddSingleton<IAgentIdentityProvider, AgentIdentityProvider>();
-        _ = services.AddSingleton<IChatConversationService, ChatConversationService>();
+        _ = services.AddSingleton<IConversationSessionBootstrapper, ConversationSessionBootstrapper>();
+        _ = services.AddSingleton<IConversationHistoryLoader, ConversationHistoryLoader>();
+        _ = services.AddSingleton<IConversationTokenCounter, ConversationTokenCounter>();
+        _ = services.AddSingleton<IConversationBudgetEvaluator, ConversationBudgetEvaluator>();
+        _ = services.AddSingleton<IChatBusyStateScopeFactory, ChatBusyStateScopeFactory>();
+        _ = services.AddSingleton<IConversationBudgetEventPublisher, ConversationBudgetEventPublisher>();
+        _ = services.AddSingleton<IConversationAgentRunner, ConversationAgentRunner>();
+        _ = services.AddSingleton<IChatConversationService>(provider => new ChatConversationService(
+            provider.GetRequiredService<ILoggerFactory>(),
+            provider.GetRequiredService<IAppSettings>(),
+            provider.GetRequiredService<IConversationSessionBootstrapper>(),
+            provider.GetRequiredService<IConversationHistoryLoader>(),
+            provider.GetRequiredService<IConversationTokenCounter>(),
+            provider.GetRequiredService<IConversationBudgetEvaluator>(),
+            provider.GetRequiredService<IChatBusyStateScopeFactory>(),
+            provider.GetRequiredService<IConversationBudgetEventPublisher>(),
+            provider.GetRequiredService<IConversationAgentRunner>(),
+            provider.GetRequiredService<IConversationProgressLogService>()));
         _ = services.AddSingleton<IPageService, PageService>();
         _ = services.AddSingleton<INavigationService, NavigationService>();
         _ = services.AddSingleton<IUserDataService, UserDataService>();

@@ -9,6 +9,8 @@
 
 using Microsoft.Extensions.AI;
 
+using DataIngestionLib.Models;
+
 
 
 
@@ -46,6 +48,13 @@ public interface IChatConversationService
     int ToolTokenCount { get; }
 
     event EventHandler<bool> BusyStateChanged;
+    ValueTask<ConversationProgressLog?> GetTaskPlanAsync(Guid planId, CancellationToken token = default);
+    ValueTask<IReadOnlyList<ConversationProgressLog>> LoadTaskPlansAsync(CancellationToken token = default);
+    ValueTask AbandonTaskPlanAsync(Guid planId, string? reason = null, CancellationToken token = default);
+    ValueTask<ConversationProgressLog> CompleteTaskPlanAsync(Guid planId, CancellationToken token = default);
     ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default);
+    ValueTask<ConversationProgressLog> RecordTaskPlanArtifactAsync(Guid planId, string artifactKey, string artifactValue, CancellationToken token = default);
     ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
+    ValueTask<ConversationProgressLog> StartTaskPlanAsync(string planName, IReadOnlyList<string> stepTitles, CancellationToken token = default);
+    ValueTask<ConversationProgressLog> UpdateTaskPlanStepAsync(Guid planId, int stepId, ConversationProgressStepStatus status, CancellationToken token = default);
 }

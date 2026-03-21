@@ -60,7 +60,7 @@
                 <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding RagTokenCount, StringFormat=Rag tokens: \{0\} / 10000}" />
                 <TextBlock Margin="12,0,0,6" Style="{StaticResource BodyTextStyle}" Text="{Binding ToolTokenCount, StringFormat=Tool tokens: \{0\} / 3000}" />
                 </StackPanel>
-                <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                <ListBox Grid.Row="1" Grid.Column="0"
                          x:Name="MessagesListBox"
                          Margin="6,0,6,0"
                          BorderThickness="0"
@@ -107,7 +107,71 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <Grid Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" Grid.ColumnSpan="3">
+                <Border Grid.Row="1"
+                        Grid.Column="2"
+                        Margin="0,0,6,0"
+                        Padding="12"
+                        Background="{DynamicResource MahApps.Brushes.Gray8}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Text="Agent Task Plans" />
+
+                        <ListBox Grid.Row="1"
+                                 Margin="0,12,0,12"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ItemsSource="{Binding TaskPlans}"
+                                 SelectedItem="{Binding SelectedTaskPlan}"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:TaskPlanDisplayItem}">
+                                    <Border Margin="0,0,0,8"
+                                            Padding="8"
+                                            Background="{DynamicResource MahApps.Brushes.Gray6}">
+                                        <StackPanel>
+                                            <TextBlock FontWeight="SemiBold"
+                                                       Text="{Binding PlanName}" />
+                                            <TextBlock Margin="0,4,0,0"
+                                                       Text="{Binding Status, StringFormat=Status: \{0\}}" />
+                                            <TextBlock Margin="0,2,0,0"
+                                                       Text="{Binding CurrentStep}"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Margin="0,2,0,0"
+                                                       Text="{Binding ArtifactSummary}" />
+                                            <TextBlock Margin="0,2,0,0"
+                                                       Opacity="0.75"
+                                                       Text="{Binding UpdatedAt}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <Border Grid.Row="2"
+                                Padding="8"
+                                Background="{DynamicResource MahApps.Brushes.Gray6}">
+                            <StackPanel>
+                                <TextBlock FontWeight="SemiBold" Text="Selected Plan" />
+                                <TextBlock Margin="0,6,0,0"
+                                           Text="{Binding SelectedTaskPlan.PlanName, TargetNullValue=No task plans recorded}" />
+                                <TextBlock Margin="0,2,0,0"
+                                           Text="{Binding SelectedTaskPlan.Status, StringFormat=Status: \{0\}}" />
+                                <TextBlock Margin="0,2,0,0"
+                                           Text="{Binding SelectedTaskPlan.CurrentStep}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="2" Grid.Column="0" Margin="0,8,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />

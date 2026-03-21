@@ -1,4 +1,4 @@
-﻿// Build Date: 2026/03/19
+// Build Date: 2026/03/19
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         RagDataService.cs
@@ -9,6 +9,7 @@
 
 using System.Collections.ObjectModel;
 
+using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Data;
 using DataIngestionLib.RAGModels;
 
@@ -27,7 +28,7 @@ namespace DataIngestionLib.Services;
 
 
 
-public class RagDataService(ILogger<RagDataService> logger)
+public class RagDataService(ILogger<RagDataService> logger) : IRagRetrievalService
 {
     private readonly ILogger<RagDataService> _logger = logger;
 
@@ -35,18 +36,14 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
 
-
-
-
     public static string FullTextSearch(string query, int topK = 5)
     {
-        //Database full text search logic here, return the search results as a string. 
         List<FullTextResults> results = [];
         using SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
 
         using SqlCommand cmd = new("EXEC sp_Search_FullText @query, @topK", conn);
-        SqlParameter unused1 = cmd.Parameters.AddWithValue("@query", query);
-        SqlParameter unused = cmd.Parameters.AddWithValue("@topK", topK);
+        _ = cmd.Parameters.AddWithValue("@query", query);
+        _ = cmd.Parameters.AddWithValue("@topK", topK);
 
         conn.Open();
         using SqlDataReader reader = cmd.ExecuteReader();
@@ -64,9 +61,6 @@ public class RagDataService(ILogger<RagDataService> logger)
 
         return JsonConvert.SerializeObject(results);
     }
-
-
-
 
 
 
@@ -84,7 +78,6 @@ public class RagDataService(ILogger<RagDataService> logger)
         }
         catch (Exception ex)
         {
-
             _logger.LogErrorFetchingRAGDataEntriesMessage(ex.Message);
         }
 
@@ -95,18 +88,14 @@ public class RagDataService(ILogger<RagDataService> logger)
 
 
 
-
-
-
     public static string HybridSearch(string query, int topK = 5)
     {
-        //Database vector search logic here, return the search results as a string. 
         List<FullTextResults> results = [];
         using SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
 
         using SqlCommand cmd = new("EXEC sp_Search_hybrid @query, @topK", conn);
-        SqlParameter unused1 = cmd.Parameters.AddWithValue("@query", query);
-        SqlParameter unused = cmd.Parameters.AddWithValue("@topK", topK);
+        _ = cmd.Parameters.AddWithValue("@query", query);
+        _ = cmd.Parameters.AddWithValue("@topK", topK);
 
         conn.Open();
         using SqlDataReader reader = cmd.ExecuteReader();
@@ -123,7 +112,42 @@ public class RagDataService(ILogger<RagDataService> logger)
         }
 
         return JsonConvert.SerializeObject(results);
+    }
 
+
+
+
+
+    public async ValueTask<IReadOnlyList<RagSearchResult>> SearchAsync(RagSearchQuery query, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(query.Query))
+        {
+            return [];
+        }
+
+        string commandText = query.Mode == RagSearchMode.FullText
+                ? "EXEC sp_Search_FullText @query, @topK"
+                : "EXEC sp_Search_hybrid @query, @topK";
+
+        List<RagSearchResult> results = [];
+        await using SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
+        await using SqlCommand cmd = new(commandText, conn);
+        _ = cmd.Parameters.AddWithValue("@query", query.Query);
+        _ = cmd.Parameters.AddWithValue("@topK", query.TopK);
+
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            results.Add(new RagSearchResult(
+                    reader.GetInt32(0),
+                    reader.GetString(1),
+                    reader.GetString(2),
+                    reader.GetString(3).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                    reader.GetDouble(4)));
+        }
+
+        return results;
     }
 }
 

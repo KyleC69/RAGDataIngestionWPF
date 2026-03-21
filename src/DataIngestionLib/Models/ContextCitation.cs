@@ -1,0 +1,14 @@
+namespace DataIngestionLib.Models;
+
+public sealed record ContextCitation
+{
+    public string Content { get; init; } = string.Empty;
+
+    public string? Locator { get; init; }
+
+    public string SourceKind { get; init; } = string.Empty;
+
+    public DateTimeOffset? TimestampUtc { get; init; }
+
+    public string Title { get; init; } = string.Empty;
+}
