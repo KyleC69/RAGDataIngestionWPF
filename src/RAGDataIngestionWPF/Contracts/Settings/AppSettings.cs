@@ -165,10 +165,15 @@ public class AppSettings : IAppSettings
 
     public void SetValue(string var, string value)
     {
-        
-       SaveSetting(var,value);
-        
+
+        SaveSetting(var, value);
+
     }
+
+
+
+
+
 
 
 
@@ -190,7 +195,10 @@ public class AppSettings : IAppSettings
 
 
 
-
+    private static bool GetBool(string settingName)
+    {
+        return (bool)Properties.Settings.Default[settingName];
+    }
 
 
     private static int GetInt(string settingName)
@@ -245,5 +253,30 @@ public class AppSettings : IAppSettings
     private static void SetString(string settingName, string value)
     {
         SaveSetting(settingName, value ?? string.Empty);
+    }
+
+
+
+
+
+
+
+
+    public bool ResumeLast
+    {
+        get { return GetBool(nameof(ResumeLast)); }
+        set { SetBool(nameof(ResumeLast), value); }
+    }
+
+
+
+
+
+
+
+
+    private void SetBool(string settingName, bool value)
+    {
+        SaveSetting(settingName, value);
     }
 }

@@ -7,9 +7,12 @@
 
 
 
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
+using DataIngestionLib.Services.Contracts;
 
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
 
@@ -32,6 +35,7 @@ namespace DataIngestionLib.Services;
 public sealed class ConversationHistoryLoader : IConversationHistoryLoader
 {
     private readonly ISQLChatHistoryProvider? _sqlChatHistoryProvider;
+    private readonly IAppSettings _appSettings;
 
 
 
@@ -52,9 +56,10 @@ public sealed class ConversationHistoryLoader : IConversationHistoryLoader
     ///     fetching and processing of conversation history. Passing <c>null</c> will result in the loader
     ///     functioning with no external data source.
     /// </remarks>
-    public ConversationHistoryLoader(ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
+    public ConversationHistoryLoader( IAppSettings settings,ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
     {
         _sqlChatHistoryProvider = sqlChatHistoryProvider;
+        _appSettings = settings;
     }
 
 
@@ -85,14 +90,15 @@ public sealed class ConversationHistoryLoader : IConversationHistoryLoader
     /// <exception cref="ArgumentNullException">
     ///     Thrown if <paramref name="conversationId" /> is null or whitespace.
     /// </exception>
-    public async ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(string conversationId, CancellationToken cancellationToken = default)
+    public async ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(HistoryIdentity identity, CancellationToken cancellationToken = default)
     {
-        if (_sqlChatHistoryProvider is null || string.IsNullOrWhiteSpace(conversationId))
+        if (_sqlChatHistoryProvider is null || identity is null)
         {
             return [];
         }
-
-        var persistedMessages = await _sqlChatHistoryProvider.GetMessagesAsync(conversationId, cancellationToken).ConfigureAwait(false);
+      
+      
+        var persistedMessages = await _sqlChatHistoryProvider.GetMessagesAsync(identity, cancellationToken).ConfigureAwait(false);
 
         List<ChatMessage> historyMessages = [];
         foreach (PersistedChatMessage persistedMessage in persistedMessages)

@@ -8,6 +8,9 @@
 
 
 using DataIngestionLib.Models;
+using DataIngestionLib.Services.Contracts;
+
+using Microsoft.Agents.AI;
 
 
 
@@ -24,10 +27,11 @@ public interface IChatHistoryProvider
     ValueTask<PersistedChatMessage> CreateMessageAsync(PersistedChatMessage message, CancellationToken cancellationToken = default);
 
 
+    HistoryIdentity SessionState { get; }
 
 
     ValueTask<PersistedChatMessage?> GetMessageAsync(Guid messageId, CancellationToken cancellationToken = default);
 
 
-    ValueTask<IReadOnlyList<PersistedChatMessage>> GetMessagesAsync(string conversationId, CancellationToken cancellationToken = default);
+    ValueTask<IReadOnlyList<PersistedChatMessage>> GetMessagesAsync(HistoryIdentity identity, CancellationToken cancellationToken = default);
 }

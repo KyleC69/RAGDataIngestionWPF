@@ -90,6 +90,11 @@ public sealed partial class App : Application
                     logging.AddJsonConsole(options => { options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions { Indented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }; });
                     ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
                     ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
+                    logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+
+
+
+                
                 })
                 .Build();
     }

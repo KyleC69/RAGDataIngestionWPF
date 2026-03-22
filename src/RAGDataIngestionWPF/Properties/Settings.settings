@@ -9,7 +9,7 @@
       <Value Profile="(Default)">11434</Value>
     </Setting>
     <Setting Name="ChatModel" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">gpt-oss:cloud</Value>
+      <Value Profile="(Default)">llama3.2:3b</Value>
     </Setting>
     <Setting Name="EmbeddingModel" Type="System.String" Scope="Application">
       <Value Profile="(Default)">mxbai-embed-large:latest</Value>
@@ -48,16 +48,19 @@
       <Value Profile="(Default)">15a53d0f-041d-44dd-a150-dfb8d0f133ff</Value>
     </Setting>
     <Setting Name="LastConversationId" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">15a53d0d-041d-44dd-a150-ddb8d0d133dd</Value>
     </Setting>
     <Setting Name="UserName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">TommyCat</Value>
     </Setting>
     <Setting Name="ChatHistoryConnectionString" Type="System.String" Scope="Application">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="RemoteRAGConnectionString" Type="System.String" Scope="Application">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ResumeLast" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

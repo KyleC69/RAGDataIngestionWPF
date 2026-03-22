@@ -11,6 +11,9 @@ using DataIngestionLib.History.HistoryModels;
 
 using Microsoft.EntityFrameworkCore;
 
+using Microsoft.EntityFrameworkCore.SqlServer;
+using Microsoft.Extensions.VectorData;
+
 
 
 
@@ -67,7 +70,15 @@ public class AIChatHistoryDb : DbContext
             entity.Property(e => e.AgentId).HasMaxLength(128);
             entity.Property(e => e.ApplicationId).HasMaxLength(128);
             entity.Property(e => e.ConversationId).HasMaxLength(128);
-            entity.Property(e => e.Embedding).HasMaxLength(1024);
+
+
+            entity.Property(e => e.Embedding).HasColumnType("vector(1024)");
+            
+            
+            
+            
+            
+            
             entity.Property(e => e.Enabled).HasDefaultValue(false, "DF_ChatHistoryMessages_Enabled");
             entity.Property(e => e.Role).HasMaxLength(32);
             entity.Property(e => e.Summary).HasMaxLength(2000);

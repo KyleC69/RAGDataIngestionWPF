@@ -48,6 +48,7 @@ public interface IAppSettings
     int SystemBudget { get; set; }
     int ToolBudget { get; set; }
     string UserId { get; set; }
+    bool ResumeLast { get; set; }
 
 
     TokenBudget GetTokenBudget();

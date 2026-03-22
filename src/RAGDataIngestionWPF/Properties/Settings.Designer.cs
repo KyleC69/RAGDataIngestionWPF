@@ -43,7 +43,7 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("gpt-oss:cloud")]
+        [global::System.Configuration.DefaultSettingValueAttribute("llama3.2:3b")]
         public string ChatModel {
             get {
                 return ((string)(this["ChatModel"]));
@@ -160,7 +160,7 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("15a53d0d-041d-44dd-a150-ddb8d0d133dd")]
         public string LastConversationId {
             get {
                 return ((string)(this["LastConversationId"]));
@@ -169,7 +169,7 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("TommyCat")]
         public string UserName {
             get {
                 return ((string)(this["UserName"]));
@@ -191,6 +191,15 @@ namespace RAGDataIngestionWPF.Properties {
         public string RemoteRAGConnectionString {
             get {
                 return ((string)(this["RemoteRAGConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ResumeLast {
+            get {
+                return ((bool)(this["ResumeLast"]));
             }
         }
     }

@@ -66,7 +66,7 @@ internal sealed class ToolBuilder
                 AIFunctionFactory.Create(installedUpdatesTool.ReadInstalledUpdates),
                 AIFunctionFactory.Create(networkConfigurationTool.ReadActiveAdapters),
                 AIFunctionFactory.Create(performanceCounterTool.ReadSnapshot),
-                AIFunctionFactory.Create(processSnapshotTool.ReadTopProcesses),
+             //   AIFunctionFactory.Create(processSnapshotTool.ReadTopProcesses),
                 AIFunctionFactory.Create(windowsEventChannelReaderTool.ReadChannel),
                 AIFunctionFactory.Create(registryReaderTool.ReadValue),
                 AIFunctionFactory.Create(reliabilityHistoryTool.ReadRecent),

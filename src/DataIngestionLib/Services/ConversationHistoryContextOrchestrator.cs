@@ -52,12 +52,33 @@ public sealed class ConversationHistoryContextOrchestrator : IConversationHistor
 
 
 
-
+    /// <summary>
+    /// Builds a collection of context messages for a given conversation based on the provided request messages.
+    /// </summary>
+    /// <param name="conversationId">
+    /// The unique identifier of the conversation for which context messages are to be built.
+    /// </param>
+    /// <param name="requestMessages">
+    /// A collection of <see cref="ChatMessage"/> objects representing the request messages.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.
+    /// </param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains a read-only list of <see cref="ChatMessage"/> objects
+    /// representing the context messages.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="requestMessages"/> is <c>null</c>.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Thrown when the operation is canceled via the <paramref name="cancellationToken"/>.
+    /// </exception>
     public async ValueTask<IReadOnlyList<ChatMessage>> BuildContextMessagesAsync(string conversationId, IReadOnlyList<ChatMessage> requestMessages, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(requestMessages);
-
+/*
         if (string.IsNullOrWhiteSpace(conversationId))
         {
             return [];
@@ -70,11 +91,11 @@ public sealed class ConversationHistoryContextOrchestrator : IConversationHistor
         }
 
         var historyMessages = await _historyLoader.LoadConversationHistoryAsync(conversationId, cancellationToken).ConfigureAwait(false);
-        if (historyMessages.Count == 0)
+       if (historyMessages.Count == 0)
         {
             return [];
         }
-
+        
         HashSet<string> requestTexts = new(StringComparer.OrdinalIgnoreCase);
         foreach (ChatMessage requestMessage in requestMessages)
         {
@@ -135,7 +156,8 @@ public sealed class ConversationHistoryContextOrchestrator : IConversationHistor
         return
         [
                 new ChatMessage(new ChatRole(AIChatRole.AIContext.Value), body)
-        ];
+        ];*/
+        return [];
     }
 
 

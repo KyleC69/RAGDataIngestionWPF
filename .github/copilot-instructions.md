@@ -7,6 +7,7 @@
 - Keep shared UI-supporting infrastructure in `src/RAGDataIngestionWPF.Core` rather than pushing it into the WPF project or the agent library.
 - Prefer extending existing service seams and interfaces in `src/DataIngestionLib/Contracts` instead of growing orchestration classes with more direct responsibilities.
 - Start documentation lookup at [docs/DocumentationManifest.md](../docs/DocumentationManifest.md), then use [docs/Architecture.md](../docs/Architecture.md), [docs/ContextManagement.md](../docs/ContextManagement.md), and [docs/Components.md](../docs/Components.md) as needed.
+- Use `ConversationSessionBootstrapper` to avoid a separate user identity service and to initialize `ProviderSessionState` once after agent session creation, removing redundant bootstrap logic.
 
 ## Build and Test
 

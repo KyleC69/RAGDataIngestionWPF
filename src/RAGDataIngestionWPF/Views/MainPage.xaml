@@ -33,16 +33,13 @@
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock Text="&#xE80F;" FontSize="40" FontFamily="Segoe MDL2 Assets"
-                   Foreground="{DynamicResource MahApps.Brushes.Text}" PresentationTraceSources.TraceLevel="High" />
-
         <TextBlock
             Style="{StaticResource PageTitleStyle}"
             Text="{x:Static properties:Resources.MainPageTitle}" />
         <Grid
             Grid.Row="1"
             Margin="{StaticResource MediumLeftRightMargin}"
-            Background="{DynamicResource MahApps.Brushes.Gray60}">
+            Background="{DynamicResource MahApps.Brushes.Window.Background.Backdrop.Acrylic}">
             <Grid Margin="{StaticResource SmallTopBottomMargin}">
 
                 <Grid.ColumnDefinitions>
@@ -69,14 +66,14 @@
                 </StackPanel>
                 <ListBox Grid.Row="1" Grid.Column="0"
                          x:Name="MessagesListBox"
-                         Margin="6,0,6,0"
+                         Margin="16,0,6,0"
                          BorderThickness="0"
                          Background="Transparent"
                          ItemsSource="{Binding Messages}"
                          HorizontalContentAlignment="Stretch"
                          ScrollViewer.CanContentScroll="False"
                          ScrollViewer.VerticalScrollBarVisibility="Auto" IsManipulationEnabled="True"
-                         SelectionMode="Multiple">
+                         SelectionMode="Multiple" Padding="5,0,-3,0">
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:MessageDisplay}">
                             <Border
@@ -99,15 +96,19 @@
                                     </Style>
                                 </Border.Style>
                                 <StackPanel>
-                                    <TextBlock
-                                        FontWeight="SemiBold"
+                                    <TextBlock FontStyle="Italic"
+                                        FontWeight="SemiBold" 
                                         Text="{Binding Role}" />
                                     <mdxam:MarkdownScrollViewer x:Name="mdScroller"
                                                                 Margin="0,6,0,0"
                                                                 HorizontalAlignment="Stretch"
                                                                 IsSelectionEnabled="True"
                                                                 BorderBrush="BlanchedAlmond" Markdown="{Binding Text}"
-                                                                MarkdownStyleName="DocumentStyleCompact" />
+                                                                MarkdownStyleName="HugaStyleProperty" >
+                                        <mdxam:MarkdownScrollViewer.Background>
+                                            <SolidColorBrush Color="{DynamicResource MahApps.Colors.Gray9}"/>
+                                        </mdxam:MarkdownScrollViewer.Background>
+                                    </mdxam:MarkdownScrollViewer>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
@@ -188,24 +189,21 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBox Grid.Row="0"
+                    <TextBox x:Name="UserMsg" Grid.Row="0"
                              Grid.Column="0"
                              MinHeight="82"
-                             Margin="0,0,8,0"
+                             Margin="12,0,8,0" 
                              AcceptsReturn="True"
                              VerticalContentAlignment="Top"
                              KeyDown="UIElement_OnKeyDown"
                              TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto"
-                             Text="{Binding MessageInput, UpdateSourceTrigger=PropertyChanged}">
+                             Text="{Binding MessageInput, UpdateSourceTrigger=PropertyChanged}" BorderThickness="2,2,2,2">
+                        <TextBox.BorderBrush>
+                            <SolidColorBrush Color="{DynamicResource MahApps.Colors.SystemBaseHigh}"/>
+                        </TextBox.BorderBrush>
                         <TextBox.Background>
-                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                <GradientStop Color="Black" />
-                                <GradientStop Color="White" Offset="1" />
-                                <GradientStop Color="#FF282828" Offset="0.16" />
-                                <GradientStop Color="#FF404040" Offset="0.257" />
-                                <GradientStop Color="#FF191212" Offset="0.327" />
-                            </LinearGradientBrush>
+                            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveCaptionTextColorKey}}" Opacity="0.335"/>
                         </TextBox.Background>
                     </TextBox>
 
@@ -214,16 +212,31 @@
                                 Orientation="Vertical">
                         <Button
                             x:Name="SendBtn"
+                            
                             Margin="8,0,0,8"
                             MinWidth="96"
                             Command="{Binding SendMessageCommand}"
-                            Content="Send" />
+                            Content="Send" >
+                            <Button.BorderBrush>
+                                <SolidColorBrush Color="{DynamicResource Theme.PrimaryAccentColor}"/>
+                            </Button.BorderBrush>
+                            <Button.Background>
+                                <SolidColorBrush Color="{DynamicResource MahApps.Colors.Accent4}"/>
+                            </Button.Background>
+                        </Button>
                         <Button
                             Margin="8,0,0,0"
                             MinWidth="96"
                             IsCancel="True"
                             Command="{Binding CancelMessageCommand}"
-                            Content="Cancel" />
+                            Content="Cancel" >
+                            <Button.BorderBrush>
+                                <SolidColorBrush Color="{DynamicResource Theme.PrimaryAccentColor}"/>
+                            </Button.BorderBrush>
+                            <Button.Background>
+                                <SolidColorBrush Color="{DynamicResource MahApps.Colors.Accent4}"/>
+                            </Button.Background>
+                        </Button>
                     </StackPanel>
 
                     <ProgressBar

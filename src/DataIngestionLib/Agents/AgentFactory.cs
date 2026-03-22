@@ -119,7 +119,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
                         },
                         AIContextProviders =
                         [
-                           //     _contextInjector,
+                               _contextInjector,
                           //      _ragContextInjector,
                            //     _contextCacheRecorder
                         ],

@@ -12,6 +12,7 @@ using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services.Contracts;
 
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -49,8 +50,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings,  IConversationAgentRunner? agentRunner = null, IConversationProgressLogService? progressLogService = null, ISQLChatHistoryProvider? sqlChatHistoryProvider = null) : this(factory, settings, new ConversationSessionBootstrapper(agentFactory, settings,  sqlChatHistoryProvider), new ConversationHistoryLoader(sqlChatHistoryProvider), new ConversationTokenCounter(), new ConversationBudgetEvaluator(), new ChatBusyStateScopeFactory(), new ConversationBudgetEventPublisher(), agentRunner ?? new ConversationAgentRunner(), progressLogService)
+    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings,  IConversationAgentRunner? agentRunner = null, IConversationProgressLogService? progressLogService = null, ISQLChatHistoryProvider? sqlChatHistoryProvider = null) : this(factory, settings, new ConversationSessionBootstrapper(agentFactory, settings,  sqlChatHistoryProvider), new ConversationHistoryLoader(settings, sqlChatHistoryProvider), new ConversationTokenCounter(), new ConversationBudgetEvaluator(), new ChatBusyStateScopeFactory(), new ConversationBudgetEventPublisher(), agentRunner ?? new ConversationAgentRunner(), progressLogService)
     {
         ArgumentNullException.ThrowIfNull(agentFactory);
     }
@@ -93,15 +93,6 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-    /// <summary>
-    ///     This is to provide an identifier in enterprise scenarios running multiple applications.
-    /// </summary>
-    public string ApplicationId
-    {
-        get { return _appSettings.ApplicationId; }
-    }
-
     /// <summary>
     ///     A collection of settings to provide the token budget allocated for the model
     /// </summary>
@@ -109,15 +100,9 @@ public sealed class ChatConversationService : IChatConversationService
 
     public bool Initialized { get; set; }
 
-    /// <summary>
-    ///     Onlly used for history persistence and retrieval filter.
-    /// </summary>
-    public static string UserId
-    {
-        get { return Environment.UserName; }
-    }
+   
 
-    /// <inheritdoc />
+ 
     public string ConversationId { get; private set; } = string.Empty;
 
     /// <summary>
@@ -184,7 +169,7 @@ public sealed class ChatConversationService : IChatConversationService
             await TryRecordAutomaticTaskPlanArtifactAsync(planId, "user_request", content, token).ConfigureAwait(false);
             await TryMoveAutomaticTaskPlanToStepAsync(planId, 2, token).ConfigureAwait(false);
 
-            ConversationAgentRunResult response = await _agentRunner.RunAsync(sessionContext.Value.Agent, content, sessionContext.Value.Session, token).ConfigureAwait(false);
+            ConversationAgentRunResult response = await _agentRunner.RunAsync(sessionContext.Agent, content, sessionContext.Session, token).ConfigureAwait(false);
 
             usageDetails = response.UsageDetails;
             if (usageDetails is not null)
@@ -232,6 +217,10 @@ public sealed class ChatConversationService : IChatConversationService
     {
         token.ThrowIfCancellationRequested();
         var sessionContext = await EnsureSessionContextAsync(CancellationToken.None).ConfigureAwait(false);
+        
+        
+        
+        
 
         if (sessionContext is null)
         {
@@ -240,7 +229,7 @@ public sealed class ChatConversationService : IChatConversationService
             return [];
         }
 
-        var conversationId = sessionContext.Value.ConversationId;
+        var conversationId = sessionContext.ConversationId;
         if (string.IsNullOrWhiteSpace(conversationId))
         {
             AIHistory.Clear();
@@ -250,7 +239,7 @@ public sealed class ChatConversationService : IChatConversationService
 
         ConversationId = conversationId;
 
-        var historyMessages = await _historyLoader.LoadConversationHistoryAsync(conversationId, token).ConfigureAwait(false);
+        var historyMessages = await _historyLoader.LoadConversationHistoryAsync(HistoryIdentity, token).ConfigureAwait(false);
 
         AIHistory.Clear();
         AIHistory.AddRange(historyMessages);
@@ -268,8 +257,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     public async ValueTask<IReadOnlyList<ConversationProgressLog>> LoadTaskPlansAsync(CancellationToken token = default)
     {
-        var conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
-        return await GetRequiredProgressLogService().ListPlansAsync(conversationId, token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().ListPlansAsync(ConversationId, token).ConfigureAwait(false);
     }
 
 
@@ -281,8 +269,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     public async ValueTask<ConversationProgressLog?> GetTaskPlanAsync(Guid planId, CancellationToken token = default)
     {
-        var conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
-        return await GetRequiredProgressLogService().GetPlanAsync(conversationId, planId, token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().GetPlanAsync(ConversationId, planId, token).ConfigureAwait(false);
     }
 
 
@@ -294,8 +281,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     public async ValueTask<ConversationProgressLog> StartTaskPlanAsync(string planName, IReadOnlyList<string> stepTitles, CancellationToken token = default)
     {
-        var conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
-        return await GetRequiredProgressLogService().CreatePlanAsync(conversationId, planName, stepTitles, token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().CreatePlanAsync(ConversationId, planName, stepTitles, token).ConfigureAwait(false);
     }
 
 
@@ -307,8 +293,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     public async ValueTask<ConversationProgressLog> UpdateTaskPlanStepAsync(Guid planId, int stepId, ConversationProgressStepStatus status, CancellationToken token = default)
     {
-        var conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
-        return await GetRequiredProgressLogService().SetCurrentStepAsync(conversationId, planId, stepId, status, token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().SetCurrentStepAsync(ConversationId, planId, stepId, status, token).ConfigureAwait(false);
     }
 
 
@@ -320,8 +305,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     public async ValueTask<ConversationProgressLog> RecordTaskPlanArtifactAsync(Guid planId, string artifactKey, string artifactValue, CancellationToken token = default)
     {
-        var conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
-        return await GetRequiredProgressLogService().RecordArtifactAsync(conversationId, planId, artifactKey, artifactValue, token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().RecordArtifactAsync(ConversationId, planId, artifactKey, artifactValue, token).ConfigureAwait(false);
     }
 
 
@@ -333,8 +317,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     public async ValueTask<ConversationProgressLog> CompleteTaskPlanAsync(Guid planId, CancellationToken token = default)
     {
-        var conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
-        return await GetRequiredProgressLogService().CompletePlanAsync(conversationId, planId, token).ConfigureAwait(false);
+        return await GetRequiredProgressLogService().CompletePlanAsync(ConversationId, planId, token).ConfigureAwait(false);
     }
 
 
@@ -346,8 +329,7 @@ public sealed class ChatConversationService : IChatConversationService
 
     public async ValueTask AbandonTaskPlanAsync(Guid planId, string? reason = null, CancellationToken token = default)
     {
-        var conversationId = await EnsureConversationIdAsync(token).ConfigureAwait(false);
-        await GetRequiredProgressLogService().AbandonPlanAsync(conversationId, planId, reason, token).ConfigureAwait(false);
+        await GetRequiredProgressLogService().AbandonPlanAsync(ConversationId, planId, reason, token).ConfigureAwait(false);
     }
 
 
@@ -385,20 +367,6 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    internal async ValueTask<string> EnsureConversationIdAsync(CancellationToken cancellationToken)
-    {
-        var sessionContext = await EnsureSessionContextAsync(cancellationToken).ConfigureAwait(false);
-        if (sessionContext is null || string.IsNullOrWhiteSpace(sessionContext.Value.ConversationId))
-        {
-            throw new InvalidOperationException("Conversation is not initialized.");
-        }
-
-        ConversationId = sessionContext.Value.ConversationId;
-        return ConversationId;
-    }
-
-
-
 
 
 
@@ -417,10 +385,20 @@ public sealed class ChatConversationService : IChatConversationService
         }
 
         _sessionContext = await _sessionBootstrapper.EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
-        ConversationId = _sessionContext.Value.ConversationId;
+        ConversationId = _sessionContext.ConversationId;
+        HistoryIdentity = _sessionContext.Identity;
         Initialized = true;
         return _sessionContext;
     }
+
+
+
+
+
+
+
+
+    public HistoryIdentity HistoryIdentity { get; set; }
 
 
 
@@ -486,8 +464,7 @@ public sealed class ChatConversationService : IChatConversationService
 
         try
         {
-            var conversationId = await EnsureConversationIdAsync(cancellationToken).ConfigureAwait(false);
-            await _progressLogService.AbandonPlanAsync(conversationId, planId.Value, reason, cancellationToken).ConfigureAwait(false);
+            await _progressLogService.AbandonPlanAsync(ConversationId, planId.Value, reason, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -511,8 +488,7 @@ public sealed class ChatConversationService : IChatConversationService
 
         try
         {
-            var conversationId = await EnsureConversationIdAsync(cancellationToken).ConfigureAwait(false);
-            await _progressLogService.CompletePlanAsync(conversationId, planId.Value, cancellationToken).ConfigureAwait(false);
+            await _progressLogService.CompletePlanAsync(ConversationId, planId.Value, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -536,8 +512,7 @@ public sealed class ChatConversationService : IChatConversationService
 
         try
         {
-            var conversationId = await EnsureConversationIdAsync(cancellationToken).ConfigureAwait(false);
-            await _progressLogService.SetCurrentStepAsync(conversationId, planId.Value, stepId, ConversationProgressStepStatus.InProgress, cancellationToken).ConfigureAwait(false);
+            await _progressLogService.SetCurrentStepAsync(ConversationId, planId.Value, stepId, ConversationProgressStepStatus.InProgress, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -561,8 +536,7 @@ public sealed class ChatConversationService : IChatConversationService
 
         try
         {
-            var conversationId = await EnsureConversationIdAsync(cancellationToken).ConfigureAwait(false);
-            await _progressLogService.RecordArtifactAsync(conversationId, planId.Value, artifactKey, artifactValue, cancellationToken).ConfigureAwait(false);
+            await _progressLogService.RecordArtifactAsync(ConversationId, planId.Value, artifactKey, artifactValue, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -586,8 +560,7 @@ public sealed class ChatConversationService : IChatConversationService
 
         try
         {
-            var conversationId = await EnsureConversationIdAsync(cancellationToken).ConfigureAwait(false);
-            ConversationProgressLog plan = await _progressLogService.CreatePlanAsync(conversationId, BuildAutomaticTaskPlanName(content), ["Queue request", "Run agent", "Finalize response"], cancellationToken).ConfigureAwait(false);
+            ConversationProgressLog plan = await _progressLogService.CreatePlanAsync(ConversationId, BuildAutomaticTaskPlanName(content), ["Queue request", "Run agent", "Finalize response"], cancellationToken).ConfigureAwait(false);
             return plan.PlanId;
         }
         catch (Exception ex)

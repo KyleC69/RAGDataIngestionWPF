@@ -1,4 +1,4 @@
-// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IConversationHistoryLoader.cs
@@ -6,6 +6,8 @@
 // Build Num: 140745
 
 
+
+using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Extensions.AI;
 
@@ -20,5 +22,5 @@ namespace DataIngestionLib.Contracts.Services;
 
 public interface IConversationHistoryLoader
 {
-    ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(string conversationId, CancellationToken cancellationToken = default);
+    ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(HistoryIdentity conversationId, CancellationToken cancellationToken = default);
 }
