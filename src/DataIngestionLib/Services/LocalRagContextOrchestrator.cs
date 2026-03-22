@@ -1,4 +1,13 @@
-﻿using DataIngestionLib.Contracts;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         LocalRagContextOrchestrator.cs
+// Author: Kyle L. Crowder
+// Build Num: 140830
+
+
+
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
@@ -12,12 +21,17 @@ namespace DataIngestionLib.Services;
 
 
 
+
 public sealed class LocalRagContextOrchestrator : IRagContextOrchestrator
 {
     private readonly IAppSettings _appSettings;
     private readonly IContextCitationFormatter _citationFormatter;
     private readonly IRagQueryExpander _queryExpander;
     private readonly IRagRetrievalService _retrievalService;
+
+
+
+
 
 
 
@@ -38,12 +52,16 @@ public sealed class LocalRagContextOrchestrator : IRagContextOrchestrator
 
 
 
+
+
+
+
     public async ValueTask<IReadOnlyList<ChatMessage>> BuildContextMessagesAsync(IReadOnlyList<ChatMessage> requestMessages, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(requestMessages);
 
-        IReadOnlyList<RagSearchQuery> queries = _queryExpander.Expand(requestMessages);
+        var queries = _queryExpander.Expand(requestMessages);
         if (queries.Count == 0)
         {
             return [];
@@ -52,9 +70,7 @@ public sealed class LocalRagContextOrchestrator : IRagContextOrchestrator
         List<IReadOnlyList<RagSearchResult>> resultSets = [];
         foreach (RagSearchQuery query in queries)
         {
-            IReadOnlyList<RagSearchResult> resultSet = await _retrievalService
-                    .SearchAsync(query, cancellationToken)
-                    .ConfigureAwait(false);
+            var resultSet = await _retrievalService.SearchAsync(query, cancellationToken).ConfigureAwait(false);
             if (resultSet.Count > 0)
             {
                 resultSets.Add(resultSet);
@@ -66,19 +82,10 @@ public sealed class LocalRagContextOrchestrator : IRagContextOrchestrator
             return [];
         }
 
-        int maxCharacters = Math.Max(500, _appSettings.RAGBudget * 4);
-        string body = _citationFormatter.FormatSection(
-            "Relevant local knowledge",
-            [
-                .. Fuse(resultSets).Select(result => new ContextCitation
-                {
-                    Title = result.Title,
-                    SourceKind = "local-rag",
-                    Locator = result.Id.ToString(),
-                    Content = result.Summary
-                })
-            ],
-            maxCharacters);
+        var maxCharacters = Math.Max(500, _appSettings.RAGBudget * 4);
+        var body = _citationFormatter.FormatSection("Relevant local knowledge", [
+                .. Fuse(resultSets).Select(result => new ContextCitation { Title = result.Title, SourceKind = "local-rag", Locator = result.Id.ToString(), Content = result.Summary })
+        ], maxCharacters);
 
         if (string.IsNullOrWhiteSpace(body))
         {
@@ -87,28 +94,33 @@ public sealed class LocalRagContextOrchestrator : IRagContextOrchestrator
 
         return
         [
-            new ChatMessage(new ChatRole(AIChatRole.RAGContext.Value), body)
+                new ChatMessage(new ChatRole(AIChatRole.RAGContext.Value), body)
         ];
     }
+
+
+
+
+
+
+
 
     internal static IReadOnlyList<RagSearchResult> Fuse(IReadOnlyList<IReadOnlyList<RagSearchResult>> resultSets)
     {
         Dictionary<int, (RagSearchResult Result, double Score)> fused = [];
 
-        foreach (IReadOnlyList<RagSearchResult> resultSet in resultSets)
+        foreach (var resultSet in resultSets)
         {
-            IReadOnlyList<RagSearchResult> ranked = resultSet
-                    .OrderByDescending(result => result.Score)
-                    .ToArray();
+            IReadOnlyList<RagSearchResult> ranked = resultSet.OrderByDescending(result => result.Score).ToArray();
 
-            for (int index = 0; index < ranked.Count; index++)
+            for (var index = 0; index < ranked.Count; index++)
             {
                 RagSearchResult result = ranked[index];
-                double contribution = 1.0 / (60 + index + 1);
+                var contribution = 1.0 / (60 + index + 1);
 
                 if (fused.TryGetValue(result.Id, out (RagSearchResult Result, double Score) existing))
                 {
-                    double mergedScore = existing.Score + contribution;
+                    var mergedScore = existing.Score + contribution;
                     RagSearchResult mergedResult = result.Score > existing.Result.Score ? result : existing.Result;
                     fused[result.Id] = (mergedResult, mergedScore);
                     continue;
@@ -118,10 +130,6 @@ public sealed class LocalRagContextOrchestrator : IRagContextOrchestrator
             }
         }
 
-        return fused.Values
-                .OrderByDescending(entry => entry.Score)
-                .ThenByDescending(entry => entry.Result.Score)
-                .Select(entry => entry.Result)
-                .ToArray();
+        return fused.Values.OrderByDescending(entry => entry.Score).ThenByDescending(entry => entry.Result.Score).Select(entry => entry.Result).ToArray();
     }
 }

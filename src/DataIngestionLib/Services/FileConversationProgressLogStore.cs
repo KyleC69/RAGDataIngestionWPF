@@ -1,4 +1,13 @@
-﻿using System.Collections.Concurrent;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         FileConversationProgressLogStore.cs
+// Author: Kyle L. Crowder
+// Build Num: 140827
+
+
+
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text.Json;
 
@@ -6,34 +15,54 @@ using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
+
+
+
 namespace DataIngestionLib.Services;
+
+
+
+
 
 public sealed class FileConversationProgressLogStore : IConversationProgressLogStore
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _conversationLocks = [];
     private readonly string _rootDirectory;
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+
+
+
+
+
+
+
 
     public FileConversationProgressLogStore(IAppSettings appSettings, string? rootDirectory = null)
     {
         ArgumentNullException.ThrowIfNull(appSettings);
 
-        string applicationId = appSettings.ApplicationId?.Trim() ?? string.Empty;
+        var applicationId = appSettings.ApplicationId?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(applicationId))
         {
             applicationId = "RAGDataIngestionWPF";
         }
 
-        _rootDirectory = rootDirectory
-                ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),  "conversation-progress-logs");
+        _rootDirectory = rootDirectory ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "conversation-progress-logs");
     }
+
+
+
+
+
+
+
 
     public async ValueTask DeleteConversationAsync(string conversationId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        string normalizedConversationId = NormalizeConversationId(conversationId);
+        var normalizedConversationId = NormalizeConversationId(conversationId);
         if (normalizedConversationId.Length == 0)
         {
             return;
@@ -43,7 +72,7 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            string filePath = GetFilePath(normalizedConversationId);
+            var filePath = GetFilePath(normalizedConversationId);
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
@@ -55,6 +84,13 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
         }
     }
 
+
+
+
+
+
+
+
     public async ValueTask<ConversationProgressLog?> GetAsync(string conversationId, Guid planId, CancellationToken cancellationToken = default)
     {
         if (planId == Guid.Empty)
@@ -62,15 +98,22 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
             return null;
         }
 
-        IReadOnlyList<ConversationProgressLog> plans = await ListAsync(conversationId, cancellationToken).ConfigureAwait(false);
+        var plans = await ListAsync(conversationId, cancellationToken).ConfigureAwait(false);
         return plans.FirstOrDefault(plan => plan.PlanId == planId);
     }
+
+
+
+
+
+
+
 
     public async ValueTask<IReadOnlyList<ConversationProgressLog>> ListAsync(string conversationId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        string normalizedConversationId = NormalizeConversationId(conversationId);
+        var normalizedConversationId = NormalizeConversationId(conversationId);
         if (normalizedConversationId.Length == 0)
         {
             return [];
@@ -88,12 +131,19 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
         }
     }
 
+
+
+
+
+
+
+
     public async ValueTask SaveAsync(ConversationProgressLog progressLog, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(progressLog);
 
-        string normalizedConversationId = NormalizeConversationId(progressLog.ConversationId);
+        var normalizedConversationId = NormalizeConversationId(progressLog.ConversationId);
         if (normalizedConversationId.Length == 0)
         {
             throw new ArgumentException("Conversation ID is required.", nameof(progressLog));
@@ -103,13 +153,9 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            List<ConversationProgressLog> plans = await LoadPlansAsync(normalizedConversationId, cancellationToken).ConfigureAwait(false);
-            int existingIndex = plans.FindIndex(plan => plan.PlanId == progressLog.PlanId);
-            ConversationProgressLog normalizedPlan = progressLog with
-            {
-                    ConversationId = normalizedConversationId,
-                    UpdatedAtUtc = progressLog.UpdatedAtUtc == default ? DateTimeOffset.UtcNow : progressLog.UpdatedAtUtc
-            };
+            var plans = await LoadPlansAsync(normalizedConversationId, cancellationToken).ConfigureAwait(false);
+            var existingIndex = plans.FindIndex(plan => plan.PlanId == progressLog.PlanId);
+            ConversationProgressLog normalizedPlan = progressLog with { ConversationId = normalizedConversationId, UpdatedAtUtc = progressLog.UpdatedAtUtc == default ? DateTimeOffset.Now : progressLog.UpdatedAtUtc };
 
             if (existingIndex >= 0)
             {
@@ -141,17 +187,23 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
         return Path.Combine(_rootDirectory, conversationId + ".json");
     }
 
+
+
+
+
+
+
+
     internal async ValueTask<List<ConversationProgressLog>> LoadPlansAsync(string conversationId, CancellationToken cancellationToken)
     {
-        string filePath = GetFilePath(conversationId);
+        var filePath = GetFilePath(conversationId);
         if (!File.Exists(filePath))
         {
             return [];
         }
 
         await using FileStream stream = File.OpenRead(filePath);
-        return await JsonSerializer.DeserializeAsync<List<ConversationProgressLog>>(stream, SerializerOptions, cancellationToken).ConfigureAwait(false)
-               ?? [];
+        return await JsonSerializer.DeserializeAsync<List<ConversationProgressLog>>(stream, SerializerOptions, cancellationToken).ConfigureAwait(false) ?? [];
     }
 
 
@@ -163,13 +215,13 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
 
     internal static string NormalizeConversationId(string conversationId)
     {
-        string trimmed = conversationId?.Trim() ?? string.Empty;
+        var trimmed = conversationId?.Trim() ?? string.Empty;
         if (trimmed.Length == 0)
         {
             return string.Empty;
         }
 
-        char[] invalid = Path.GetInvalidFileNameChars();
+        var invalid = Path.GetInvalidFileNameChars();
         return new string(trimmed.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
     }
 
@@ -183,7 +235,7 @@ public sealed class FileConversationProgressLogStore : IConversationProgressLogS
     internal async ValueTask SavePlansAsync(string conversationId, IReadOnlyList<ConversationProgressLog> plans, CancellationToken cancellationToken)
     {
         _ = Directory.CreateDirectory(_rootDirectory);
-        string filePath = GetFilePath(conversationId);
+        var filePath = GetFilePath(conversationId);
 
         await using FileStream stream = File.Create(filePath);
         await JsonSerializer.SerializeAsync(stream, plans, SerializerOptions, cancellationToken).ConfigureAwait(false);

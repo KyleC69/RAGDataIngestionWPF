@@ -1,7 +1,23 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         WindowsEventChannelReaderTool.cs
+// Author: Kyle L. Crowder
+// Build Num: 140846
+
+
+
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
 
+
+
+
 namespace DataIngestionLib.ToolFunctions;
+
+
+
+
 
 public sealed class WindowsEventChannelEntryDto
 {
@@ -13,6 +29,10 @@ public sealed class WindowsEventChannelEntryDto
     public DateTime? TimeCreated { get; init; }
 }
 
+
+
+
+
 public sealed class WindowsEventChannelReaderTool
 {
     private const int DefaultMaxEvents = 20;
@@ -21,18 +41,23 @@ public sealed class WindowsEventChannelReaderTool
 
     private static readonly HashSet<string> AllowedChannels =
     [
-        "Application",
-        "System",
-        "Setup",
-        "Microsoft-Windows-Diagnostics-Performance/Operational",
-        "Microsoft-Windows-WMI-Activity/Operational",
-        "Microsoft-Windows-WindowsUpdateClient/Operational"
+            "Application",
+            "System",
+            "Setup",
+            "Microsoft-Windows-Diagnostics-Performance/Operational",
+            "Microsoft-Windows-WMI-Activity/Operational",
+            "Microsoft-Windows-WindowsUpdateClient/Operational"
     ];
 
+
+
+
+
+
+
+
     [Description("Read recent entries from an allowlisted Windows event channel for local diagnostics.")]
-    public ToolResult<IReadOnlyList<WindowsEventChannelEntryDto>> ReadChannel(
-        [Description("Allowed event channel name, for example 'System' or 'Microsoft-Windows-Diagnostics-Performance/Operational'.")] string channelName,
-        [Description("Maximum number of recent events to return. Range: 1 to 50.")] int maxEvents = DefaultMaxEvents)
+    public ToolResult<IReadOnlyList<WindowsEventChannelEntryDto>> ReadChannel([Description("Allowed event channel name, for example 'System' or 'Microsoft-Windows-Diagnostics-Performance/Operational'.")] string channelName, [Description("Maximum number of recent events to return. Range: 1 to 50.")] int maxEvents = DefaultMaxEvents)
     {
         if (string.IsNullOrWhiteSpace(channelName))
         {
@@ -64,10 +89,7 @@ public sealed class WindowsEventChannelReaderTool
                 return ToolResult<IReadOnlyList<WindowsEventChannelEntryDto>>.Fail($"Event channel '{normalizedChannelName}' is not available on this machine.");
             }
 
-            EventLogQuery query = new(availableChannel, PathType.LogName)
-            {
-                ReverseDirection = true
-            };
+            EventLogQuery query = new(availableChannel, PathType.LogName) { ReverseDirection = true };
 
             using EventLogReader reader = new(query);
             List<WindowsEventChannelEntryDto> entries = [];
@@ -78,12 +100,12 @@ public sealed class WindowsEventChannelReaderTool
                 {
                     entries.Add(new WindowsEventChannelEntryDto
                     {
-                        EventId = record.Id,
-                        Level = record.LevelDisplayName ?? record.Level?.ToString() ?? "Unknown",
-                        LogName = availableChannel,
-                        Message = Truncate(TryFormatMessage(record)),
-                        ProviderName = Truncate(record.ProviderName ?? string.Empty, 128),
-                        TimeCreated = record.TimeCreated
+                            EventId = record.Id,
+                            Level = record.LevelDisplayName ?? record.Level?.ToString() ?? "Unknown",
+                            LogName = availableChannel,
+                            Message = Truncate(TryFormatMessage(record)),
+                            ProviderName = Truncate(record.ProviderName ?? string.Empty, 128),
+                            TimeCreated = record.TimeCreated
                     });
                 }
             }
@@ -104,6 +126,30 @@ public sealed class WindowsEventChannelReaderTool
         }
     }
 
+
+
+
+
+
+
+
+    private static string Truncate(string value, int maxLength = MaxMessageLength)
+    {
+        if (value.Length <= maxLength)
+        {
+            return value;
+        }
+
+        return value[..maxLength] + "...";
+    }
+
+
+
+
+
+
+
+
     private static string TryFormatMessage(EventRecord record)
     {
         try
@@ -114,15 +160,5 @@ public sealed class WindowsEventChannelReaderTool
         {
             return string.Empty;
         }
-    }
-
-    private static string Truncate(string value, int maxLength = MaxMessageLength)
-    {
-        if (value.Length <= maxLength)
-        {
-            return value;
-        }
-
-        return value[..maxLength] + "...";
     }
 }

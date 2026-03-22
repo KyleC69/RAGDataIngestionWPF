@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         PageService.cs
 // Author: Kyle L. Crowder
-// Build Num: 051902
+// Build Num: 140903
 
 
 
@@ -89,9 +89,7 @@ public sealed class PageService : IPageService
 
 
 
-    private void Configure<TVm, TV>()
-            where TVm : ObservableObject
-            where TV : Page
+    private void Configure<TVm, TV>() where TVm : ObservableObject where TV : Page
     {
         lock (_pages)
         {

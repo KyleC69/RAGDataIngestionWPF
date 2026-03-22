@@ -1,5 +1,13 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         LocalRagContextSource.cs
+// Author: Kyle L. Crowder
+// Build Num: 140805
+
+
+
 using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.Models;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -23,6 +31,9 @@ public sealed class LocalRagContextSource : IRagContextSource
 
 
 
+
+
+
     public LocalRagContextSource(IRagContextOrchestrator ragContextOrchestrator, ILogger<LocalRagContextSource> logger)
     {
         ArgumentNullException.ThrowIfNull(ragContextOrchestrator);
@@ -36,6 +47,9 @@ public sealed class LocalRagContextSource : IRagContextSource
 
 
 
+
+
+
     public async ValueTask<List<ChatMessage>> GetContextMessagesAsync(List<ChatMessage> requestMessages, AgentSession? session, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -43,9 +57,7 @@ public sealed class LocalRagContextSource : IRagContextSource
 
         try
         {
-            IReadOnlyList<ChatMessage> contextMessages = await _ragContextOrchestrator
-                    .BuildContextMessagesAsync(requestMessages, cancellationToken)
-                    .ConfigureAwait(false);
+            var contextMessages = await _ragContextOrchestrator.BuildContextMessagesAsync(requestMessages, cancellationToken).ConfigureAwait(false);
             return contextMessages.ToList();
         }
         catch (OperationCanceledException)

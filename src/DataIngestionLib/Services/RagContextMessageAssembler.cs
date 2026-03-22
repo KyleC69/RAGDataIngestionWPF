@@ -1,4 +1,13 @@
-﻿using DataIngestionLib.Contracts;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         RagContextMessageAssembler.cs
+// Author: Kyle L. Crowder
+// Build Num: 140831
+
+
+
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 
 using Microsoft.Extensions.AI;
@@ -11,9 +20,14 @@ namespace DataIngestionLib.Services;
 
 
 
+
 public sealed class RagContextMessageAssembler : IRagContextMessageAssembler
 {
     private readonly IAppSettings _appSettings;
+
+
+
+
 
 
 
@@ -27,6 +41,10 @@ public sealed class RagContextMessageAssembler : IRagContextMessageAssembler
 
 
 
+
+
+
+
     public IReadOnlyList<ChatMessage> Assemble(IReadOnlyList<ChatMessage> requestMessages, IReadOnlyList<ChatMessage> candidateMessages)
     {
         ArgumentNullException.ThrowIfNull(requestMessages);
@@ -35,21 +53,21 @@ public sealed class RagContextMessageAssembler : IRagContextMessageAssembler
         HashSet<string> seenTexts = new(StringComparer.OrdinalIgnoreCase);
         foreach (ChatMessage requestMessage in requestMessages)
         {
-            string requestText = NormalizeText(requestMessage.Text);
+            var requestText = NormalizeText(requestMessage.Text);
             if (!string.IsNullOrWhiteSpace(requestText))
             {
                 _ = seenTexts.Add(requestText);
             }
         }
 
-        int maxCharacters = Math.Max(500, _appSettings.RAGBudget * 4);
-        int currentCharacters = 0;
+        var maxCharacters = Math.Max(500, _appSettings.RAGBudget * 4);
+        var currentCharacters = 0;
         List<ChatMessage> assembled = [];
 
         foreach (ChatMessage candidateMessage in candidateMessages)
         {
-            string candidateText = candidateMessage.Text?.Trim() ?? string.Empty;
-            string normalizedCandidateText = NormalizeText(candidateText);
+            var candidateText = candidateMessage.Text?.Trim() ?? string.Empty;
+            var normalizedCandidateText = NormalizeText(candidateText);
             if (string.IsNullOrWhiteSpace(candidateText))
             {
                 continue;
@@ -72,11 +90,15 @@ public sealed class RagContextMessageAssembler : IRagContextMessageAssembler
         return assembled;
     }
 
+
+
+
+
+
+
+
     internal static string NormalizeText(string? text)
     {
-        return string.Join(
-            " ",
-            (text ?? string.Empty)
-                .Split([' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        return string.Join(" ", (text ?? string.Empty).Split([' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
     }
 }

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatMessageExtensions.cs
 // Author: Kyle L. Crowder
-// Build Num: 044240
+// Build Num: 140754
 
 
 
@@ -41,9 +41,7 @@ public static class ChatMessageExtensions
     {
         object? value = default;
         var flag = message.AdditionalProperties?.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out value);
-        return flag.HasValue && flag == true && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution
-                ? agentRequestMessageSourceAttribution.SourceId
-                : null;
+        return flag.HasValue && flag == true && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution ? agentRequestMessageSourceAttribution.SourceId : null;
     }
 
 
@@ -84,9 +82,7 @@ public static class ChatMessageExtensions
     {
         object? value = default;
         var flag = message.AdditionalProperties?.TryGetValue(AgentRequestMessageSourceAttribution.AdditionalPropertiesKey, out value);
-        return flag.HasValue && flag == true && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution
-                ? agentRequestMessageSourceAttribution.SourceType
-                : AgentRequestMessageSourceType.External;
+        return flag.HasValue && flag == true && value is AgentRequestMessageSourceAttribution agentRequestMessageSourceAttribution ? agentRequestMessageSourceAttribution.SourceType : AgentRequestMessageSourceType.External;
     }
 
 

@@ -1,11 +1,13 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatHistorySessionState.cs
 // Author: Kyle L. Crowder
-// Build Num: 044257
+// Build Num: 140812
 
 
+
+using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Agents.AI;
 
@@ -21,12 +23,11 @@ namespace DataIngestionLib.Services;
 internal static class ChatHistorySessionState
 {
 
-    private const string AgentIdStateKey = "ChatHistoryAgentId";
-    private const string ApplicationIdStateKey = "ChatHistoryApplicationId";
-    private const string ConversationIdStateKey = "ChatHistoryConversationId";
-    private const string UserIdStateKey = "ChatHistoryUserId";
+    private const string AgentIdStateKey = "AgentId";
+    private const string ApplicationIdStateKey = "ApplicationId";
+    private const string ConversationIdStateKey = "ConversationId";
+    private const string UserIdStateKey = "UserId";
 
-    private static string? _startupConversationId;
     private static readonly Lock SyncRoot = new();
 
 
@@ -36,160 +37,11 @@ internal static class ChatHistorySessionState
 
 
 
-    internal static void ApplyStartupConversationIfAvailable(AgentSession? session)
+    public static HistoryIdentity GetHistoryIdentity(AgentSession? contextSession)
     {
-        if (session is null)
-        {
-            return;
-        }
 
-        if (session.StateBag.TryGetValue(ConversationIdStateKey, out string? existingConversationId)
-            && !string.IsNullOrWhiteSpace(existingConversationId))
-        {
-            return;
-        }
+        HistoryIdentity identity = new() { AgentId = contextSession.StateBag.GetValue<string>("AgentId") ?? "UnknownAgent", ApplicationId = contextSession.StateBag.GetValue<string>("ApplicationId") ?? "Application-001", ConversationId = contextSession.StateBag.GetValue<string>("ConversationId") ?? "UnknownConversation", UserId = contextSession.StateBag.GetValue<string>("UserId") ?? "UnknownUser" };
+        return identity;
 
-        var startupConversationId = TryTakeStartupConversationId();
-        if (string.IsNullOrWhiteSpace(startupConversationId))
-        {
-            return;
-        }
-
-        session.StateBag.SetValue(ConversationIdStateKey, startupConversationId);
-    }
-
-
-
-
-
-
-
-
-    public static string GetOrCreateAgentId(AgentSession? session, string fallbackAgentId)
-    {
-        return GetOrCreateValue(session, AgentIdStateKey, () => fallbackAgentId);
-    }
-
-
-
-
-
-
-
-
-    public static string GetOrCreateApplicationId(AgentSession? session, string fallbackApplicationId)
-    {
-        return GetOrCreateValue(session, ApplicationIdStateKey, () => fallbackApplicationId);
-    }
-
-
-
-
-
-
-
-
-    public static string GetOrCreateConversationId(AgentSession? session)
-    {
-        ApplyStartupConversationIfAvailable(session);
-        return GetOrCreateValue(session, ConversationIdStateKey, static () => Guid.NewGuid().ToString("N"));
-    }
-
-
-
-
-
-
-
-
-
-
-    public static string GetOrCreateUserId(AgentSession? session)
-    {
-        return GetOrCreateUserId(session, Environment.UserName);
-    }
-
-
-
-
-
-
-
-
-    public static string GetOrCreateUserId(AgentSession? session, string fallbackUserId)
-    {
-        return GetOrCreateValue(session, UserIdStateKey, () => fallbackUserId);
-    }
-
-
-
-
-
-
-
-
-    internal static string GetOrCreateValue(AgentSession? session, string key, Func<string> factory)
-    {
-        if (session is null)
-        {
-            var value = factory();
-            return string.IsNullOrWhiteSpace(value) ? "unknown" : value;
-        }
-
-        if (session.StateBag.TryGetValue(key, out string? existingValue) && !string.IsNullOrWhiteSpace(existingValue))
-        {
-            return existingValue;
-        }
-
-        var newValue = factory();
-        if (string.IsNullOrWhiteSpace(newValue))
-        {
-            newValue = "unknown";
-        }
-
-        session.StateBag.SetValue(key, newValue);
-        return newValue;
-    }
-
-
-
-
-
-
-
-
-    public static void SetStartupConversation(string conversationId)
-    {
-        if (string.IsNullOrWhiteSpace(conversationId))
-        {
-            return;
-        }
-
-        lock (SyncRoot)
-        {
-            _startupConversationId = conversationId.Trim();
-        }
-    }
-
-
-
-
-
-
-
-
-    internal static string? TryTakeStartupConversationId()
-    {
-        lock (SyncRoot)
-        {
-            if (string.IsNullOrWhiteSpace(_startupConversationId))
-            {
-                return null;
-            }
-
-            string startupConversationId = _startupConversationId;
-            _startupConversationId = null;
-            return startupConversationId;
-        }
     }
 }

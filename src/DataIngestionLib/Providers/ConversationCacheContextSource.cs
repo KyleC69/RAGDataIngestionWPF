@@ -1,4 +1,13 @@
-﻿using DataIngestionLib.Contracts;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ConversationCacheContextSource.cs
+// Author: Kyle L. Crowder
+// Build Num: 140804
+
+
+
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
@@ -6,23 +15,33 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
+
+
+
 namespace DataIngestionLib.Providers;
+
+
+
+
 
 public sealed class ConversationCacheContextSource : IRagContextSource
 {
-    private const string ConversationIdStateKey = "ConversationId";
-    private const string ChatHistoryConversationIdStateKey = "ChatHistoryConversationId";
 
     private readonly IAppSettings _appSettings;
     private readonly IConversationContextCacheStore _cacheStore;
     private readonly IContextCitationFormatter _citationFormatter;
     private readonly ILogger<ConversationCacheContextSource> _logger;
+    private const string ChatHistoryConversationIdStateKey = "ChatHistoryConversationId";
+    private const string ConversationIdStateKey = "ConversationId";
 
-    public ConversationCacheContextSource(
-            IConversationContextCacheStore cacheStore,
-            IAppSettings appSettings,
-            IContextCitationFormatter citationFormatter,
-            ILogger<ConversationCacheContextSource> logger)
+
+
+
+
+
+
+
+    public ConversationCacheContextSource(IConversationContextCacheStore cacheStore, IAppSettings appSettings, IContextCitationFormatter citationFormatter, ILogger<ConversationCacheContextSource> logger)
     {
         ArgumentNullException.ThrowIfNull(cacheStore);
         ArgumentNullException.ThrowIfNull(appSettings);
@@ -35,17 +54,20 @@ public sealed class ConversationCacheContextSource : IRagContextSource
         _logger = logger;
     }
 
+
+
+
+
+
+
+
     public async ValueTask<List<ChatMessage>> GetContextMessagesAsync(List<ChatMessage> requestMessages, AgentSession? session, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(requestMessages);
 
-        string query = requestMessages
-                .Where(message => message.Role == ChatRole.User)
-                .Select(message => message.Text?.Trim() ?? string.Empty)
-                .LastOrDefault(text => !string.IsNullOrWhiteSpace(text))
-                ?? string.Empty;
-        string conversationId = ResolveConversationId(session);
+        var query = requestMessages.Where(message => message.Role == ChatRole.User).Select(message => message.Text?.Trim() ?? string.Empty).LastOrDefault(text => !string.IsNullOrWhiteSpace(text)) ?? string.Empty;
+        var conversationId = ResolveConversationId(session);
         if (string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(conversationId))
         {
             return [];
@@ -53,28 +75,23 @@ public sealed class ConversationCacheContextSource : IRagContextSource
 
         try
         {
-            IReadOnlyList<ConversationContextCacheEntry> entries = await _cacheStore
-                    .SearchAsync(conversationId, query, 3, cancellationToken)
-                    .ConfigureAwait(false);
+            var entries = await _cacheStore.SearchAsync(conversationId, query, 3, cancellationToken).ConfigureAwait(false);
             if (entries.Count == 0)
             {
                 return [];
             }
 
-            int maxCharacters = Math.Max(300, _appSettings.MetaBudget * 4);
-            string body = _citationFormatter.FormatSection(
-                "Relevant cached context",
-                [
+            var maxCharacters = Math.Max(300, _appSettings.MetaBudget * 4);
+            var body = _citationFormatter.FormatSection("Relevant cached context", [
                     .. entries.Select(entry => new ContextCitation
                     {
-                        Title = entry.Role?.Trim() ?? AIChatRole.RAGContext.Value,
-                        SourceKind = "conversation-cache",
-                        Locator = entry.EntryId.ToString("D"),
-                        TimestampUtc = entry.CreatedAtUtc,
-                        Content = entry.Text
+                            Title = entry.Role?.Trim() ?? AIChatRole.RAGContext.Value,
+                            SourceKind = "conversation-cache",
+                            Locator = entry.EntryId.ToString("D"),
+                            TimestampUtc = entry.CreatedAtUtc,
+                            Content = entry.Text
                     })
-                ],
-                maxCharacters);
+            ], maxCharacters);
 
             if (string.IsNullOrWhiteSpace(body))
             {
@@ -83,7 +100,7 @@ public sealed class ConversationCacheContextSource : IRagContextSource
 
             return
             [
-                new ChatMessage(new ChatRole(AIChatRole.AIContext.Value), body)
+                    new ChatMessage(new ChatRole(AIChatRole.AIContext.Value), body)
             ];
         }
         catch (OperationCanceledException)
@@ -97,6 +114,13 @@ public sealed class ConversationCacheContextSource : IRagContextSource
         }
     }
 
+
+
+
+
+
+
+
     internal static string ResolveConversationId(AgentSession? session)
     {
         if (session is null)
@@ -104,14 +128,12 @@ public sealed class ConversationCacheContextSource : IRagContextSource
             return string.Empty;
         }
 
-        if (session.StateBag.TryGetValue(ConversationIdStateKey, out string? conversationId)
-            && !string.IsNullOrWhiteSpace(conversationId))
+        if (session.StateBag.TryGetValue(ConversationIdStateKey, out string? conversationId) && !string.IsNullOrWhiteSpace(conversationId))
         {
             return conversationId;
         }
 
-        if (session.StateBag.TryGetValue(ChatHistoryConversationIdStateKey, out string? chatHistoryConversationId)
-            && !string.IsNullOrWhiteSpace(chatHistoryConversationId))
+        if (session.StateBag.TryGetValue(ChatHistoryConversationIdStateKey, out string? chatHistoryConversationId) && !string.IsNullOrWhiteSpace(chatHistoryConversationId))
         {
             return chatHistoryConversationId;
         }

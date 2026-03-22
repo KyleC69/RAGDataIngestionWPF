@@ -1,4 +1,17 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ContextCitation.cs
+// Author: Kyle L. Crowder
+// Build Num: 140757
+
+
+
 namespace DataIngestionLib.Models;
+
+
+
+
 
 public sealed record ContextCitation
 {

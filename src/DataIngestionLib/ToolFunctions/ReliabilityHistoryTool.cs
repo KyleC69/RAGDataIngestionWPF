@@ -1,7 +1,23 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ReliabilityHistoryTool.cs
+// Author: Kyle L. Crowder
+// Build Num: 140841
+
+
+
 using System.ComponentModel;
 using System.Management;
 
+
+
+
 namespace DataIngestionLib.ToolFunctions;
+
+
+
+
 
 public sealed class ReliabilityRecordSnapshot
 {
@@ -12,9 +28,20 @@ public sealed class ReliabilityRecordSnapshot
     public string User { get; init; } = string.Empty;
 }
 
+
+
+
+
 public sealed class ReliabilityHistoryTool
 {
     private const int MaxResults = 25;
+
+
+
+
+
+
+
 
     [Description("Read bounded reliability history records for recent system instability and crash diagnosis.")]
     public ToolResult<IReadOnlyList<ReliabilityRecordSnapshot>> ReadRecent([Description("Maximum number of records to return. Range: 1 to 25.")] int maxResults = 10)
@@ -35,18 +62,18 @@ public sealed class ReliabilityHistoryTool
             using ManagementObjectCollection results = searcher.Get();
 
             var records = results.Cast<ManagementBaseObject>()
-                .OrderByDescending(record => record["TimeGenerated"]?.ToString(), StringComparer.OrdinalIgnoreCase)
-                .Take(maxResults)
-                .Select(record => new ReliabilityRecordSnapshot
-                {
-                    ProductName = DiagnosticsText.Truncate(record["ProductName"]?.ToString()),
-                    RecordNumber = DiagnosticsText.Truncate(record["RecordNumber"]?.ToString(), 32),
-                    SourceName = DiagnosticsText.Truncate(record["SourceName"]?.ToString(), 128),
-                    TimeGenerated = DiagnosticsText.Truncate(record["TimeGenerated"]?.ToString(), 64),
-                    User = DiagnosticsText.Truncate(record["User"]?.ToString(), 64)
-                })
-                .ToList()
-                .AsReadOnly();
+                    .OrderByDescending(record => record["TimeGenerated"]?.ToString(), StringComparer.OrdinalIgnoreCase)
+                    .Take(maxResults)
+                    .Select(record => new ReliabilityRecordSnapshot
+                    {
+                            ProductName = DiagnosticsText.Truncate(record["ProductName"]?.ToString()),
+                            RecordNumber = DiagnosticsText.Truncate(record["RecordNumber"]?.ToString(), 32),
+                            SourceName = DiagnosticsText.Truncate(record["SourceName"]?.ToString(), 128),
+                            TimeGenerated = DiagnosticsText.Truncate(record["TimeGenerated"]?.ToString(), 64),
+                            User = DiagnosticsText.Truncate(record["User"]?.ToString(), 64)
+                    })
+                    .ToList()
+                    .AsReadOnly();
 
             return ToolResult<IReadOnlyList<ReliabilityRecordSnapshot>>.Ok(records);
         }

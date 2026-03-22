@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         SqlChatHistoryConnectionFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 044300
+// Build Num: 140814
 
 
 

@@ -1,34 +1,55 @@
-using System.IO;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         ConfigurationAndEdgeCaseServiceTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 140943
+
+
+
 using System.Reflection;
-
-using Microsoft.Extensions.Logging;
-
-using Moq;
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Services;
+
+using Moq;
 
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.Settings;
 using RAGDataIngestionWPF.Services;
 using RAGDataIngestionWPF.ViewModels;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class ConfigurationAndEdgeCaseServiceTests
 {
+
+
+
+
+
+
+
+
     [TestMethod]
     public void AppSettingsGetTokenBudgetAggregatesConfiguredBudgets()
     {
         AppSettings settings = new();
 
-        int oldSession = settings.SessionBudget;
-        int oldSystem = settings.SystemBudget;
-        int oldRag = settings.RAGBudget;
-        int oldTool = settings.ToolBudget;
-        int oldMeta = settings.MetaBudget;
-        int oldContext = settings.MaximumContext;
+        var oldSession = settings.SessionBudget;
+        var oldSystem = settings.SystemBudget;
+        var oldRag = settings.RAGBudget;
+        var oldTool = settings.ToolBudget;
+        var oldMeta = settings.MetaBudget;
+        var oldContext = settings.MaximumContext;
 
         try
         {
@@ -60,12 +81,19 @@ public class ConfigurationAndEdgeCaseServiceTests
         }
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public void AppSettingsStringSettersNormalizeNullToEmpty()
     {
         AppSettings settings = new();
-        string oldChatModel = settings.ChatModel;
-        string oldAgentId = settings.AgentId;
+        var oldChatModel = settings.ChatModel;
+        var oldAgentId = settings.AgentId;
 
         try
         {
@@ -81,27 +109,12 @@ public class ConfigurationAndEdgeCaseServiceTests
         }
     }
 
-    [TestMethod]
-    public void AgentIdentityProviderReturnsConfiguredAgentId()
-    {
-        Mock<IAppSettings> settings = new();
-        settings.SetupGet(s => s.AgentId).Returns("  configured-agent  ");
 
-        AgentIdentityProvider provider = new(settings.Object);
 
-        Assert.AreEqual("configured-agent", provider.GetAgentId());
-    }
 
-    [TestMethod]
-    public void AgentIdentityProviderFallsBackWhenConfiguredAgentIdIsBlank()
-    {
-        Mock<IAppSettings> settings = new();
-        settings.SetupGet(s => s.AgentId).Returns(string.Empty);
 
-        AgentIdentityProvider provider = new(settings.Object);
 
-        Assert.AreEqual("Agentic-Max", provider.GetAgentId());
-    }
+
 
     [TestMethod]
     public void IdentityCacheServiceRoundTripsEncryptedToken()
@@ -109,24 +122,24 @@ public class ConfigurationAndEdgeCaseServiceTests
         Type serviceType = Type.GetType("RAGDataIngestionWPF.Services.IdentityCacheService, RAGDataIngestionWPF");
         Assert.IsNotNull(serviceType);
 
-        object service = Activator.CreateInstance(serviceType, true);
+        var service = Activator.CreateInstance(serviceType, true);
 
         FieldInfo pathField = serviceType.GetField("MsalCacheFilePath", BindingFlags.Public | BindingFlags.Static);
         FieldInfo fileField = serviceType.GetField("MsalCacheFileName", BindingFlags.Public | BindingFlags.Static);
         Assert.IsNotNull(pathField);
         Assert.IsNotNull(fileField);
 
-        string folder = (string)pathField.GetValue(null);
-        string file = (string)fileField.GetValue(null);
-        string fullPath = Path.Combine(folder, file);
+        var folder = (string)pathField.GetValue(null);
+        var file = (string)fileField.GetValue(null);
+        var fullPath = Path.Combine(folder, file);
 
-        byte[] previous = File.Exists(fullPath) ? File.ReadAllBytes(fullPath) : null;
+        var previous = File.Exists(fullPath) ? File.ReadAllBytes(fullPath) : null;
 
         try
         {
             byte[] token = [1, 2, 3, 4, 5, 6];
             _ = serviceType.GetMethod("SaveMsalToken", BindingFlags.Public | BindingFlags.Instance).Invoke(service, new object[] { token });
-            byte[] roundTrip = (byte[])serviceType.GetMethod("ReadMsalToken", BindingFlags.Public | BindingFlags.Instance).Invoke(service, null);
+            var roundTrip = (byte[])serviceType.GetMethod("ReadMsalToken", BindingFlags.Public | BindingFlags.Instance).Invoke(service, null);
 
             CollectionAssert.AreEqual(token, roundTrip);
         }
@@ -147,6 +160,13 @@ public class ConfigurationAndEdgeCaseServiceTests
         }
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public void SettingsViewModelPrivateParseMethodsHandleEdgeCases()
     {
@@ -166,9 +186,16 @@ public class ConfigurationAndEdgeCaseServiceTests
         Assert.IsNull(parseNullableInt.Invoke(null, new object[] { "", 5 }));
         Assert.AreEqual(5, (int)parseNullableInt.Invoke(null, new object[] { "-4", 5 }));
 
-        object theme = parseTheme.Invoke(null, new object[] { "NotATheme" });
-        Assert.AreEqual(RAGDataIngestionWPF.Models.AppTheme.Default, (RAGDataIngestionWPF.Models.AppTheme)theme);
+        var theme = parseTheme.Invoke(null, new object[] { "NotATheme" });
+        Assert.AreEqual(Models.AppTheme.Default, (Models.AppTheme)theme);
     }
+
+
+
+
+
+
+
 
     [TestMethod]
     public void SettingsViewModelSetThemeCommandCanSurfaceMissingThemeResourceEdgeCase()
@@ -195,6 +222,13 @@ public class ConfigurationAndEdgeCaseServiceTests
             Assert.IsNotNull(captured);
         });
     }
+
+
+
+
+
+
+
 
     [TestMethod]
     public void SystemServiceOpenInWebBrowserWithNullUrlThrows()

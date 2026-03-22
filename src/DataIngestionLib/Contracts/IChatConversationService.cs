@@ -1,15 +1,15 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 044229
+// Build Num: 140743
 
 
-
-using Microsoft.Extensions.AI;
 
 using DataIngestionLib.Models;
+
+using Microsoft.Extensions.AI;
 
 
 
@@ -23,8 +23,6 @@ namespace DataIngestionLib.Contracts.Services;
 public interface IChatConversationService
 {
 
-    string ConversationId { get; }
-
     /// <summary>
     ///     Gets the active Semantic Kernel chat history for the current conversation.
     /// </summary>
@@ -34,6 +32,8 @@ public interface IChatConversationService
     ///     Gets the total current context token count for the active chat history.
     /// </summary>
     int ContextTokenCount { get; }
+
+    string ConversationId { get; }
 
     //Tokens used for RAG context, including prompt and response tokens affecting overall context size.
     int RagTokenCount { get; }
@@ -47,14 +47,33 @@ public interface IChatConversationService
     //Tokens used for tool calls, including prompt and response tokens affecting overall context size.
     int ToolTokenCount { get; }
 
-    event EventHandler<bool> BusyStateChanged;
-    ValueTask<ConversationProgressLog?> GetTaskPlanAsync(Guid planId, CancellationToken token = default);
-    ValueTask<IReadOnlyList<ConversationProgressLog>> LoadTaskPlansAsync(CancellationToken token = default);
+
     ValueTask AbandonTaskPlanAsync(Guid planId, string? reason = null, CancellationToken token = default);
+
+
+    event EventHandler<bool> BusyStateChanged;
+
+
     ValueTask<ConversationProgressLog> CompleteTaskPlanAsync(Guid planId, CancellationToken token = default);
+
+
+    ValueTask<ConversationProgressLog?> GetTaskPlanAsync(Guid planId, CancellationToken token = default);
+
+
     ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default);
+
+
+    ValueTask<IReadOnlyList<ConversationProgressLog>> LoadTaskPlansAsync(CancellationToken token = default);
+
+
     ValueTask<ConversationProgressLog> RecordTaskPlanArtifactAsync(Guid planId, string artifactKey, string artifactValue, CancellationToken token = default);
+
+
     ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token);
+
+
     ValueTask<ConversationProgressLog> StartTaskPlanAsync(string planName, IReadOnlyList<string> stepTitles, CancellationToken token = default);
+
+
     ValueTask<ConversationProgressLog> UpdateTaskPlanStepAsync(Guid planId, int stepId, ConversationProgressStepStatus status, CancellationToken token = default);
 }

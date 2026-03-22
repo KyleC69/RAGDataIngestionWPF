@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AgentFactory.cs
 // Author: Kyle L. Crowder
-// Build Num: 044228
+// Build Num: 140741
 
 
 
@@ -37,10 +37,10 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     private readonly IAppSettings _appSettings;
 
     private readonly SqlChatHistoryProvider _chatHistoryProvider;
-    private readonly ChatHistoryContextInjector _contextInjector;
     private readonly ConversationContextCacheRecorder _contextCacheRecorder;
-    private readonly AIContextRAGInjector _ragContextInjector;
+    private readonly ChatHistoryContextInjector _contextInjector;
     private readonly ILoggerFactory _factory;
+    private readonly AIContextRAGInjector _ragContextInjector;
 
     /// <summary>
     ///     Base client that will be decorated with additional functionality using the builder pattern.
@@ -56,14 +56,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
-    public AgentFactory(
-            ILoggerFactory factory,
-            IAppSettings appSettings,
-            SqlChatHistoryProvider chatHistoryProvider,
-            ChatHistoryContextInjector contextInjector,
-                ConversationContextCacheRecorder contextCacheRecorder,
-            AIContextRAGInjector ragContextInjector
-    )
+    public AgentFactory(ILoggerFactory factory, IAppSettings appSettings, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector, ConversationContextCacheRecorder contextCacheRecorder, AIContextRAGInjector ragContextInjector)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(appSettings);
@@ -86,8 +79,10 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
+
     /// <summary>
-    /// Factory method to create a coding assistant agent. The defafult agent is a coding assistant. A different agent can be created by providing different instructions and tools.
+    ///     Factory method to create a coding assistant agent. The defafult agent is a coding assistant. A different agent can
+    ///     be created by providing different instructions and tools.
     /// </summary>
     /// <param name="agentId"></param>
     /// <param name="model"></param>
@@ -106,37 +101,31 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         }
 
         _agents.Add(agentId, model);
-        var ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
+        Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
         _innerClient = new OllamaApiClient(ollamaUri, model);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
 
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-        {
-            Id = agentId,
-            Name = agentId,
-            Description = agentDescription,
-            ChatOptions = new ChatOptions
-            {
-                ConversationId = _appSettings.LastConversationId ?? Guid.NewGuid().ToString(),
-                Instructions = instructions ?? GetModelInstructions(),
-                Temperature = 0.7f,
-                MaxOutputTokens = 10000,
-                ResponseFormat = ChatResponseFormat.Text,
-                Tools = ToolBuilder.GetReadOnlyAiTools()
-            },
-            AIContextProviders =
+                {
+                        Id = agentId,
+                        Name = agentId,
+                        Description = agentDescription,
+                        ChatOptions = new ChatOptions
+                        {
+                                Instructions = instructions ?? GetModelInstructions(),
+                                Temperature = 0.7f,
+                                MaxOutputTokens = 10000,
+                                Tools = ToolBuilder.GetReadOnlyAiTools()
+                        },
+                        AIContextProviders =
                         [
-                            _contextInjector,
-                            _ragContextInjector,
-                            _contextCacheRecorder
+                           //     _contextInjector,
+                          //      _ragContextInjector,
+                           //     _contextCacheRecorder
                         ],
-            UseProvidedChatClientAsIs = false,
-            ClearOnChatHistoryProviderConflict = false,
-            WarnOnChatHistoryProviderConflict = false,
-            ThrowOnChatHistoryProviderConflict = true,
-            ChatHistoryProvider = _chatHistoryProvider
-
-        }, loggerFactory: _factory).AsBuilder()
+                        ThrowOnChatHistoryProviderConflict = true,
+                        ChatHistoryProvider = _chatHistoryProvider
+                }, loggerFactory: _factory).AsBuilder()
                 .UseLogging(_factory)
                 .Build();
 

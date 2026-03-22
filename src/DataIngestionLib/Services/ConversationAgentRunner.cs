@@ -1,8 +1,24 @@
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ConversationAgentRunner.cs
+// Author: Kyle L. Crowder
+// Build Num: 140816
+
+
+
 using DataIngestionLib.Contracts;
 
 using Microsoft.Agents.AI;
 
+
+
+
 namespace DataIngestionLib.Services;
+
+
+
+
 
 public sealed class ConversationAgentRunner : IConversationAgentRunner
 {

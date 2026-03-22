@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         AppSettings.cs
 // Author: Kyle L. Crowder
-// Build Num: 051856
+// Build Num: 140854
 
 
 
@@ -143,7 +143,7 @@ public class AppSettings : IAppSettings
     }
 
     /// <inheritdoc />
-    public string LastConversationId
+    public string? LastConversationId
     {
         get { return GetString(nameof(LastConversationId)); }
         set { SetString(nameof(LastConversationId), value); }
@@ -160,6 +160,15 @@ public class AppSettings : IAppSettings
 
 
 
+
+
+
+    public void SetValue(string var, string value)
+    {
+        
+       SaveSetting(var,value);
+        
+    }
 
 
 

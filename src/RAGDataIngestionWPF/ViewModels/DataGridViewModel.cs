@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         DataGridViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 051904
+// Build Num: 140906
 
 
 
@@ -30,9 +30,9 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 public sealed class DataGridViewModel : ObservableObject, INavigationAware
 {
-    private AsyncRelayCommand _startIngestionCommand;
     private readonly ILogger<DataGridViewModel> _logger;
     private readonly LearningHtmlRunner _runner;
+    private AsyncRelayCommand _startIngestionCommand;
 
 
 
@@ -107,10 +107,10 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
     {
 
         await _runner.IngestRemoteKnowledgeSource();
-        
-        
-        
-        
-        
+
+
+
+
+
     }
 }

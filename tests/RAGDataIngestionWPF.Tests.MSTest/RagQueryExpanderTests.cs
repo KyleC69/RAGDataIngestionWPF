@@ -1,9 +1,25 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         RagQueryExpanderTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 141004
+
+
+
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Services;
 
 using Microsoft.Extensions.AI;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class RagQueryExpanderTests
@@ -13,9 +29,8 @@ public class RagQueryExpanderTests
     {
         IRagQueryExpander expander = new RagQueryExpander();
 
-        IReadOnlyList<DataIngestionLib.Contracts.Services.RagSearchQuery> queries = expander.Expand(
-        [
-            new(ChatRole.User, "How does SQL chat history schema validation work at startup?")
+        var queries = expander.Expand([
+                new(ChatRole.User, "How does SQL chat history schema validation work at startup?")
         ]);
 
         Assert.AreEqual(2, queries.Count);
@@ -23,16 +38,22 @@ public class RagQueryExpanderTests
         Assert.AreEqual("SQL chat history schema validation work startup", queries[1].Query);
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public void ExpandUsesLatestUserMessageOnly()
     {
         IRagQueryExpander expander = new RagQueryExpander();
 
-        IReadOnlyList<DataIngestionLib.Contracts.Services.RagSearchQuery> queries = expander.Expand(
-        [
-            new(ChatRole.User, "older question"),
-            new(ChatRole.Assistant, "assistant reply"),
-            new(ChatRole.User, "latest query terms")
+        var queries = expander.Expand([
+                new(ChatRole.User, "older question"),
+                new(ChatRole.Assistant, "assistant reply"),
+                new(ChatRole.User, "latest query terms")
         ]);
 
         Assert.AreEqual("latest query terms", queries[0].Query);

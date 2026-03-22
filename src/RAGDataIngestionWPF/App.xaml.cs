@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 051913
+// Build Num: 140919
 
 
 
@@ -18,6 +18,7 @@ using System.Windows.Threading;
 using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Data;
 using DataIngestionLib.DocIngestion;
 using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
@@ -69,10 +70,8 @@ public sealed partial class App : Application
         PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Error | SourceLevels.Warning;
         PresentationTraceSources.ResourceDictionarySource.Switch.Level = SourceLevels.All;
         PresentationTraceSources.AnimationSource.Switch.Level = SourceLevels.All;
-        
-        _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel)
-                ? configLevel
-                : LogLevel.Trace;
+
+        _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel) ? configLevel : LogLevel.Trace;
         return Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c =>
                 {
@@ -88,14 +87,7 @@ public sealed partial class App : Application
                     // the dynamic filter below. The LoggingLevelSwitch controls the
                     // effective minimum at runtime and is user-configurable from the
                     // Settings page.
-                    logging.AddJsonConsole(options =>
-                    {
-                        options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions
-                        {
-                                Indented = true,
-                                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                        };
-                    });
+                    logging.AddJsonConsole(options => { options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions { Indented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }; });
                     ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
                     ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
                 })
@@ -168,9 +160,7 @@ public sealed partial class App : Application
     private static string GetAppLocation()
     {
         var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
-        var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation)
-                ? AppContext.BaseDirectory
-                : Path.GetDirectoryName(entryAssemblyLocation);
+        var appLocation = string.IsNullOrWhiteSpace(entryAssemblyLocation) ? AppContext.BaseDirectory : Path.GetDirectoryName(entryAssemblyLocation);
 
         return string.IsNullOrWhiteSpace(appLocation) ? AppContext.BaseDirectory : appLocation;
     }
@@ -357,7 +347,6 @@ public sealed partial class App : Application
         _ = services.AddSingleton<ISystemService, SystemService>();
         _ = services.AddSingleton<LearningHtmlRunner>();
         _ = services.AddSingleton<IAppSettings, AppSettings>();
-        _ = services.AddSingleton<IAgentIdentityProvider, AgentIdentityProvider>();
         _ = services.AddSingleton<IConversationSessionBootstrapper, ConversationSessionBootstrapper>();
         _ = services.AddSingleton<IConversationHistoryLoader, ConversationHistoryLoader>();
         _ = services.AddSingleton<IConversationTokenCounter, ConversationTokenCounter>();
@@ -365,17 +354,7 @@ public sealed partial class App : Application
         _ = services.AddSingleton<IChatBusyStateScopeFactory, ChatBusyStateScopeFactory>();
         _ = services.AddSingleton<IConversationBudgetEventPublisher, ConversationBudgetEventPublisher>();
         _ = services.AddSingleton<IConversationAgentRunner, ConversationAgentRunner>();
-        _ = services.AddSingleton<IChatConversationService>(provider => new ChatConversationService(
-            provider.GetRequiredService<ILoggerFactory>(),
-            provider.GetRequiredService<IAppSettings>(),
-            provider.GetRequiredService<IConversationSessionBootstrapper>(),
-            provider.GetRequiredService<IConversationHistoryLoader>(),
-            provider.GetRequiredService<IConversationTokenCounter>(),
-            provider.GetRequiredService<IConversationBudgetEvaluator>(),
-            provider.GetRequiredService<IChatBusyStateScopeFactory>(),
-            provider.GetRequiredService<IConversationBudgetEventPublisher>(),
-            provider.GetRequiredService<IConversationAgentRunner>(),
-            provider.GetRequiredService<IConversationProgressLogService>()));
+        _ = services.AddSingleton<IChatConversationService>(provider => new ChatConversationService(provider.GetRequiredService<ILoggerFactory>(), provider.GetRequiredService<IAppSettings>(), provider.GetRequiredService<IConversationSessionBootstrapper>(), provider.GetRequiredService<IConversationHistoryLoader>(), provider.GetRequiredService<IConversationTokenCounter>(), provider.GetRequiredService<IConversationBudgetEvaluator>(), provider.GetRequiredService<IChatBusyStateScopeFactory>(), provider.GetRequiredService<IConversationBudgetEventPublisher>(), provider.GetRequiredService<IConversationAgentRunner>(), provider.GetRequiredService<IConversationProgressLogService>()));
         _ = services.AddSingleton<IPageService, PageService>();
         _ = services.AddSingleton<INavigationService, NavigationService>();
         _ = services.AddSingleton<IUserDataService, UserDataService>();
@@ -406,6 +385,8 @@ public sealed partial class App : Application
     {
         ArgumentNullException.ThrowIfNull(services);
         _ = services.AddHostedService<ApplicationHostService>();
+        services.AddDbContext<AIChatHistoryDb>();
+        services.AddDbContext<RAGContext>();
     }
 
 

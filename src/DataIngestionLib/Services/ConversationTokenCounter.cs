@@ -1,4 +1,13 @@
-﻿using DataIngestionLib.Contracts.Services;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ConversationTokenCounter.cs
+// Author: Kyle L. Crowder
+// Build Num: 140823
+
+
+
+using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services.Contracts;
 
@@ -25,38 +34,17 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
             return snapshot;
         }
 
-        int ragTokens = ClampToInt(GetAdditionalCount(
-                usageDetails,
-                snapshot.Rag,
-                "rag",
-                "rag_tokens",
-                "rag_token_count",
-                "rag_context",
-                "retrieval",
-                "retrieval_tokens",
-                "context",
-                "context_tokens"));
-        int toolTokens = ClampToInt(GetAdditionalCount(
-                usageDetails,
-                snapshot.Tool,
-                "tool",
-                "tool_tokens",
-                "tool_token_count",
-                "function",
-                "function_tokens"));
-        int systemTokens = ClampToInt(GetAdditionalCount(
-                usageDetails,
-                snapshot.System,
-                "system",
-                "system_tokens",
-                "system_token_count",
-                "instruction",
-                "instruction_tokens"));
+        var ragTokens = ClampToInt(GetAdditionalCount(usageDetails, snapshot.Rag, "rag", "rag_tokens", "rag_token_count", "rag_context", "retrieval", "retrieval_tokens", "context", "context_tokens"));
+        var toolTokens = ClampToInt(GetAdditionalCount(usageDetails, snapshot.Tool, "tool", "tool_tokens", "tool_token_count", "function", "function_tokens"));
+        var systemTokens = ClampToInt(GetAdditionalCount(usageDetails, snapshot.System, "system", "system_tokens", "system_token_count", "instruction", "instruction_tokens"));
 
-        int reserved = ragTokens + toolTokens + systemTokens;
-        int sessionTokens = Math.Max(0, snapshot.Total - reserved);
+        var reserved = ragTokens + toolTokens + systemTokens;
+        var sessionTokens = Math.Max(0, snapshot.Total - reserved);
         return new ConversationTokenSnapshot(snapshot.Total, sessionTokens, ragTokens, toolTokens, systemTokens);
     }
+
+
+
 
 
 
@@ -72,14 +60,14 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
 
         for (var index = history.Count - 1; index >= 0; index--)
         {
-            string content = history[index].Text;
-            int messageTokenCount = EstimateTokenCount(content);
+            var content = history[index].Text;
+            var messageTokenCount = EstimateTokenCount(content);
             if (totalTokens + messageTokenCount > budget.SessionBudget)
             {
                 break;
             }
 
-            string role = history[index].Role.Value;
+            var role = history[index].Role.Value;
             if (string.Equals(role, AIChatRole.System.Value, StringComparison.OrdinalIgnoreCase))
             {
                 systemTokens += messageTokenCount;
@@ -88,9 +76,7 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
             {
                 toolTokens += messageTokenCount;
             }
-            else if (string.Equals(role, AIChatRole.RAGContext.Value, StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(role, AIChatRole.AIContext.Value, StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(role, "rag", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(role, AIChatRole.RAGContext.Value, StringComparison.OrdinalIgnoreCase) || string.Equals(role, AIChatRole.AIContext.Value, StringComparison.OrdinalIgnoreCase) || string.Equals(role, "rag", StringComparison.OrdinalIgnoreCase))
             {
                 ragTokens += messageTokenCount;
             }
@@ -109,10 +95,33 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
 
 
 
+
+
+
+    internal static int ClampToInt(long value)
+    {
+        if (value <= 0)
+        {
+            return 0;
+        }
+
+        return value >= int.MaxValue ? int.MaxValue : (int)value;
+    }
+
+
+
+
+
+
+
+
     internal static int EstimateTokenCount(string content)
     {
         return string.IsNullOrWhiteSpace(content) ? 0 : Math.Max(1, content.Length / 4);
     }
+
+
+
 
 
 
@@ -125,31 +134,15 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
             return fallback;
         }
 
-        foreach (string key in keys)
+        foreach (var key in keys)
         {
-            foreach ((string countKey, long countValue) in usageDetails.AdditionalCounts)
-            {
+            foreach (var (countKey, countValue) in usageDetails.AdditionalCounts)
                 if (string.Equals(countKey, key, StringComparison.OrdinalIgnoreCase))
                 {
                     return countValue;
                 }
-            }
         }
 
         return fallback;
-    }
-
-
-
-
-
-    internal static int ClampToInt(long value)
-    {
-        if (value <= 0)
-        {
-            return 0;
-        }
-
-        return value >= int.MaxValue ? int.MaxValue : (int)value;
     }
 }

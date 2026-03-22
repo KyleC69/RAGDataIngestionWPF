@@ -139,7 +139,7 @@ namespace RAGDataIngestionWPF.Properties {
                 return ((int)(this["MaximumContext"]));
             }
         }
-
+        
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Agentic-Max")]
@@ -151,7 +151,7 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("[Guid(\"15A53D0F-041D-44DD-A150-DFB8D0F133FF\")]")]
+        [global::System.Configuration.DefaultSettingValueAttribute("15a53d0f-041d-44dd-a150-dfb8d0f133ff")]
         public string ApplicationId {
             get {
                 return ((string)(this["ApplicationId"]));

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         FileSystemWriterTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 044302
+// Build Num: 140834
 
 
 
@@ -24,6 +24,13 @@ public sealed class FileSystemWriterTool
 
     private readonly string _sandboxRoot;
 
+
+
+
+
+
+
+
     public FileSystemWriterTool(string sandboxRoot)
     {
         if (string.IsNullOrWhiteSpace(sandboxRoot))
@@ -34,9 +41,15 @@ public sealed class FileSystemWriterTool
         _sandboxRoot = SandboxPathResolver.NormalizeRoot(sandboxRoot);
     }
 
+
+
+
+
+
+
+
     [Description("Write text content to a file. Path is relative to the sandbox root. Creates or overwrites the file.")]
-    public ToolResult<string> WriteText([Description("File path relative to sandbox root")] string path,
-        [Description("Text content to write")] string content)
+    public ToolResult<string> WriteText([Description("File path relative to sandbox root")] string path, [Description("Text content to write")] string content)
     {
 
 

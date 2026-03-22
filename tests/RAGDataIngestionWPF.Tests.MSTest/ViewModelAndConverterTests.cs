@@ -1,63 +1,56 @@
-﻿using System.Globalization;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         ViewModelAndConverterTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 140935
+
+
+
+using System.Globalization;
 
 using DataIngestionLib.ToolFunctions;
 
-using Microsoft.Extensions.Logging;
-
 using Moq;
 
-using RAGDataIngestionWPF.Converters;
 using RAGDataIngestionWPF.Contracts.Services;
+using RAGDataIngestionWPF.Converters;
 using RAGDataIngestionWPF.Core.Contracts.Services;
 using RAGDataIngestionWPF.Core.Helpers;
-using RAGDataIngestionWPF.Core.Models;
 using RAGDataIngestionWPF.Models;
 using RAGDataIngestionWPF.Properties;
 using RAGDataIngestionWPF.ViewModels;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class ViewModelAndConverterTests
 {
-    [TestMethod]
-    public void EnumToBooleanConverterConvertMatchesExpectedEnumValue()
-    {
-        EnumToBooleanConverter converter = new()
-        {
-            EnumType = typeof(AppTheme)
-        };
-
-        object result = converter.Convert(AppTheme.Dark, typeof(bool), nameof(AppTheme.Dark), CultureInfo.InvariantCulture);
-
-        Assert.AreEqual(true, result);
-    }
 
     [TestMethod]
-    public void EnumToBooleanConverterConvertReturnsFalseForMismatchedValue()
+    public void AgentLoggerWhitespaceMessageReturnsFailure()
     {
-        EnumToBooleanConverter converter = new()
-        {
-            EnumType = typeof(AppTheme)
-        };
+        AgentLogger logger = new();
 
-        object result = converter.Convert(AppTheme.Light, typeof(bool), nameof(AppTheme.Dark), CultureInfo.InvariantCulture);
+        var result = logger.LogMessage("  ");
 
-        Assert.AreEqual(false, result);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("Message cannot be null or whitespace.", result.Error);
     }
 
-    [TestMethod]
-    public void EnumToBooleanConverterConvertBackParsesEnum()
-    {
-        EnumToBooleanConverter converter = new()
-        {
-            EnumType = typeof(AppTheme)
-        };
 
-        object result = converter.ConvertBack(true, typeof(AppTheme), nameof(AppTheme.Default), CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(AppTheme.Default, (AppTheme)result);
-    }
+
+
+
+
 
     [TestMethod]
     public void DataGridViewModelOnNavigatedToClearsSource()
@@ -73,18 +66,77 @@ public class ViewModelAndConverterTests
 
 
 
+
+
+
+
+    [TestMethod]
+    public void EnumToBooleanConverterConvertBackParsesEnum()
+    {
+        EnumToBooleanConverter converter = new() { EnumType = typeof(AppTheme) };
+
+        var result = converter.ConvertBack(true, typeof(AppTheme), nameof(AppTheme.Default), CultureInfo.InvariantCulture);
+
+        Assert.AreEqual(AppTheme.Default, (AppTheme)result);
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void EnumToBooleanConverterConvertMatchesExpectedEnumValue()
+    {
+        EnumToBooleanConverter converter = new() { EnumType = typeof(AppTheme) };
+
+        var result = converter.Convert(AppTheme.Dark, typeof(bool), nameof(AppTheme.Dark), CultureInfo.InvariantCulture);
+
+        Assert.AreEqual(true, result);
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public void EnumToBooleanConverterConvertReturnsFalseForMismatchedValue()
+    {
+        EnumToBooleanConverter converter = new() { EnumType = typeof(AppTheme) };
+
+        var result = converter.Convert(AppTheme.Light, typeof(bool), nameof(AppTheme.Dark), CultureInfo.InvariantCulture);
+
+        Assert.AreEqual(false, result);
+    }
+
+
+
+
+
+
+
+
     [TestMethod]
     public void LogInViewModelLoginCommandReflectsBusyState()
     {
         Mock<IIdentityService> identity = new();
         identity.Setup(service => service.LoginAsync()).ReturnsAsync(LoginResultType.Success);
-        LogInViewModel viewModel = new(identity.Object)
-        {
-            IsBusy = true
-        };
+        LogInViewModel viewModel = new(identity.Object) { IsBusy = true };
 
         Assert.IsFalse(viewModel.LoginCommand.CanExecute(null));
     }
+
+
+
+
+
+
+
 
     [TestMethod]
     public void LogInViewModelLoginSetsStatusMessageForUnauthorized()
@@ -95,20 +147,24 @@ public class ViewModelAndConverterTests
 
         viewModel.LoginCommand.Execute(null);
 
-        bool completed = SpinWait.SpinUntil(() => !viewModel.IsBusy, TimeSpan.FromSeconds(2));
+        var completed = SpinWait.SpinUntil(() => !viewModel.IsBusy, TimeSpan.FromSeconds(2));
 
         Assert.IsTrue(completed);
         Assert.AreEqual(Resources.StatusUnauthorized, viewModel.StatusMessage);
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public void WebViewViewModelStateAndCommandsWorkWithoutWebView()
     {
         Mock<ISystemService> systemService = new();
-        WebViewViewModel viewModel = new(systemService.Object)
-        {
-            Source = "https://contoso.test"
-        };
+        WebViewViewModel viewModel = new(systemService.Object) { Source = "https://contoso.test" };
 
         Assert.AreEqual("https://contoso.test", viewModel.Source);
 
@@ -127,16 +183,5 @@ public class ViewModelAndConverterTests
 
         viewModel.OnNavigationCompleted(this, null);
         Assert.IsFalse(viewModel.IsLoading);
-    }
-
-    [TestMethod]
-    public void AgentLoggerWhitespaceMessageReturnsFailure()
-    {
-        AgentLogger logger = new();
-
-        ToolResult<string> result = logger.LogMessage("  ");
-
-        Assert.IsFalse(result.Success);
-        Assert.AreEqual("Message cannot be null or whitespace.", result.Error);
     }
 }

@@ -1,9 +1,25 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         Tests.cs
+// Author: Kyle L. Crowder
+// Build Num: 140926
+
+
+
 using Microsoft.Extensions.AI;
 
 using RAGDataIngestionWPF.Core.Services;
 using RAGDataIngestionWPF.Models;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class Tests
@@ -23,13 +39,20 @@ public class Tests
         Assert.AreEqual("hi", assistantMessage.Text);
     }
 
+
+
+
+
+
+
+
     [TestMethod]
     public async Task SampleDataServiceReturnsOrderCollectionsForBothConsumers()
     {
         SampleDataService service = new();
 
-        List<long> gridOrderIds = (await service.GetGridDataAsync()).Select(order => order.OrderId).ToList();
-        List<long> listDetailsOrderIds = (await service.GetListDetailsDataAsync()).Select(order => order.OrderId).ToList();
+        var gridOrderIds = (await service.GetGridDataAsync()).Select(order => order.OrderId).ToList();
+        var listDetailsOrderIds = (await service.GetListDetailsDataAsync()).Select(order => order.OrderId).ToList();
 
         Assert.IsTrue(gridOrderIds.Count > 0);
         CollectionAssert.AreEqual(gridOrderIds, listDetailsOrderIds);

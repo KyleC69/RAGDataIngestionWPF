@@ -1,13 +1,14 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         MainViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 051905
+// Build Num: 140907
 
 
 
 using System.Collections.ObjectModel;
+using System.Windows.Threading;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -32,16 +33,20 @@ namespace RAGDataIngestionWPF.ViewModels;
 public sealed partial class MainViewModel : ObservableObject, IDisposable, INavigationAware
 {
     private readonly IChatConversationService _chatConversationService;
-    private CancellationTokenSource _responseCancellationTokenSource;
     private bool _historyLoaded;
-    [ObservableProperty] private TaskPlanDisplayItem selectedTaskPlan;
+    private CancellationTokenSource _responseCancellationTokenSource;
 
     //Running Token counts for different categories
     [ObservableProperty] private int ragTokenCount;
-    [ObservableProperty] private int toolTokenCount;
-    [ObservableProperty] private int systemTokenCount;
+    [ObservableProperty] private TaskPlanDisplayItem selectedTaskPlan;
     [ObservableProperty] private int sessionTokenCount;
+    [ObservableProperty] private int systemTokenCount;
+    [ObservableProperty] private int toolTokenCount;
     [ObservableProperty] private int totalTokenCount;
+
+
+
+
 
 
 
@@ -61,18 +66,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    }
-
-
-
-
-
-
-
-
-    private void OnBusyStateChange(object sender, bool e)
-    {
-        IsBusy = e;
     }
 
 
@@ -111,9 +104,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
     public ObservableCollection<ChatMessageDisplayItem> Messages { get; }
 
-    public ObservableCollection<TaskPlanDisplayItem> TaskPlans { get; }
-
     public IAsyncRelayCommand SendMessageCommand { get; }
+
+    public ObservableCollection<TaskPlanDisplayItem> TaskPlans { get; }
 
 
 
@@ -125,8 +118,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     /// <inheritdoc />
     public void Dispose()
     {
-
+        _chatConversationService.BusyStateChanged -= OnBusyStateChange;
     }
+
+
 
 
 
@@ -137,6 +132,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
     public void OnNavigatedFrom()
     {
     }
+
+
 
 
 
@@ -154,15 +151,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         _historyLoaded = true;
         try
         {
-            IReadOnlyList<ChatMessage> historyMessages = await _chatConversationService
-                    .LoadConversationHistoryAsync()
-                    .ConfigureAwait(true);
+            var historyMessages = await _chatConversationService.LoadConversationHistoryAsync().ConfigureAwait(true);
 
             Messages.Clear();
-            foreach (ChatMessage historyMessage in historyMessages)
-            {
-                Messages.Add(CreateUiMessage(historyMessage));
-            }
+            foreach (ChatMessage historyMessage in historyMessages) Messages.Add(CreateUiMessage(historyMessage));
 
             await RefreshTaskPlansAsync().ConfigureAwait(true);
 
@@ -235,6 +227,43 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
+    private void OnBusyStateChange(object? sender, bool e)
+    {
+        Dispatcher dispatcher = System.Windows.Application.Current.Dispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            IsBusy = e;
+        }
+        else
+        {
+            dispatcher.Invoke(() => IsBusy = e);
+        }
+    }
+
+
+
+
+
+
+
+
+    private async Task RefreshTaskPlansAsync()
+    {
+        var plans = await _chatConversationService.LoadTaskPlansAsync().ConfigureAwait(true);
+
+        TaskPlans.Clear();
+        foreach (ConversationProgressLog plan in plans) TaskPlans.Add(TaskPlanDisplayItem.Create(plan));
+
+        SelectedTaskPlan = TaskPlans.FirstOrDefault();
+    }
+
+
+
+
+
+
+
+
     private async Task SendMessageAsync()
     {
         //TODO: Need to link to lifecycle of view model and application lifetime.
@@ -253,7 +282,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
         //Clear UI input
         MessageInput = string.Empty;
 
-  
+
 
         try
         {
@@ -270,7 +299,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
             _responseCancellationTokenSource = null;
             await RefreshTaskPlansAsync().ConfigureAwait(true);
             TotalTokenCount = _chatConversationService.ContextTokenCount;
-            SessionTokenCount= _chatConversationService.SessionTokenCount;
+            SessionTokenCount = _chatConversationService.SessionTokenCount;
             RagTokenCount = _chatConversationService.RagTokenCount;
             ToolTokenCount = _chatConversationService.ToolTokenCount;
             SystemTokenCount = _chatConversationService.SystemTokenCount;
@@ -278,20 +307,5 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    }
-
-    private async Task RefreshTaskPlansAsync()
-    {
-        IReadOnlyList<ConversationProgressLog> plans = await _chatConversationService
-            .LoadTaskPlansAsync()
-            .ConfigureAwait(true);
-
-        TaskPlans.Clear();
-        foreach (ConversationProgressLog plan in plans)
-        {
-            TaskPlans.Add(TaskPlanDisplayItem.Create(plan));
-        }
-
-        SelectedTaskPlan = TaskPlans.FirstOrDefault();
     }
 }

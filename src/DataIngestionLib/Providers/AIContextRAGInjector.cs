@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIContextRAGInjector.cs
 // Author: Kyle L. Crowder
-// Build Num: 044246
+// Build Num: 140758
 
 
 
@@ -33,9 +33,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
 
 
-    public AIContextRAGInjector(
-            IEnumerable<IRagContextSource> sources,
-            IRagContextMessageAssembler assembler)
+    public AIContextRAGInjector(IEnumerable<IRagContextSource> sources, IRagContextMessageAssembler assembler)
     {
         ArgumentNullException.ThrowIfNull(sources);
         ArgumentNullException.ThrowIfNull(assembler);
@@ -57,8 +55,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
 
         List<ChatMessage> requestMessages =
         [
-                .. context.RequestMessages
-                        .Select(m => new ChatMessage(m.Role, m.Text))
+                .. context.RequestMessages.Select(m => new ChatMessage(m.Role, m.Text))
         ];
         if (_sources.Count == 0)
         {
@@ -69,9 +66,7 @@ public sealed class AIContextRAGInjector : MessageAIContextProvider
         foreach (IRagContextSource source in _sources)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var sourceMessages = await source
-                    .GetContextMessagesAsync(requestMessages, context.Session, cancellationToken)
-                    .ConfigureAwait(false);
+            var sourceMessages = await source.GetContextMessagesAsync(requestMessages, context.Session, cancellationToken).ConfigureAwait(false);
 
             if (sourceMessages.Count == 0)
             {

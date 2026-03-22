@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AgentLogger.cs
 // Author: Kyle L. Crowder
-// Build Num: 044300
+// Build Num: 140832
 
 
 
@@ -27,8 +27,8 @@ namespace DataIngestionLib.ToolFunctions;
 /// </remarks>
 public sealed class AgentLogger
 {
-    private const string LogsDirectoryName = "logs";
     private readonly string _logFile;
+    private const string LogsDirectoryName = "logs";
 
 
 
@@ -40,10 +40,16 @@ public sealed class AgentLogger
     /// <summary>
     ///     Initializes a new instance of the <see cref="AgentLogger" /> class.
     /// </summary>
-    public AgentLogger()
-        : this(Environment.CurrentDirectory)
+    public AgentLogger() : this(Environment.CurrentDirectory)
     {
     }
+
+
+
+
+
+
+
 
     internal AgentLogger(string sandboxRoot)
     {
@@ -100,7 +106,7 @@ public sealed class AgentLogger
 
         try
         {
-            var line = $"{DateTime.UtcNow:O} | {message}";
+            var line = $"{DateTime.Now:O} | {message}";
             File.AppendAllLines(_logFile, [line]);
             return ToolResult<string>.Ok("Message logged.");
         }

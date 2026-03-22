@@ -1,3 +1,12 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IConversationTokenCounter.cs
+// Author: Kyle L. Crowder
+// Build Num: 140745
+
+
+
 using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Extensions.AI;

@@ -1,4 +1,17 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ConversationProgressLog.cs
+// Author: Kyle L. Crowder
+// Build Num: 140757
+
+
+
 namespace DataIngestionLib.Models;
+
+
+
+
 
 public sealed record ConversationProgressLog
 {
@@ -8,9 +21,9 @@ public sealed record ConversationProgressLog
 
     public int CurrentStepId { get; init; }
 
-    public string PlanName { get; init; } = string.Empty;
-
     public Guid PlanId { get; init; }
+
+    public string PlanName { get; init; } = string.Empty;
 
     public ConversationProgressStatus Status { get; init; } = ConversationProgressStatus.InProgress;
 
@@ -18,6 +31,10 @@ public sealed record ConversationProgressLog
 
     public DateTimeOffset UpdatedAtUtc { get; init; }
 }
+
+
+
+
 
 public sealed record ConversationProgressStep
 {
@@ -28,17 +45,20 @@ public sealed record ConversationProgressStep
     public string Title { get; init; } = string.Empty;
 }
 
+
+
+
+
 public enum ConversationProgressStatus
 {
-    InProgress,
-    Completed,
-    Abandoned
+    InProgress, Completed, Abandoned
 }
+
+
+
+
 
 public enum ConversationProgressStepStatus
 {
-    NotStarted,
-    InProgress,
-    Completed,
-    Skipped
+    NotStarted, InProgress, Completed, Skipped
 }

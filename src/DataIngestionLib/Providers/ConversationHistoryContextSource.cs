@@ -1,22 +1,43 @@
-﻿using DataIngestionLib.Contracts.Services;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ConversationHistoryContextSource.cs
+// Author: Kyle L. Crowder
+// Build Num: 140804
+
+
+
+using DataIngestionLib.Contracts.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
+
+
+
 namespace DataIngestionLib.Providers;
+
+
+
+
 
 public sealed class ConversationHistoryContextSource : IRagContextSource
 {
-    private const string ConversationIdStateKey = "ConversationId";
-    private const string ChatHistoryConversationIdStateKey = "ChatHistoryConversationId";
 
     private readonly ILogger<ConversationHistoryContextSource> _logger;
     private readonly IConversationHistoryContextOrchestrator _orchestrator;
+    private const string ChatHistoryConversationIdStateKey = "ChatHistoryConversationId";
+    private const string ConversationIdStateKey = "ConversationId";
 
-    public ConversationHistoryContextSource(
-            IConversationHistoryContextOrchestrator orchestrator,
-            ILogger<ConversationHistoryContextSource> logger)
+
+
+
+
+
+
+
+    public ConversationHistoryContextSource(IConversationHistoryContextOrchestrator orchestrator, ILogger<ConversationHistoryContextSource> logger)
     {
         ArgumentNullException.ThrowIfNull(orchestrator);
         ArgumentNullException.ThrowIfNull(logger);
@@ -25,12 +46,19 @@ public sealed class ConversationHistoryContextSource : IRagContextSource
         _logger = logger;
     }
 
+
+
+
+
+
+
+
     public async ValueTask<List<ChatMessage>> GetContextMessagesAsync(List<ChatMessage> requestMessages, AgentSession? session, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(requestMessages);
 
-        string conversationId = ResolveConversationId(session);
+        var conversationId = ResolveConversationId(session);
         if (string.IsNullOrWhiteSpace(conversationId))
         {
             return [];
@@ -38,9 +66,7 @@ public sealed class ConversationHistoryContextSource : IRagContextSource
 
         try
         {
-            IReadOnlyList<ChatMessage> messages = await _orchestrator
-                    .BuildContextMessagesAsync(conversationId, requestMessages, cancellationToken)
-                    .ConfigureAwait(false);
+            var messages = await _orchestrator.BuildContextMessagesAsync(conversationId, requestMessages, cancellationToken).ConfigureAwait(false);
 
             return [.. messages];
         }
@@ -55,6 +81,13 @@ public sealed class ConversationHistoryContextSource : IRagContextSource
         }
     }
 
+
+
+
+
+
+
+
     internal static string ResolveConversationId(AgentSession? session)
     {
         if (session is null)
@@ -62,14 +95,12 @@ public sealed class ConversationHistoryContextSource : IRagContextSource
             return string.Empty;
         }
 
-        if (session.StateBag.TryGetValue(ConversationIdStateKey, out string? conversationId)
-            && !string.IsNullOrWhiteSpace(conversationId))
+        if (session.StateBag.TryGetValue(ConversationIdStateKey, out string? conversationId) && !string.IsNullOrWhiteSpace(conversationId))
         {
             return conversationId;
         }
 
-        if (session.StateBag.TryGetValue(ChatHistoryConversationIdStateKey, out string? chatHistoryConversationId)
-            && !string.IsNullOrWhiteSpace(chatHistoryConversationId))
+        if (session.StateBag.TryGetValue(ChatHistoryConversationIdStateKey, out string? chatHistoryConversationId) && !string.IsNullOrWhiteSpace(chatHistoryConversationId))
         {
             return chatHistoryConversationId;
         }

@@ -1,6 +1,22 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         ProcessSnapshotToolTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 141005
+
+
+
 using DataIngestionLib.ToolFunctions;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class ProcessSnapshotToolTests
@@ -10,7 +26,7 @@ public class ProcessSnapshotToolTests
     {
         ProcessSnapshotTool tool = new();
 
-        ToolResult<IReadOnlyList<ProcessSnapshot>> result = tool.ReadTopProcesses(0);
+        var result = tool.ReadTopProcesses(0);
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual("maxResults must be between 1 and 20.", result.Error);

@@ -1,4 +1,14 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         IRagRetrievalService.cs
+// Author: Kyle L. Crowder
+// Build Num: 140746
+
+
+
 namespace DataIngestionLib.Contracts.Services;
+
 
 
 
@@ -26,6 +36,5 @@ public readonly record struct RagSearchResult(int Id, string Title, string Summa
 
 public enum RagSearchMode
 {
-    FullText,
-    Hybrid
+    FullText, Hybrid
 }

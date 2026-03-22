@@ -1,6 +1,14 @@
-﻿using System.Reflection;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ConversationContextCacheRecorder.cs
+// Author: Kyle L. Crowder
+// Build Num: 140806
 
-using DataIngestionLib.Contracts;
+
+
+using System.Reflection;
+
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
@@ -8,19 +16,31 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
+
+
+
 namespace DataIngestionLib.Providers;
+
+
+
+
 
 public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
 {
-    private const string ConversationIdStateKey = "ConversationId";
-    private const string ChatHistoryConversationIdStateKey = "ChatHistoryConversationId";
 
     private readonly IConversationContextCacheStore _cacheStore;
     private readonly ILogger<ConversationContextCacheRecorder> _logger;
+    private const string ChatHistoryConversationIdStateKey = "ChatHistoryConversationId";
+    private const string ConversationIdStateKey = "ConversationId";
 
-    public ConversationContextCacheRecorder(
-            IConversationContextCacheStore cacheStore,
-            ILogger<ConversationContextCacheRecorder> logger)
+
+
+
+
+
+
+
+    public ConversationContextCacheRecorder(IConversationContextCacheStore cacheStore, ILogger<ConversationContextCacheRecorder> logger)
     {
         ArgumentNullException.ThrowIfNull(cacheStore);
         ArgumentNullException.ThrowIfNull(logger);
@@ -29,6 +49,13 @@ public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
         _logger = logger;
     }
 
+
+
+
+
+
+
+
     protected override ValueTask<IEnumerable<ChatMessage>> ProvideMessagesAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -36,12 +63,19 @@ public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
         return ValueTask.FromResult<IEnumerable<ChatMessage>>([]);
     }
 
+
+
+
+
+
+
+
     protected override async ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(context);
 
-        string conversationId = ResolveConversationId(context.Session);
+        var conversationId = ResolveConversationId(context.Session);
         if (string.IsNullOrWhiteSpace(conversationId))
         {
             return;
@@ -51,9 +85,9 @@ public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
         {
             List<ChatMessage> cacheableMessages =
             [
-                .. FilterCacheableMessages(context.RequestMessages),
-                .. FilterCacheableMessages(GetContextMessages(context, "ResponseMessages")),
-                .. FilterCacheableMessages(GetContextMessages(context, "ResultMessages"))
+                    .. FilterCacheableMessages(context.RequestMessages),
+                    .. FilterCacheableMessages(GetContextMessages(context, "ResponseMessages")),
+                    .. FilterCacheableMessages(GetContextMessages(context, "ResultMessages"))
             ];
 
             if (cacheableMessages.Count == 0)
@@ -73,13 +107,24 @@ public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
         }
     }
 
+
+
+
+
+
+
+
     internal static IEnumerable<ChatMessage> FilterCacheableMessages(IEnumerable<ChatMessage>? messages)
     {
-        return messages?.Where(static message =>
-                !string.IsNullOrWhiteSpace(message.Text)
-                && IsCacheableRole(message.Role))
-            ?? [];
+        return messages?.Where(static message => !string.IsNullOrWhiteSpace(message.Text) && IsCacheableRole(message.Role)) ?? [];
     }
+
+
+
+
+
+
+
 
     internal static IReadOnlyList<ChatMessage> GetContextMessages(object context, string propertyName)
     {
@@ -92,14 +137,25 @@ public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
         return [];
     }
 
+
+
+
+
+
+
+
     internal static bool IsCacheableRole(ChatRole role)
     {
-        string value = role.Value?.Trim() ?? string.Empty;
-        return value.Equals(AIChatRole.AIContext.Value, StringComparison.OrdinalIgnoreCase)
-               || value.Equals(AIChatRole.RAGContext.Value, StringComparison.OrdinalIgnoreCase)
-               || value.Equals(AIChatRole.Tool.Value, StringComparison.OrdinalIgnoreCase)
-               || value.EndsWith("_context", StringComparison.OrdinalIgnoreCase);
+        var value = role.Value?.Trim() ?? string.Empty;
+        return value.Equals(AIChatRole.AIContext.Value, StringComparison.OrdinalIgnoreCase) || value.Equals(AIChatRole.RAGContext.Value, StringComparison.OrdinalIgnoreCase) || value.Equals(AIChatRole.Tool.Value, StringComparison.OrdinalIgnoreCase) || value.EndsWith("_context", StringComparison.OrdinalIgnoreCase);
     }
+
+
+
+
+
+
+
 
     internal static string ResolveConversationId(AgentSession? session)
     {
@@ -108,14 +164,12 @@ public sealed class ConversationContextCacheRecorder : MessageAIContextProvider
             return string.Empty;
         }
 
-        if (session.StateBag.TryGetValue(ConversationIdStateKey, out string? conversationId)
-            && !string.IsNullOrWhiteSpace(conversationId))
+        if (session.StateBag.TryGetValue(ConversationIdStateKey, out string? conversationId) && !string.IsNullOrWhiteSpace(conversationId))
         {
             return conversationId;
         }
 
-        if (session.StateBag.TryGetValue(ChatHistoryConversationIdStateKey, out string? chatHistoryConversationId)
-            && !string.IsNullOrWhiteSpace(chatHistoryConversationId))
+        if (session.StateBag.TryGetValue(ChatHistoryConversationIdStateKey, out string? chatHistoryConversationId) && !string.IsNullOrWhiteSpace(chatHistoryConversationId))
         {
             return chatHistoryConversationId;
         }

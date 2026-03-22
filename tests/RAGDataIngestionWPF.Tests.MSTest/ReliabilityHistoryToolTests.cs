@@ -1,6 +1,22 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         ReliabilityHistoryToolTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 141005
+
+
+
 using DataIngestionLib.ToolFunctions;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class ReliabilityHistoryToolTests
@@ -10,7 +26,7 @@ public class ReliabilityHistoryToolTests
     {
         ReliabilityHistoryTool tool = new();
 
-        ToolResult<IReadOnlyList<ReliabilityRecordSnapshot>> result = tool.ReadRecent(0);
+        var result = tool.ReadRecent(0);
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual("maxResults must be between 1 and 25.", result.Error);

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AgentRunMiddleWare.cs
 // Author: Kyle L. Crowder
-// Build Num: 044300
+// Build Num: 140833
 
 
 
@@ -51,9 +51,6 @@ public sealed class AgentRunMiddleWare
 
     internal IChatClient Run()
     {
-        return new ChatClientBuilder(_baseAgent)
-                .UseLogging(_factory)
-                .UseFunctionInvocation()
-                .Build();
+        return new ChatClientBuilder(_baseAgent).UseLogging(_factory).UseFunctionInvocation().Build();
     }
 }

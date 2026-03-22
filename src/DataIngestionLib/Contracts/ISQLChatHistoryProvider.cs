@@ -1,14 +1,13 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ISQLChatHistoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 044230
+// Build Num: 140746
 
 
 
 namespace DataIngestionLib.Contracts.Services;
-
 
 
 
@@ -26,9 +25,5 @@ public interface ISQLChatHistoryProvider : IChatHistoryProvider
     /// <param name="userId">The user ID to match.</param>
     /// <param name="applicationId">The application ID to match.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    ValueTask<string?> GetLatestConversationIdAsync(
-            string agentId,
-            string userId,
-            string applicationId,
-            CancellationToken cancellationToken = default);
+    ValueTask<string?> GetLatestConversationIdAsync(string agentId, string userId, string applicationId, CancellationToken cancellationToken = default);
 }

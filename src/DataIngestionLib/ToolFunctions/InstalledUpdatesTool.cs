@@ -1,7 +1,23 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         InstalledUpdatesTool.cs
+// Author: Kyle L. Crowder
+// Build Num: 140838
+
+
+
 using System.ComponentModel;
 using System.Management;
 
+
+
+
 namespace DataIngestionLib.ToolFunctions;
+
+
+
+
 
 public sealed class InstalledUpdateSnapshot
 {
@@ -11,9 +27,20 @@ public sealed class InstalledUpdateSnapshot
     public string InstalledOn { get; init; } = string.Empty;
 }
 
+
+
+
+
 public sealed class InstalledUpdatesTool
 {
     private const int MaxResults = 25;
+
+
+
+
+
+
+
 
     [Description("Read a bounded snapshot of installed Windows hotfixes and updates.")]
     public ToolResult<IReadOnlyList<InstalledUpdateSnapshot>> ReadInstalledUpdates([Description("Maximum number of updates to return. Range: 1 to 25.")] int maxResults = 10)
@@ -33,18 +60,7 @@ public sealed class InstalledUpdatesTool
             using ManagementObjectSearcher searcher = new("root\\cimv2", "SELECT Description, HotFixID, InstalledBy, InstalledOn FROM Win32_QuickFixEngineering");
             using ManagementObjectCollection results = searcher.Get();
 
-            var updates = results.Cast<ManagementBaseObject>()
-                .OrderByDescending(record => record["InstalledOn"]?.ToString(), StringComparer.OrdinalIgnoreCase)
-                .Take(maxResults)
-                .Select(record => new InstalledUpdateSnapshot
-                {
-                    Description = DiagnosticsText.Truncate(record["Description"]?.ToString(), 128),
-                    HotFixId = DiagnosticsText.Truncate(record["HotFixID"]?.ToString(), 64),
-                    InstalledBy = DiagnosticsText.Truncate(record["InstalledBy"]?.ToString(), 64),
-                    InstalledOn = DiagnosticsText.Truncate(record["InstalledOn"]?.ToString(), 64)
-                })
-                .ToList()
-                .AsReadOnly();
+            var updates = results.Cast<ManagementBaseObject>().OrderByDescending(record => record["InstalledOn"]?.ToString(), StringComparer.OrdinalIgnoreCase).Take(maxResults).Select(record => new InstalledUpdateSnapshot { Description = DiagnosticsText.Truncate(record["Description"]?.ToString(), 128), HotFixId = DiagnosticsText.Truncate(record["HotFixID"]?.ToString(), 64), InstalledBy = DiagnosticsText.Truncate(record["InstalledBy"]?.ToString(), 64), InstalledOn = DiagnosticsText.Truncate(record["InstalledOn"]?.ToString(), 64) }).ToList().AsReadOnly();
 
             return ToolResult<IReadOnlyList<InstalledUpdateSnapshot>>.Ok(updates);
         }

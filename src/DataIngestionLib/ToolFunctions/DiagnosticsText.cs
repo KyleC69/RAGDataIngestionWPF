@@ -1,4 +1,17 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         DiagnosticsText.cs
+// Author: Kyle L. Crowder
+// Build Num: 140838
+
+
+
 namespace DataIngestionLib.ToolFunctions;
+
+
+
+
 
 internal static class DiagnosticsText
 {
@@ -6,13 +19,17 @@ internal static class DiagnosticsText
     {
         ArgumentNullException.ThrowIfNull(values);
 
-        var filtered = values
-            .Where(value => !string.IsNullOrWhiteSpace(value))
-            .Take(maxItems)
-            .Select(value => value!.Trim());
+        var filtered = values.Where(value => !string.IsNullOrWhiteSpace(value)).Take(maxItems).Select(value => value!.Trim());
 
         return Truncate(string.Join("; ", filtered), maxLength);
     }
+
+
+
+
+
+
+
 
     internal static string Truncate(string? value, int maxLength = 256)
     {

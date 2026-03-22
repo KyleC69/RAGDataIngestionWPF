@@ -1,15 +1,24 @@
-// Build Date: 2026/03/19
+// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         RegistryReaderTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 044303
+// Build Num: 140835
+
+
 
 using DataIngestionLib.Services;
 
 using Microsoft.Extensions.Logging;
 
+
+
+
 namespace DataIngestionLib.ToolFunctions;
+
+
+
+
 
 public sealed class RegistryValueSnapshot
 {
@@ -20,6 +29,10 @@ public sealed class RegistryValueSnapshot
     public string ValueText { get; init; } = string.Empty;
 }
 
+
+
+
+
 /// <summary>
 ///     Simple tool to read registry values, will fail gracefully on security errors or if the registry key doesn't exist.
 /// </summary>
@@ -27,11 +40,62 @@ public class RegistryReaderTool
 {
     private readonly ILogger<RegistryReaderTool> _logger;
 
+
+
+
+
+
+
+
     public RegistryReaderTool(ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
         _logger = loggerFactory.CreateLogger<RegistryReaderTool>();
     }
+
+
+
+
+
+
+
+
+    private static string FormatRegistryValue(object value)
+    {
+        return value switch
+        {
+                string text => Truncate(text),
+                string[] items => Truncate(string.Join("; ", items.Where(item => !string.IsNullOrWhiteSpace(item)))),
+                byte[] bytes => Convert.ToHexString(bytes.AsSpan(0, Math.Min(bytes.Length, 64))),
+                _ => Truncate(value.ToString() ?? string.Empty)
+        };
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    ///     Reads a string value from the Windows Registry.
+    /// </summary>
+    /// <param name="keyPath">The full path to the registry key (e.g., "HKEY_CURRENT_USER\Software\MyApplication\Setting").</param>
+    /// <returns>A <see cref="ToolResult{T}" /> with the value on success, or an error message on failure.</returns>
+    public ToolResult<string> ReadStringValue(string keyPath)
+    {
+        var result = ReadValue(keyPath);
+
+        return result.Success ? ToolResult<string>.Ok(result.Value!.ValueText) : ToolResult<string>.Fail(result.Error!);
+    }
+
+
+
+
+
+
+
 
     /// <summary>
     ///     Reads a registry value and returns bounded metadata suitable for diagnostics.
@@ -112,11 +176,11 @@ public class RegistryReaderTool
 
             return ToolResult<RegistryValueSnapshot>.Ok(new RegistryValueSnapshot
             {
-                Hive = hiveName,
-                KeyPath = subKeyPath,
-                ValueName = string.IsNullOrEmpty(valueName) ? "(Default)" : valueName,
-                ValueKind = subKey.GetValueKind(valueName).ToString(),
-                ValueText = FormatRegistryValue(value)
+                    Hive = hiveName,
+                    KeyPath = subKeyPath,
+                    ValueName = string.IsNullOrEmpty(valueName) ? "(Default)" : valueName,
+                    ValueKind = subKey.GetValueKind(valueName).ToString(),
+                    ValueText = FormatRegistryValue(value)
             });
         }
         catch (System.Security.SecurityException ex)
@@ -131,19 +195,31 @@ public class RegistryReaderTool
         }
     }
 
-    /// <summary>
-    ///     Reads a string value from the Windows Registry.
-    /// </summary>
-    /// <param name="keyPath">The full path to the registry key (e.g., "HKEY_CURRENT_USER\Software\MyApplication\Setting").</param>
-    /// <returns>A <see cref="ToolResult{T}" /> with the value on success, or an error message on failure.</returns>
-    public ToolResult<string> ReadStringValue(string keyPath)
-    {
-        ToolResult<RegistryValueSnapshot> result = ReadValue(keyPath);
 
-        return result.Success
-                ? ToolResult<string>.Ok(result.Value!.ValueText)
-                : ToolResult<string>.Fail(result.Error!);
+
+
+
+
+
+
+    private static string Truncate(string value)
+    {
+        const int maxLength = 512;
+
+        if (value.Length <= maxLength)
+        {
+            return value;
+        }
+
+        return value[..maxLength] + "...";
     }
+
+
+
+
+
+
+
 
     internal static bool TryResolveBaseKey(string hiveName, out Microsoft.Win32.RegistryKey? baseKey)
     {
@@ -158,28 +234,5 @@ public class RegistryReaderTool
         };
 
         return baseKey != null;
-    }
-
-    private static string FormatRegistryValue(object value)
-    {
-        return value switch
-        {
-                string text => Truncate(text),
-                string[] items => Truncate(string.Join("; ", items.Where(item => !string.IsNullOrWhiteSpace(item)))),
-                byte[] bytes => Convert.ToHexString(bytes.AsSpan(0, Math.Min(bytes.Length, 64))),
-                _ => Truncate(value.ToString() ?? string.Empty)
-        };
-    }
-
-    private static string Truncate(string value)
-    {
-        const int maxLength = 512;
-
-        if (value.Length <= maxLength)
-        {
-            return value;
-        }
-
-        return value[..maxLength] + "...";
     }
 }

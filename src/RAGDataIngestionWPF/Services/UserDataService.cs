@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/16
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         UserDataService.cs
 // Author: Kyle L. Crowder
-// Build Num: 051903
+// Build Num: 140905
 
 
 
@@ -49,11 +49,7 @@ public sealed class UserDataService : IUserDataService
 
     public void Initialize()
     {
-        _currentUser = new UserViewModel
-        {
-                Name = Environment.UserName,
-                UserPrincipalName = Environment.UserName
-        };
+        _currentUser = new UserViewModel { Name = Environment.UserName, UserPrincipalName = Environment.UserName };
 
         UserDataUpdated?.Invoke(this, _currentUser);
     }

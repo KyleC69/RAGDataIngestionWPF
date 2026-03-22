@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         SafeCommandRunner.cs
 // Author: Kyle L. Crowder
-// Build Num: 044304
+// Build Num: 140836
 
 
 
@@ -22,8 +22,14 @@ public sealed class SafeCommandRunner(string sandboxRoot)
 {
     private readonly string _sandboxRoot = SandboxPathResolver.NormalizeRoot(sandboxRoot);
 
-    private static readonly HashSet<string> AllowedCommands =
-        new(StringComparer.OrdinalIgnoreCase) { "dir", "ls", "type", "cat", "echo" };
+    private static readonly HashSet<string> AllowedCommands = new(StringComparer.OrdinalIgnoreCase)
+    {
+            "dir",
+            "ls",
+            "type",
+            "cat",
+            "echo"
+    };
 
 
 
@@ -80,9 +86,7 @@ public sealed class SafeCommandRunner(string sandboxRoot)
         var cmd = parts[0];
         var args = parts.Length > 1 ? parts[1] : string.Empty;
 
-        return !AllowedCommands.Contains(cmd)
-                ? ToolResult<string>.Fail($"Command '{cmd}' is not allowed.")
-                : ExecuteAllowedCommand(cmd, args);
+        return !AllowedCommands.Contains(cmd) ? ToolResult<string>.Fail($"Command '{cmd}' is not allowed.") : ExecuteAllowedCommand(cmd, args);
 
     }
 }

@@ -1,10 +1,26 @@
-﻿using System.Globalization;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ContextCitationFormatter.cs
+// Author: Kyle L. Crowder
+// Build Num: 140816
+
+
+
+using System.Globalization;
 using System.Text;
 
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
+
+
+
 namespace DataIngestionLib.Services;
+
+
+
+
 
 public sealed class ContextCitationFormatter : IContextCitationFormatter
 {
@@ -14,17 +30,17 @@ public sealed class ContextCitationFormatter : IContextCitationFormatter
         ArgumentNullException.ThrowIfNull(citations);
 
         List<string> blocks = [];
-        int currentCharacters = 0;
+        var currentCharacters = 0;
 
         foreach (ContextCitation citation in citations)
         {
-            string content = citation.Content?.Trim() ?? string.Empty;
+            var content = citation.Content?.Trim() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(content))
             {
                 continue;
             }
 
-            string block = FormatBlock(blocks.Count + 1, citation with { Content = content });
+            var block = FormatBlock(blocks.Count + 1, citation with { Content = content });
             if (currentCharacters > 0 && currentCharacters + Environment.NewLine.Length * 2 + block.Length > maxCharacters)
             {
                 break;
@@ -42,19 +58,26 @@ public sealed class ContextCitationFormatter : IContextCitationFormatter
         return heading.Trim() + ":" + Environment.NewLine + Environment.NewLine + string.Join(Environment.NewLine + Environment.NewLine, blocks);
     }
 
+
+
+
+
+
+
+
     internal static string FormatBlock(int index, ContextCitation citation)
     {
         StringBuilder builder = new();
         _ = builder.Append('[').Append(index).Append("] ").Append(citation.Title.Trim());
 
         List<string> metadata = [];
-        string sourceKind = citation.SourceKind?.Trim() ?? string.Empty;
+        var sourceKind = citation.SourceKind?.Trim() ?? string.Empty;
         if (!string.IsNullOrWhiteSpace(sourceKind))
         {
             metadata.Add("source=" + sourceKind);
         }
 
-        string locator = citation.Locator?.Trim() ?? string.Empty;
+        var locator = citation.Locator?.Trim() ?? string.Empty;
         if (!string.IsNullOrWhiteSpace(locator))
         {
             metadata.Add("locator=" + locator);

@@ -1,6 +1,22 @@
+// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         StorageHealthToolTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 141005
+
+
+
 using DataIngestionLib.ToolFunctions;
 
+
+
+
 namespace RAGDataIngestionWPF.Tests.MSTest;
+
+
+
+
 
 [TestClass]
 public class StorageHealthToolTests
@@ -10,7 +26,7 @@ public class StorageHealthToolTests
     {
         StorageHealthTool tool = new();
 
-        ToolResult<IReadOnlyList<StorageHealthSnapshot>> result = tool.ReadLogicalDisks(0);
+        var result = tool.ReadLogicalDisks(0);
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual("maxResults must be between 1 and 20.", result.Error);

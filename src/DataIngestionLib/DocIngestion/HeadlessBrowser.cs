@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         HeadlessBrowser.cs
 // Author: Kyle L. Crowder
-// Build Num: 044237
+// Build Num: 140751
 
 
 
@@ -87,10 +87,7 @@ public class HeadlessBrowser : IDisposable, IHeadlessBrowser
         await using IBrowser browser = await StartAsync().ConfigureAwait(false);
         await using IPage page = await browser.NewPageAsync().ConfigureAwait(false);
 
-        NavigationOptions navigationOptions = new()
-        {
-                WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
-        };
+        NavigationOptions navigationOptions = new() { WaitUntil = new[] { WaitUntilNavigation.Networkidle0 } };
 
         IResponse unused = await page.GoToAsync(url, navigationOptions).ConfigureAwait(false);
         return await page.GetContentAsync().ConfigureAwait(false);
@@ -117,14 +114,11 @@ public class HeadlessBrowser : IDisposable, IHeadlessBrowser
 
         await using IBrowser browser = await StartAsync().ConfigureAwait(false);
         await using IPage page = await browser.NewPageAsync().ConfigureAwait(false);
-        NavigationOptions navigationOptions = new()
-        {
-                WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
-        };
+        NavigationOptions navigationOptions = new() { WaitUntil = new[] { WaitUntilNavigation.Networkidle0 } };
         IResponse unused = await page.GoToAsync(url, navigationOptions).ConfigureAwait(false);
 
         await page.EmulateMediaTypeAsync(MediaType.Screen).ConfigureAwait(false);
-        await page.PdfAsync(Path.Combine("E:\\capturedpages", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + ".pdf")).ConfigureAwait(false);
+        await page.PdfAsync(Path.Combine("E:\\capturedpages", DateTimeOffset.Now.ToUnixTimeMilliseconds() + ".pdf")).ConfigureAwait(false);
 
     }
 
@@ -148,12 +142,7 @@ public class HeadlessBrowser : IDisposable, IHeadlessBrowser
                 AcceptInsecureCerts = false,
                 Headless = false,
                 HeadlessMode = HeadlessMode.False,
-                Args = new[]
-                {
-                        "--no-sandbox",
-                        "--disable-setuid-sandbox",
-                        "--disable-gpu"
-                },
+                Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu" },
                 Timeout = 300000,
                 DumpIO = false,
                 Devtools = false,

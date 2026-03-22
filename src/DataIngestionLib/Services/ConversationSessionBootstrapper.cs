@@ -1,8 +1,19 @@
-﻿using DataIngestionLib.Contracts;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ConversationSessionBootstrapper.cs
+// Author: Kyle L. Crowder
+// Build Num: 160439
+
+
+
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Data;
 using DataIngestionLib.Models;
 
 using Microsoft.Agents.AI;
+using Microsoft.EntityFrameworkCore;
 
 
 
@@ -16,9 +27,8 @@ namespace DataIngestionLib.Services;
 public sealed class ConversationSessionBootstrapper : IConversationSessionBootstrapper, IDisposable
 {
     private readonly IAgentFactory _agentFactory;
-    private readonly IAgentIdentityProvider _agentIdentityProvider;
     private readonly IAppSettings _appSettings;
-    private readonly SemaphoreSlim _initializeGate = new(1, 1);
+    private readonly SemaphoreSlim _initializeGate = new SemaphoreSlim(1, 1);
     private readonly ISQLChatHistoryProvider? _sqlChatHistoryProvider;
     private AIAgent? _agent;
     private AgentSession? _agentSession;
@@ -28,19 +38,16 @@ public sealed class ConversationSessionBootstrapper : IConversationSessionBootst
 
 
 
-    public ConversationSessionBootstrapper(
-            IAgentFactory agentFactory,
-            IAppSettings appSettings,
-            IAgentIdentityProvider agentIdentityProvider,
-            ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
+
+
+
+    public ConversationSessionBootstrapper(IAgentFactory agentFactory, IAppSettings appSettings, ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
     {
         ArgumentNullException.ThrowIfNull(agentFactory);
         ArgumentNullException.ThrowIfNull(appSettings);
-        ArgumentNullException.ThrowIfNull(agentIdentityProvider);
 
         _agentFactory = agentFactory;
         _appSettings = appSettings;
-        _agentIdentityProvider = agentIdentityProvider;
         _sqlChatHistoryProvider = sqlChatHistoryProvider;
     }
 
@@ -48,39 +55,57 @@ public sealed class ConversationSessionBootstrapper : IConversationSessionBootst
 
 
 
+
+
+
     public async ValueTask<ConversationSessionContext> EnsureInitializedAsync(CancellationToken cancellationToken = default)
     {
-        if (_agent is not null && _agentSession is not null && !string.IsNullOrWhiteSpace(_conversationId))
+        if (IsInitialized())
         {
-            return new ConversationSessionContext(_agent, _agentSession, _conversationId);
+            return new ConversationSessionContext(_agent!, _agentSession!, _conversationId!);
         }
 
-        await _initializeGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        if (!await _initializeGate.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken).ConfigureAwait(false))
+        {
+            throw new TimeoutException("Failed to acquire initialization lock within the timeout period.");
+        }
+
         try
         {
-            if (_agent is not null && _agentSession is not null && !string.IsNullOrWhiteSpace(_conversationId))
+            if (IsInitialized())
             {
-                return new ConversationSessionContext(_agent, _agentSession, _conversationId);
+                return new ConversationSessionContext(_agent!, _agentSession!, _conversationId!);
             }
 
-            string agentId = _agentIdentityProvider.GetAgentId();
-            _agent = _agentFactory.GetCodingAssistantAgent(agentId, AIModels.GPTOSS, "Agentic-Max Description");
+            _agent = _agentFactory.GetCodingAssistantAgent("Agentic-Max", AIModels.GPTOSS, "Agentic-Max Description");
+            if (_appSettings == null)
+            {
+                throw new InvalidOperationException("AppSettings is not initialized.");
+            }
 
+            _conversationId = await ResolveStartupConversationIdAsync(_agent.Id, ResolveApplicationId(), ResolveUserId(), cancellationToken);
+            _appSettings.SetValue("LastConversationId", _conversationId);
             _agentSession = await _agent.CreateSessionAsync().ConfigureAwait(false);
             _agentSession.StateBag.SetValue("ApplicationId", ResolveApplicationId());
             _agentSession.StateBag.SetValue("UserId", ResolveUserId());
-            _agentSession.StateBag.SetValue("AgentId", agentId);
-
-            _conversationId = await ResolveStartupConversationIdAsync(agentId, cancellationToken).ConfigureAwait(false);
+            _agentSession.StateBag.SetValue("AgentId", _agent.Id);
             _agentSession.StateBag.SetValue("ConversationId", _conversationId);
-
             return new ConversationSessionContext(_agent, _agentSession, _conversationId);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            Console.Error.WriteLine($"Error during initialization: {ex.Message}");
+            throw;
         }
         finally
         {
             _initializeGate.Release();
         }
     }
+
+
+
 
 
 
@@ -96,9 +121,38 @@ public sealed class ConversationSessionBootstrapper : IConversationSessionBootst
 
 
 
+
+
+
+    private bool IsInitialized()
+    {
+        return _agent is not null && _agentSession is not null && !string.IsNullOrWhiteSpace(_conversationId);
+    }
+
+
+
+
+
+
+
+
+    private string LoadLastConversationIdFromDB()
+    {
+        AIChatHistoryDb db = new AIChatHistoryDb();
+        var response = db.Database.ExecuteSqlInterpolated($"EXEC sp_GetLastConversationId({ResolveApplicationId()}, {ResolveUserId()}, {_agent.Id}  )");
+        return response.ToString();
+    }
+
+
+
+
+
+
+
+
     internal string ResolveApplicationId()
     {
-        string applicationId = _appSettings.ApplicationId?.Trim() ?? string.Empty;
+        var applicationId = _appSettings.ApplicationId?.Trim() ?? string.Empty;
         return string.IsNullOrWhiteSpace(applicationId) ? "unknown-application" : applicationId;
     }
 
@@ -106,23 +160,14 @@ public sealed class ConversationSessionBootstrapper : IConversationSessionBootst
 
 
 
-    internal static string ResolveUserId()
-    {
-        string userId = Environment.UserName?.Trim() ?? string.Empty;
-        return string.IsNullOrWhiteSpace(userId) ? "unknown-user" : userId;
-    }
 
 
 
-
-
-    internal async ValueTask<string> ResolveStartupConversationIdAsync(string agentId, CancellationToken cancellationToken)
+    internal async ValueTask<string> ResolveStartupConversationIdAsync(string agentId, string ApplicationId,string UserId,CancellationToken cancellationToken)
     {
         if (_sqlChatHistoryProvider is not null)
         {
-            string? latestConversationId = await _sqlChatHistoryProvider
-                    .GetLatestConversationIdAsync(agentId, ResolveUserId(), ResolveApplicationId(), cancellationToken)
-                    .ConfigureAwait(false);
+            var latestConversationId = await _sqlChatHistoryProvider.GetLatestConversationIdAsync(agentId, UserId, ApplicationId, cancellationToken).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(latestConversationId))
             {
@@ -130,12 +175,25 @@ public sealed class ConversationSessionBootstrapper : IConversationSessionBootst
             }
         }
 
-        string configuredConversationId = _appSettings.LastConversationId?.Trim() ?? string.Empty;
+        var configuredConversationId = _appSettings.LastConversationId?.Trim() ?? string.Empty;
         if (!string.IsNullOrWhiteSpace(configuredConversationId))
         {
             return configuredConversationId;
         }
 
         return Guid.NewGuid().ToString("N");
+    }
+
+
+
+
+
+
+
+
+    internal static string ResolveUserId()
+    {
+        var userId = Environment.UserName?.Trim() ?? string.Empty;
+        return string.IsNullOrWhiteSpace(userId) ? "unknown-user" : userId;
     }
 }

@@ -1,4 +1,13 @@
-﻿using System.Collections.Concurrent;
+﻿// Build Date: 2026/03/21
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         FileConversationContextCacheStore.cs
+// Author: Kyle L. Crowder
+// Build Num: 140826
+
+
+
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text.Json;
 
@@ -8,7 +17,13 @@ using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 
+
+
+
 namespace DataIngestionLib.Services;
+
+
+
 
 
 /// <summary>
@@ -16,41 +31,71 @@ namespace DataIngestionLib.Services;
 /// </summary>
 public sealed class FileConversationContextCacheStore : IConversationContextCacheStore
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
-    private static readonly HashSet<string> CacheableRoles = new(StringComparer.OrdinalIgnoreCase)
-    {
-        AIChatRole.AIContext.Value,
-        AIChatRole.RAGContext.Value,
-        AIChatRole.Tool.Value
-    };
-    private static readonly HashSet<string> StopWords = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "the", "and", "for", "with", "that", "this", "from", "into", "about", "what", "when", "where", "which", "while", "have", "does", "how", "why", "can", "should"
-    };
 
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _conversationLocks = [];
     private readonly string _rootDirectory;
+
+    private static readonly HashSet<string> CacheableRoles = new(StringComparer.OrdinalIgnoreCase) { AIChatRole.AIContext.Value, AIChatRole.RAGContext.Value, AIChatRole.Tool.Value };
+
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+
+    private static readonly HashSet<string> StopWords = new(StringComparer.OrdinalIgnoreCase)
+    {
+            "the",
+            "and",
+            "for",
+            "with",
+            "that",
+            "this",
+            "from",
+            "into",
+            "about",
+            "what",
+            "when",
+            "where",
+            "which",
+            "while",
+            "have",
+            "does",
+            "how",
+            "why",
+            "can",
+            "should"
+    };
+
+
+
+
+
+
+
 
     public FileConversationContextCacheStore(IAppSettings appSettings, string? rootDirectory = null)
     {
         ArgumentNullException.ThrowIfNull(appSettings);
 
-        string applicationId = appSettings.ApplicationId?.Trim() ?? string.Empty;
+        var applicationId = appSettings.ApplicationId?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(applicationId))
         {
             applicationId = "RAGDataIngestionWPF";
         }
 
-        _rootDirectory = rootDirectory
-                ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), applicationId, "conversation-context-cache");
+        _rootDirectory = rootDirectory ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), applicationId, "conversation-context-cache");
     }
+
+
+
+
+
+
+
 
     public async ValueTask AppendAsync(string conversationId, IReadOnlyList<ChatMessage> messages, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(messages);
 
-        string normalizedConversationId = NormalizeConversationId(conversationId);
+        var normalizedConversationId = NormalizeConversationId(conversationId);
         if (normalizedConversationId.Length == 0 || messages.Count == 0)
         {
             return;
@@ -60,20 +105,18 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            List<ConversationContextCacheEntry> existingEntries = await LoadEntriesAsync(normalizedConversationId, cancellationToken).ConfigureAwait(false);
-            HashSet<string> seen = existingEntries
-                    .Select(static entry => CreateDedupKey(entry.Role, entry.Text))
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var existingEntries = await LoadEntriesAsync(normalizedConversationId, cancellationToken).ConfigureAwait(false);
+            var seen = existingEntries.Select(static entry => CreateDedupKey(entry.Role, entry.Text)).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             foreach (ChatMessage message in messages)
             {
-                string text = message.Text?.Trim() ?? string.Empty;
+                var text = message.Text?.Trim() ?? string.Empty;
                 if (string.IsNullOrWhiteSpace(text))
                 {
                     continue;
                 }
 
-                string role = message.Role.Value?.Trim() ?? string.Empty;
+                var role = message.Role.Value?.Trim() ?? string.Empty;
                 if (!IsCacheableRole(role))
                 {
                     continue;
@@ -89,7 +132,7 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
                         EntryId = Guid.NewGuid(),
                         Role = role,
                         Text = text,
-                        CreatedAtUtc = message.CreatedAt ?? DateTimeOffset.UtcNow,
+                        CreatedAtUtc = message.CreatedAt ?? DateTimeOffset.Now,
                         Keywords = Tokenize(text)
                 });
             }
@@ -102,11 +145,18 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         }
     }
 
+
+
+
+
+
+
+
     public async ValueTask ResetAsync(string conversationId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        string normalizedConversationId = NormalizeConversationId(conversationId);
+        var normalizedConversationId = NormalizeConversationId(conversationId);
         if (normalizedConversationId.Length == 0)
         {
             return;
@@ -116,7 +166,7 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            string filePath = GetFilePath(normalizedConversationId);
+            var filePath = GetFilePath(normalizedConversationId);
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
@@ -128,16 +178,19 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         }
     }
 
-    public async ValueTask<IReadOnlyList<ConversationContextCacheEntry>> SearchAsync(
-            string conversationId,
-            string query,
-            int maxResults,
-            CancellationToken cancellationToken = default)
+
+
+
+
+
+
+
+    public async ValueTask<IReadOnlyList<ConversationContextCacheEntry>> SearchAsync(string conversationId, string query, int maxResults, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        string normalizedConversationId = NormalizeConversationId(conversationId);
-        string normalizedQuery = query?.Trim() ?? string.Empty;
+        var normalizedConversationId = NormalizeConversationId(conversationId);
+        var normalizedQuery = query?.Trim() ?? string.Empty;
         if (normalizedConversationId.Length == 0 || string.IsNullOrWhiteSpace(normalizedQuery) || maxResults <= 0)
         {
             return [];
@@ -153,15 +206,8 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
                 return [];
             }
 
-            string[] queryTerms = Tokenize(normalizedQuery);
-            return entries
-                    .Select(entry => (Entry: entry, Score: Score(entry, normalizedQuery, queryTerms)))
-                    .Where(static pair => pair.Score > 0)
-                    .OrderByDescending(pair => pair.Score)
-                    .ThenByDescending(pair => pair.Entry.CreatedAtUtc)
-                    .Take(maxResults)
-                    .Select(pair => pair.Entry)
-                    .ToArray();
+            var queryTerms = Tokenize(normalizedQuery);
+            return entries.Select(entry => (Entry: entry, Score: Score(entry, normalizedQuery, queryTerms))).Where(static pair => pair.Score > 0).OrderByDescending(pair => pair.Score).ThenByDescending(pair => pair.Entry.CreatedAtUtc).Take(maxResults).Select(pair => pair.Entry).ToArray();
         }
         finally
         {
@@ -169,60 +215,107 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         }
     }
 
+
+
+
+
+
+
+
     internal static string CreateDedupKey(string role, string text)
     {
         return role.Trim() + "\n" + text.Trim();
     }
+
+
+
+
+
+
+
 
     internal string GetFilePath(string conversationId)
     {
         return Path.Combine(_rootDirectory, conversationId + ".json");
     }
 
+
+
+
+
+
+
+
+    internal static bool IsCacheableRole(string role)
+    {
+        var normalizedRole = role.Trim();
+        return CacheableRoles.Contains(normalizedRole) || normalizedRole.EndsWith("_context", StringComparison.OrdinalIgnoreCase);
+    }
+
+
+
+
+
+
+
+
     internal async ValueTask<List<ConversationContextCacheEntry>> LoadEntriesAsync(string conversationId, CancellationToken cancellationToken)
     {
-        string filePath = GetFilePath(conversationId);
+        var filePath = GetFilePath(conversationId);
         if (!File.Exists(filePath))
         {
             return [];
         }
 
         await using FileStream stream = File.OpenRead(filePath);
-        return await JsonSerializer.DeserializeAsync<List<ConversationContextCacheEntry>>(stream, SerializerOptions, cancellationToken).ConfigureAwait(false)
-               ?? [];
+        return await JsonSerializer.DeserializeAsync<List<ConversationContextCacheEntry>>(stream, SerializerOptions, cancellationToken).ConfigureAwait(false) ?? [];
     }
+
+
+
+
+
+
+
 
     internal static string NormalizeConversationId(string conversationId)
     {
-        string trimmed = conversationId?.Trim() ?? string.Empty;
+        var trimmed = conversationId?.Trim() ?? string.Empty;
         if (trimmed.Length == 0)
         {
             return string.Empty;
         }
 
-        char[] invalid = Path.GetInvalidFileNameChars();
+        var invalid = Path.GetInvalidFileNameChars();
         return new string(trimmed.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
     }
 
-    internal static bool IsCacheableRole(string role)
-    {
-        string normalizedRole = role.Trim();
-        return CacheableRoles.Contains(normalizedRole)
-               || normalizedRole.EndsWith("_context", StringComparison.OrdinalIgnoreCase);
-    }
+
+
+
+
+
+
 
     internal async ValueTask SaveEntriesAsync(string conversationId, IReadOnlyList<ConversationContextCacheEntry> entries, CancellationToken cancellationToken)
     {
         _ = Directory.CreateDirectory(_rootDirectory);
-        string filePath = GetFilePath(conversationId);
+        var filePath = GetFilePath(conversationId);
 
         await using FileStream stream = File.Create(filePath);
         await JsonSerializer.SerializeAsync(stream, entries, SerializerOptions, cancellationToken).ConfigureAwait(false);
     }
 
+
+
+
+
+
+
+
     internal static double Score(ConversationContextCacheEntry entry, string query, IReadOnlyList<string> queryTerms)
     {
-        string text = entry.Text?.Trim() ?? string.Empty;
+        var text = entry.Text?.Trim() ?? string.Empty;
         if (text.Length == 0)
         {
             return 0;
@@ -242,11 +335,17 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         return score;
     }
 
+
+
+
+
+
+
+
     internal static string[] Tokenize(string text)
     {
-        return text
-                .Split([
-                    ' ', '\t', '\r', '\n', '.', ',', ';', ':', '!', '?', '(', ')', '[', ']', '{', '}', '/', '\\', '"', '\''
+        return text.Split([
+                        ' ', '\t', '\r', '\n', '.', ',', ';', ':', '!', '?', '(', ')', '[', ']', '{', '}', '/', '\\', '"', '\''
                 ], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Where(term => term.Length >= 3 && !StopWords.Contains(term))
                 .Distinct(StringComparer.OrdinalIgnoreCase)

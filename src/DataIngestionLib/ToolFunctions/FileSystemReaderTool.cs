@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/19
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         FileSystemReaderTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 044301
+// Build Num: 140834
 
 
 
@@ -27,6 +27,13 @@ public sealed class FileSystemReaderTool
 {
     private readonly string _sandboxRoot;
 
+
+
+
+
+
+
+
     public FileSystemReaderTool(string sandboxRoot)
     {
         if (string.IsNullOrWhiteSpace(sandboxRoot))
@@ -36,6 +43,13 @@ public sealed class FileSystemReaderTool
 
         _sandboxRoot = SandboxPathResolver.NormalizeRoot(sandboxRoot);
     }
+
+
+
+
+
+
+
 
     [Description("Read a file's text content. The path is relative to the sandbox root.")]
     public ToolResult<string> ReadFile(string relativePath)
