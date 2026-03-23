@@ -166,13 +166,13 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
     /// <remarks>
     ///     This method is invoked to persist any relevant AI context after the operation has been processed.
     /// </remarks>
-    protected override ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = new())
+    protected override async ValueTask StoreAIContextAsync(InvokedContext context, CancellationToken cancellationToken = new())
     {
         var messageId = context.Session?.StateBag?.GetValue<string>("MessageId") ?? string.Empty;
         var conversationId = context.Session?.StateBag?.GetValue<string>("ConversationId") ?? string.Empty;
 
         _logger.LogTrace("Call from StoreAIContextAsync in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}", messageId, conversationId);
 
-        return base.StoreAIContextAsync(context, cancellationToken);
+        return;
     }
 }

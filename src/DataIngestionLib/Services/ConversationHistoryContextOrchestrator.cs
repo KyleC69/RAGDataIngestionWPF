@@ -9,7 +9,6 @@
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.Models;
 
 using Microsoft.Extensions.AI;
 

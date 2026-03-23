@@ -106,7 +106,7 @@ namespace RAGDataIngestionWPF.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://learn.microsoft.com/en-us/agent-framework")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://learn.microsoft.com/en-us/agent-framework/")]
         public string LearnBaseUrl {
             get {
                 return ((string)(this["LearnBaseUrl"]));

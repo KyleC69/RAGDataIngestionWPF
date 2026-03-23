@@ -18,8 +18,6 @@ using DataIngestionLib.Models;
 using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Agents.AI;
-using Microsoft.Agents.Builder;
-using Microsoft.Agents.Core.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -101,7 +99,8 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     {
       
         await base.InvokedCoreAsync(context, cancellationToken);
-
+        //override removed to allow StoreChatHistoryAsync to be called by base InvokedCoreAsync implementation, which ensures that messages are stored even if there is an error during storing (as the error handling is also done in the base implementation).
+        //If we override InvokedCoreAsync and don't call base.InvokedCoreAsync, then StoreChatHistoryAsync will not be called if there is an error during storing, which would result in lost chat history messages.
 
     }
 
@@ -947,5 +946,18 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return ToPersisted(entity);
+    }
+
+
+
+
+
+
+
+
+    public async Task<ChatHistoryMessage?> GetLastMessageAsync()
+    {
+        var entity=_dbContext.ChatHistoryMessages.OrderByDescending(m => m.CreatedAt).FirstOrDefault();
+        return entity;
     }
 }

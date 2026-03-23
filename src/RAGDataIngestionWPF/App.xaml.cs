@@ -58,10 +58,10 @@ public sealed partial class App : Application
 
     private LogLevel _loglevel;
 
+internal static new App Current => (App)Application.Current;
 
 
-
-
+public static IHost AppHost { get; private set; }
 
 
 
@@ -72,7 +72,7 @@ public sealed partial class App : Application
         PresentationTraceSources.AnimationSource.Switch.Level = SourceLevels.All;
 
         _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel) ? configLevel : LogLevel.Trace;
-        return Host.CreateDefaultBuilder()
+       return Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c =>
                 {
 
@@ -277,7 +277,7 @@ public sealed partial class App : Application
         };
         // For more information about .NET generic host see  https://docs.microsoft.com/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-3.0
 
-        _host = BuildHost();
+        AppHost = BuildHost();
 
         if (ToastNotificationManagerCompat.WasCurrentProcessToastActivated())
         {

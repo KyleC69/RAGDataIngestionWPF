@@ -56,19 +56,19 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
-    public AgentFactory(ILoggerFactory factory, IAppSettings appSettings, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector, ConversationContextCacheRecorder contextCacheRecorder, AIContextRAGInjector ragContextInjector)
+    public AgentFactory(ILoggerFactory factory, IAppSettings appSettings, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(appSettings);
         ArgumentNullException.ThrowIfNull(chatHistoryProvider);
-        ArgumentNullException.ThrowIfNull(contextInjector);
-        ArgumentNullException.ThrowIfNull(contextCacheRecorder);
-        ArgumentNullException.ThrowIfNull(ragContextInjector);
+    //    ArgumentNullException.ThrowIfNull(contextInjector);
+      //  ArgumentNullException.ThrowIfNull(contextCacheRecorder);
+    ////    ArgumentNullException.ThrowIfNull(ragContextInjector);
 
         _factory = factory;
         _contextInjector = contextInjector;
-        _contextCacheRecorder = contextCacheRecorder;
-        _ragContextInjector = ragContextInjector;
+     //   _contextCacheRecorder = contextCacheRecorder;
+    //    _ragContextInjector = ragContextInjector;
         _chatHistoryProvider = chatHistoryProvider;
         _appSettings = appSettings;
     }
@@ -133,6 +133,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         return outer;
 
     }
+
 
 
 

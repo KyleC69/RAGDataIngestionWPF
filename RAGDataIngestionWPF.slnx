@@ -9,7 +9,5 @@
   <Project Path="src/DataIngestionLib/DataIngestionLib.csproj" />
   <Project Path="src/RAGDataIngestionWPF.Core/RAGDataIngestionWPF.Core.csproj" />
   <Project Path="src/RAGDataIngestionWPF/RAGDataIngestionWPF.csproj" />
-  <Project Path="tests/RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj">
-    <Build Solution="Debug|*" Project="false" />
-  </Project>
+  <Project Path="tests/RAGDataIngestionWPF.Tests.MSTest/RAGDataIngestionWPF.Tests.MSTest.csproj" />
 </Solution>

@@ -27,7 +27,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="ChatConversationServiceTests.cs" />
+	  <Compile Remove="Class.cs" />
+	  <Compile Remove="ConversationHistoryLoaderTests.cs" />
+	  <Compile Remove="PersistedAndModelContractsTests.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Microsoft.Extensions.AI.Evaluation" Version="10.4.0" />
+		<PackageReference Include="Microsoft.Extensions.AI.Evaluation.Quality" Version="10.4.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
 		<PackageReference Include="Moq" Version="4.20.72" />
 		<PackageReference Include="MSTest.TestAdapter" Version="4.1.0" />

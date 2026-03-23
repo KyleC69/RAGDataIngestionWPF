@@ -11,9 +11,6 @@ using DataIngestionLib.History.HistoryModels;
 
 using Microsoft.EntityFrameworkCore;
 
-using Microsoft.EntityFrameworkCore.SqlServer;
-using Microsoft.Extensions.VectorData;
-
 
 
 
@@ -46,8 +43,11 @@ public class AIChatHistoryDb : DbContext
 
 
 
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CHAT_HISTORY"));
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CHAT_HISTORY"), sqlServerOptions =>
+    {
+        sqlServerOptions.EnableRetryOnFailure();
+        sqlServerOptions.CommandTimeout(60);
+    });
 
 
 
