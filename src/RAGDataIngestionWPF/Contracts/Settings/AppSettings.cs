@@ -8,7 +8,6 @@
 
 
 using DataIngestionLib.Contracts;
-using DataIngestionLib.Services.Contracts;
 
 
 
@@ -143,7 +142,7 @@ public class AppSettings : IAppSettings
     }
 
     /// <inheritdoc />
-    public string? LastConversationId
+    public string LastConversationId
     {
         get { return GetString(nameof(LastConversationId)); }
         set { SetString(nameof(LastConversationId), value); }
@@ -181,13 +180,13 @@ public class AppSettings : IAppSettings
     {
         return new TokenBudget
         {
-                SessionBudget = SessionBudget,
-                SystemBudget = SystemBudget,
-                RAGBudget = RAGBudget,
-                ToolBudget = ToolBudget,
-                MetaBudget = MetaBudget,
-                BudgetTotal = SessionBudget + SystemBudget + RAGBudget + ToolBudget + MetaBudget,
-                MaximumContext = MaximumContext
+            SessionBudget = SessionBudget,
+            SystemBudget = SystemBudget,
+            RAGBudget = RAGBudget,
+            ToolBudget = ToolBudget,
+            MetaBudget = MetaBudget,
+            BudgetTotal = SessionBudget + SystemBudget + RAGBudget + ToolBudget + MetaBudget,
+            MaximumContext = MaximumContext
         };
     }
 

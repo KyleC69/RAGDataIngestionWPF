@@ -1,16 +1,15 @@
-﻿// Build Date: 2026/03/22
+﻿// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ConversationSessionBootstrapper.cs
 // Author: Kyle L. Crowder
-// Build Num: 045118
+// Build Num: 133603
 
 
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Agents.AI;
 

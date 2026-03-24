@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIModels.cs
 // Author: Kyle L. Crowder
-// Build Num: 140755
+// Build Num: 133548
 
 
 
@@ -15,6 +15,8 @@ namespace DataIngestionLib.Models;
 
 public record AIModels
 {
+
+    public const string BGE_RERANKER = "bbjson/bge-reranker-base:latest";
 
     /// <summary>OpenAI GPT-4 cloud model identifier.</summary>
     public const string GPT4 = "gpt-4";
@@ -30,6 +32,4 @@ public record AIModels
 
     /// <summary>MixedBread AI large embedding model (<c>mxbai-embed-large</c>) served through Ollama.</summary>
     public const string MXBAI = "mxbai-embed-large:latest";
-    
-    public const string BGE_RERANKER = "bbjson/bge-reranker-base:latest";
 }

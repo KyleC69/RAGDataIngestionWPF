@@ -1,16 +1,15 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatConversationService.cs
 // Author: Kyle L. Crowder
-// Build Num: 140810
+// Build Num: 133559
 
 
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -49,7 +48,8 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings,  IConversationAgentRunner? agentRunner = null, IConversationProgressLogService? progressLogService = null, ISQLChatHistoryProvider? sqlChatHistoryProvider = null) : this(factory, settings, new ConversationSessionBootstrapper(agentFactory, settings,  sqlChatHistoryProvider), new ConversationHistoryLoader(settings, sqlChatHistoryProvider), new ConversationTokenCounter(), new ConversationBudgetEvaluator(), new ChatBusyStateScopeFactory(), new ConversationBudgetEventPublisher(), agentRunner ?? new ConversationAgentRunner(), progressLogService)
+
+    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings, IConversationAgentRunner? agentRunner = null, IConversationProgressLogService? progressLogService = null, ISQLChatHistoryProvider? sqlChatHistoryProvider = null) : this(factory, settings, new ConversationSessionBootstrapper(agentFactory, settings, sqlChatHistoryProvider), new ConversationHistoryLoader(settings, sqlChatHistoryProvider), new ConversationTokenCounter(), new ConversationBudgetEvaluator(), new ChatBusyStateScopeFactory(), new ConversationBudgetEventPublisher(), agentRunner ?? new ConversationAgentRunner(), progressLogService)
     {
         ArgumentNullException.ThrowIfNull(agentFactory);
     }
@@ -92,16 +92,16 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
+
     /// <summary>
     ///     A collection of settings to provide the token budget allocated for the model
     /// </summary>
     private TokenBudget ConversationTokenBudget { get; }
 
+    public HistoryIdentity HistoryIdentity { get; set; } = new();
+
     public bool Initialized { get; set; }
 
-   
-
- 
     public string ConversationId { get; private set; } = string.Empty;
 
     /// <summary>
@@ -147,7 +147,7 @@ public sealed class ChatConversationService : IChatConversationService
     /// <exception cref="ArgumentException"></exception>
     public async ValueTask<ChatMessage> SendRequestToModelAsync(string content, CancellationToken token)
     {
-        var sessionContext = await EnsureSessionContextAsync(token).ConfigureAwait(false);
+        ConversationSessionContext? sessionContext = await EnsureSessionContextAsync(token).ConfigureAwait(false);
         using IDisposable busyScope = _busyStateScopeFactory.Enter(busy => BusyStateChanged?.Invoke(this, busy));
         UsageDetails? usageDetails = null;
         Guid? planId = null;
@@ -215,11 +215,11 @@ public sealed class ChatConversationService : IChatConversationService
     public async ValueTask<IReadOnlyList<ChatMessage>> LoadConversationHistoryAsync(CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
-        var sessionContext = await EnsureSessionContextAsync(CancellationToken.None).ConfigureAwait(false);
-        
-        
-        
-        
+        ConversationSessionContext? sessionContext = await EnsureSessionContextAsync(CancellationToken.None).ConfigureAwait(false);
+
+
+
+
 
         if (sessionContext is null)
         {
@@ -366,11 +366,6 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-
-
-
-
-
     internal async ValueTask<ConversationSessionContext?> EnsureSessionContextAsync(CancellationToken cancellationToken)
     {
         if (_sessionContext is not null)
@@ -389,15 +384,6 @@ public sealed class ChatConversationService : IChatConversationService
         Initialized = true;
         return _sessionContext;
     }
-
-
-
-
-
-
-
-
-    public HistoryIdentity HistoryIdentity { get; set; }
 
 
 

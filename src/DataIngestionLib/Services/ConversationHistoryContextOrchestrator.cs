@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ConversationHistoryContextOrchestrator.cs
 // Author: Kyle L. Crowder
-// Build Num: 140819
+// Build Num: 133602
 
 
 
@@ -51,27 +51,29 @@ public sealed class ConversationHistoryContextOrchestrator : IConversationHistor
 
 
 
+
     /// <summary>
-    /// Builds a collection of context messages for a given conversation based on the provided request messages.
+    ///     Builds a collection of context messages for a given conversation based on the provided request messages.
     /// </summary>
     /// <param name="conversationId">
-    /// The unique identifier of the conversation for which context messages are to be built.
+    ///     The unique identifier of the conversation for which context messages are to be built.
     /// </param>
     /// <param name="requestMessages">
-    /// A collection of <see cref="ChatMessage"/> objects representing the request messages.
+    ///     A collection of <see cref="ChatMessage" /> objects representing the request messages.
     /// </param>
     /// <param name="cancellationToken">
-    /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.
+    ///     A <see cref="CancellationToken" /> to observe while waiting for the task to complete.
     /// </param>
     /// <returns>
-    /// A task that represents the asynchronous operation. The task result contains a read-only list of <see cref="ChatMessage"/> objects
-    /// representing the context messages.
+    ///     A task that represents the asynchronous operation. The task result contains a read-only list of
+    ///     <see cref="ChatMessage" /> objects
+    ///     representing the context messages.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="requestMessages"/> is <c>null</c>.
+    ///     Thrown when <paramref name="requestMessages" /> is <c>null</c>.
     /// </exception>
     /// <exception cref="OperationCanceledException">
-    /// Thrown when the operation is canceled via the <paramref name="cancellationToken"/>.
+    ///     Thrown when the operation is canceled via the <paramref name="cancellationToken" />.
     /// </exception>
     public async ValueTask<IReadOnlyList<ChatMessage>> BuildContextMessagesAsync(string conversationId, IReadOnlyList<ChatMessage> requestMessages, CancellationToken cancellationToken = default)
     {
@@ -94,7 +96,7 @@ public sealed class ConversationHistoryContextOrchestrator : IConversationHistor
         {
             return [];
         }
-        
+
         HashSet<string> requestTexts = new(StringComparer.OrdinalIgnoreCase);
         foreach (ChatMessage requestMessage in requestMessages)
         {

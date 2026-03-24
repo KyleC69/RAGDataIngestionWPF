@@ -227,7 +227,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable, INavi
 
 
 
-    private void OnBusyStateChange(object? sender, bool e)
+    private void OnBusyStateChange(object sender, bool e)
     {
         Dispatcher dispatcher = System.Windows.Application.Current.Dispatcher;
         if (dispatcher.CheckAccess())

@@ -1,30 +1,17 @@
-﻿using System;
-using System.Diagnostics;
-using System.Windows.Forms;
+﻿using System.Diagnostics;
 
 using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
-
-using Microsoft.Agents.AI;
-using Microsoft.Agents.Builder;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.AI.Evaluation;
-using Microsoft.Extensions.AI.Evaluation.Quality;
-
-using Windows.System;
-
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Data;
 using DataIngestionLib.Providers;
 using DataIngestionLib.Services;
-using DataIngestionLib.Services.Contracts;
 
-using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Options;
 
 using RAGDataIngestionWPF.Contracts.Settings;
 
@@ -37,8 +24,8 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 [TestClass]
 public class AgentFuzzerTests
 {
-    internal AgentSession _session;
-    internal ProviderSessionState<HistoryIdentity> _provider;
+    internal AgentSession _session = null!;
+    internal ProviderSessionState<HistoryIdentity> _provider = null!;
 
 
 

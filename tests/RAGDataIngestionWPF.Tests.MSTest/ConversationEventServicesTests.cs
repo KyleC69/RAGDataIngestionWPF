@@ -1,4 +1,4 @@
-// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ConversationEventServicesTests.cs
@@ -7,6 +7,7 @@
 
 
 
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Services;
 

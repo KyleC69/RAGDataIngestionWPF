@@ -10,7 +10,6 @@
 using System.Reflection;
 
 using DataIngestionLib.Contracts;
-using DataIngestionLib.Services;
 
 using Moq;
 
@@ -60,15 +59,16 @@ public class ConfigurationAndEdgeCaseServiceTests
             settings.MetaBudget = 50;
             settings.MaximumContext = 900;
 
-            DataIngestionLib.Services.Contracts.TokenBudget budget = settings.GetTokenBudget();
+            var tokenBudget = settings.GetTokenBudget();
 
-            Assert.AreEqual(10, budget.SessionBudget);
-            Assert.AreEqual(20, budget.SystemBudget);
-            Assert.AreEqual(30, budget.RAGBudget);
-            Assert.AreEqual(40, budget.ToolBudget);
-            Assert.AreEqual(50, budget.MetaBudget);
-            Assert.AreEqual(900, budget.MaximumContext);
-            Assert.AreEqual(150, budget.BudgetTotal);
+
+            Assert.AreEqual(10, tokenBudget.SessionBudget);
+            Assert.AreEqual(20, tokenBudget.SystemBudget);
+            Assert.AreEqual(30, tokenBudget.RAGBudget);
+            Assert.AreEqual(40, tokenBudget.ToolBudget);
+            Assert.AreEqual(50, tokenBudget.MetaBudget);
+            Assert.AreEqual(900, tokenBudget.MaximumContext);
+            Assert.AreEqual(150, tokenBudget.BudgetTotal);
         }
         finally
         {

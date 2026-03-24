@@ -1,15 +1,16 @@
-﻿// Build Date: 2026/03/21
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         ConversationTokenCounter.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 140823
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
 
 
 
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Extensions.AI;
 
@@ -100,12 +101,7 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
 
     internal static int ClampToInt(long value)
     {
-        if (value <= 0)
-        {
-            return 0;
-        }
-
-        return value >= int.MaxValue ? int.MaxValue : (int)value;
+        return value <= 0 ? 0 : value >= int.MaxValue ? int.MaxValue : (int)value;
     }
 
 
@@ -136,11 +132,13 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
 
         foreach (var key in keys)
         {
-            foreach (var (countKey, countValue) in usageDetails.AdditionalCounts)
+            foreach ((string? countKey, long countValue) in usageDetails.AdditionalCounts)
+            {
                 if (string.Equals(countKey, key, StringComparison.OrdinalIgnoreCase))
                 {
                     return countValue;
                 }
+            }
         }
 
         return fallback;

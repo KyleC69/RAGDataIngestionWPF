@@ -1,9 +1,9 @@
-// Build Date: 2026/03/21
+// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ServiceHealthTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 140843
+// Build Num: 133617
 
 
 
@@ -49,7 +49,7 @@ public sealed class ServiceHealthTool
         {
             using ManagementObjectSearcher searcher = new("root\\cimv2", $"SELECT StartMode FROM Win32_Service WHERE Name='{serviceName.Replace("'", "''", StringComparison.Ordinal)}'");
             using ManagementObjectCollection? results = searcher.Get();
-            ManagementBaseObject? service = results.Cast<System.Management.ManagementBaseObject>().FirstOrDefault();
+            ManagementBaseObject? service = results.Cast<ManagementBaseObject>().FirstOrDefault();
             return service?["StartMode"]?.ToString() ?? string.Empty;
         }
         catch

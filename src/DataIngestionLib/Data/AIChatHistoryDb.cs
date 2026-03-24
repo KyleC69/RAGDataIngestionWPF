@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         AIChatHistoryDb.cs
 // Author: Kyle L. Crowder
-// Build Num: 140748
+// Build Num: 133540
 
 
 
@@ -43,6 +43,7 @@ public class AIChatHistoryDb : DbContext
 
 
 
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("CHAT_HISTORY"), sqlServerOptions =>
     {
         sqlServerOptions.EnableRetryOnFailure();
@@ -73,12 +74,12 @@ public class AIChatHistoryDb : DbContext
 
 
             entity.Property(e => e.Embedding).HasColumnType("vector(1024)");
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             entity.Property(e => e.Enabled).HasDefaultValue(false, "DF_ChatHistoryMessages_Enabled");
             entity.Property(e => e.Role).HasMaxLength(32);
             entity.Property(e => e.Summary).HasMaxLength(2000);

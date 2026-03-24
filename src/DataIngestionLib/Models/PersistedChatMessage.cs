@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         PersistedChatMessage.cs
 // Author: Kyle L. Crowder
-// Build Num: 140755
+// Build Num: 133549
 
 
 
@@ -39,39 +39,14 @@ public sealed record PersistedChatMessage
     public DateTimeOffset TimestampUtc { get; init; }
 
     public string UserId { get; init; } = string.Empty;
-
-
-
-
 }
-    public static class ChatMessageExt
-    {
-
-
-
-
-public static ChatMessage ToChatMessage(this PersistedChatMessage persistedChatMessage)
-    {
-        if (persistedChatMessage == null) throw new ArgumentNullException(nameof(persistedChatMessage));
-
-        return new ChatMessage
-        {
-                AuthorName = null,
-                CreatedAt = persistedChatMessage.TimestampUtc,
-                MessageId = persistedChatMessage.MessageId.ToString("D"),
-                RawRepresentation = null,
-                AdditionalProperties = null,
-                Role = ParseRole(persistedChatMessage.Role),
-                Contents = null,
-        };
-    }
 
 
 
 
 
-
-
+public static class ChatMessageExt
+{
 
     private static ChatRole ParseRole(string role)
     {
@@ -85,4 +60,25 @@ public static ChatMessage ToChatMessage(this PersistedChatMessage persistedChatM
     }
 
 
+
+
+
+
+
+
+    public static ChatMessage ToChatMessage(this PersistedChatMessage persistedChatMessage)
+    {
+        if (persistedChatMessage == null) throw new ArgumentNullException(nameof(persistedChatMessage));
+
+        return new ChatMessage
+        {
+                AuthorName = null,
+                CreatedAt = persistedChatMessage.TimestampUtc,
+                MessageId = persistedChatMessage.MessageId.ToString("D"),
+                RawRepresentation = null,
+                AdditionalProperties = null,
+                Role = ParseRole(persistedChatMessage.Role),
+                Contents = null
+        };
     }
+}

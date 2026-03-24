@@ -1,13 +1,11 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IConversationHistoryLoader.cs
 // Author: Kyle L. Crowder
-// Build Num: 140745
+// Build Num: 133537
 
 
-
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Extensions.AI;
 

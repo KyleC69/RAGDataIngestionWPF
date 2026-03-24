@@ -1,23 +1,18 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/24
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChatHistory.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
+// Build Num: 133545
 
 
 
 namespace DataIngestionLib.HistoryModels;
 
+
+
+
+
 public static class ChatHistoryExt
 {
-
-    
-    
-    
-    
-
-    
-    
 }

@@ -61,7 +61,7 @@ public sealed partial class App : Application
 internal static new App Current => (App)Application.Current;
 
 
-public static IHost AppHost { get; private set; }
+public static IHost AppHost { get; private set; } = null!;
 
 
 

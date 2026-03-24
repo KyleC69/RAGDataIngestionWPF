@@ -1,14 +1,13 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         IChatHistoryProvider.cs
 // Author: Kyle L. Crowder
-// Build Num: 140743
+// Build Num: 133536
 
 
 
 using DataIngestionLib.Models;
-using DataIngestionLib.Services.Contracts;
 
 
 
@@ -22,10 +21,10 @@ namespace DataIngestionLib.Contracts.Services;
 public interface IChatHistoryProvider
 {
 
-    ValueTask<PersistedChatMessage> CreateMessageAsync(PersistedChatMessage message, CancellationToken cancellationToken = default);
-
-
     HistoryIdentity SessionState { get; }
+
+
+    ValueTask<PersistedChatMessage> CreateMessageAsync(PersistedChatMessage message, CancellationToken cancellationToken = default);
 
 
     ValueTask<PersistedChatMessage?> GetMessageAsync(Guid messageId, CancellationToken cancellationToken = default);

@@ -1,14 +1,10 @@
-﻿// Build Date: 2026/03/21
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         IAppSettings.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 140742
-
-
-
-using DataIngestionLib.Services.Contracts;
-
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
 
 
 
@@ -44,11 +40,11 @@ public interface IAppSettings
     int RAGBudget { get; set; }
 
     string RemoteRAGConnectionString { get; set; }
+    bool ResumeLast { get; set; }
     int SessionBudget { get; set; }
     int SystemBudget { get; set; }
     int ToolBudget { get; set; }
     string UserId { get; set; }
-    bool ResumeLast { get; set; }
 
 
     TokenBudget GetTokenBudget();

@@ -1,16 +1,15 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ConversationHistoryLoader.cs
 // Author: Kyle L. Crowder
-// Build Num: 140820
+// Build Num: 133602
 
 
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Extensions.AI;
 
@@ -33,8 +32,8 @@ namespace DataIngestionLib.Services;
 /// </remarks>
 public sealed class ConversationHistoryLoader : IConversationHistoryLoader
 {
-    private readonly ISQLChatHistoryProvider? _sqlChatHistoryProvider;
     private readonly IAppSettings _appSettings;
+    private readonly ISQLChatHistoryProvider? _sqlChatHistoryProvider;
 
 
 
@@ -55,7 +54,7 @@ public sealed class ConversationHistoryLoader : IConversationHistoryLoader
     ///     fetching and processing of conversation history. Passing <c>null</c> will result in the loader
     ///     functioning with no external data source.
     /// </remarks>
-    public ConversationHistoryLoader( IAppSettings settings,ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
+    public ConversationHistoryLoader(IAppSettings settings, ISQLChatHistoryProvider? sqlChatHistoryProvider = null)
     {
         _sqlChatHistoryProvider = sqlChatHistoryProvider;
         _appSettings = settings;
@@ -95,8 +94,8 @@ public sealed class ConversationHistoryLoader : IConversationHistoryLoader
         {
             return [];
         }
-      
-      
+
+
         var persistedMessages = await _sqlChatHistoryProvider.GetMessagesAsync(identity, cancellationToken).ConfigureAwait(false);
 
         List<ChatMessage> historyMessages = [];

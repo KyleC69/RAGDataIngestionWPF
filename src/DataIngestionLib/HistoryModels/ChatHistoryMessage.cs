@@ -1,14 +1,13 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/24
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         ChatHistoryMessage.cs
 // Author: Kyle L. Crowder
-// Build Num: 140754
+// Build Num: 133545
 
 
 
 using Microsoft.Data.SqlTypes;
-using Microsoft.Extensions.AI;
 
 
 
@@ -46,13 +45,4 @@ public class ChatHistoryMessage
     public DateTimeOffset TimestampUtc { get; set; }
 
     public string UserId { get; set; } = null!;
-
-
-
-
-
-
 }
-
-
-    

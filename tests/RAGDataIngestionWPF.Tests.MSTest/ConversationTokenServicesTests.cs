@@ -1,4 +1,4 @@
-// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ConversationTokenServicesTests.cs
@@ -7,10 +7,10 @@
 
 
 
+using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services;
-using DataIngestionLib.Services.Contracts;
 
 using Microsoft.Extensions.AI;
 
@@ -126,12 +126,12 @@ public class ConversationTokenServicesTests
 
     private static TokenBudget MakeBudget(int sessionBudget = 100_000, int maximumContext = 80_000, int systemBudget = 5_000, int ragBudget = 10_000, int toolBudget = 5_000, int metaBudget = 1_000) => new()
     {
-            SessionBudget = sessionBudget,
-            MaximumContext = maximumContext,
-            SystemBudget = systemBudget,
-            RAGBudget = ragBudget,
-            ToolBudget = toolBudget,
-            MetaBudget = metaBudget,
-            BudgetTotal = sessionBudget + systemBudget + ragBudget + toolBudget + metaBudget
+        SessionBudget = sessionBudget,
+        MaximumContext = maximumContext,
+        SystemBudget = systemBudget,
+        RAGBudget = ragBudget,
+        ToolBudget = toolBudget,
+        MetaBudget = metaBudget,
+        BudgetTotal = sessionBudget + systemBudget + ragBudget + toolBudget + metaBudget
     };
 }

@@ -8,6 +8,7 @@
     <AnalysisLevel>preview</AnalysisLevel>
     <LangVersion>preview</LangVersion>
 	  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	  <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -78,7 +79,7 @@
 	  <PackageReference Include="PuppeteerSharp" Version="24.39.1" />
 	  <PackageReference Include="System.Management" Version="10.0.0" />
 	  <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.0" />
-	  <PackageReference Include="MarkDig" Version="1.1.1" />
+	  <PackageReference Include="MarkDig" Version="1.0.0" />
 
   </ItemGroup>
 

@@ -1,13 +1,14 @@
-// Build Date: 2026/03/21
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         ChatBusyStateScopeFactory.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 140815
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
 
 
 
-using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Contracts;
 
 
 

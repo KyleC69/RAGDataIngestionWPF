@@ -1,7 +1,7 @@
----
+﻿---
 name: Documentation Steward Agent
 description: Review repository documentation, keep the documentation manifest current, and update the README to match the current solution state.
-tools: [read, edit, search, execute]
+
 argument-hint: Review documentation drift, update the manifest, and sync the README with the current solution.
 ---
 
