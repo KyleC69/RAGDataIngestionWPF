@@ -8,6 +8,7 @@
 
 
 using System.IO;
+using System.Runtime.CompilerServices;
 
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
@@ -23,15 +24,6 @@ namespace DataIngestionLib.DocIngestion;
 
 public interface IHeadlessBrowser
 {
-
-    Task CaptureScreenshotAsync(string url, CancellationToken cancellationToken = default);
-
-
-
-
-
-
-
 
     /// <summary>
     ///     Navigates to the specified URL and returns the page source.
@@ -84,10 +76,12 @@ public class HeadlessBrowser : IDisposable, IHeadlessBrowser
             throw new ArgumentException("URL must be an absolute URI.", nameof(url));
         }
 
-        await using IBrowser browser = await StartAsync().ConfigureAwait(false);
-        await using IPage page = await browser.NewPageAsync().ConfigureAwait(false);
+        IBrowser browser = await StartAsync().ConfigureAwait(false);
+        await using ConfiguredAsyncDisposable browser1 = browser.ConfigureAwait(false);
+        IPage page = await browser.NewPageAsync().ConfigureAwait(false);
+        await using ConfiguredAsyncDisposable page1 = page.ConfigureAwait(false);
 
-        NavigationOptions navigationOptions = new() { WaitUntil = new[] { WaitUntilNavigation.Networkidle0 } };
+        NavigationOptions navigationOptions = new() { WaitUntil = [WaitUntilNavigation.Networkidle0] };
 
         IResponse unused = await page.GoToAsync(url, navigationOptions).ConfigureAwait(false);
         return await page.GetContentAsync().ConfigureAwait(false);
@@ -112,9 +106,11 @@ public class HeadlessBrowser : IDisposable, IHeadlessBrowser
             throw new ArgumentException("URL must be an absolute URI.", nameof(url));
         }
 
-        await using IBrowser browser = await StartAsync().ConfigureAwait(false);
-        await using IPage page = await browser.NewPageAsync().ConfigureAwait(false);
-        NavigationOptions navigationOptions = new() { WaitUntil = new[] { WaitUntilNavigation.Networkidle0 } };
+        IBrowser browser = await StartAsync().ConfigureAwait(false);
+        await using ConfiguredAsyncDisposable browser1 = browser.ConfigureAwait(false);
+        IPage page = await browser.NewPageAsync().ConfigureAwait(false);
+        await using ConfiguredAsyncDisposable page1 = page.ConfigureAwait(false);
+        NavigationOptions navigationOptions = new() { WaitUntil = [WaitUntilNavigation.Networkidle0] };
         IResponse unused = await page.GoToAsync(url, navigationOptions).ConfigureAwait(false);
 
         await page.EmulateMediaTypeAsync(MediaType.Screen).ConfigureAwait(false);
@@ -142,7 +138,7 @@ public class HeadlessBrowser : IDisposable, IHeadlessBrowser
                 AcceptInsecureCerts = false,
                 Headless = false,
                 HeadlessMode = HeadlessMode.False,
-                Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu" },
+                Args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"],
                 Timeout = 300000,
                 DumpIO = false,
                 Devtools = false,

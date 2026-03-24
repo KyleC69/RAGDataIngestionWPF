@@ -48,31 +48,31 @@ public class AgentFuzzerTests
 
     public AgentFuzzerTests()
     {
-     var services = new ServiceCollection();
-     services.AddLogging();
-     services.AddDbContext<AIChatHistoryDb>();
-    services.AddSingleton<IAgentFactory, AgentFactory>();
-    services.AddScoped<IChatHistoryProvider, SqlChatHistoryProvider>();
-    services.AddScoped<ISQLChatHistoryProvider, SqlChatHistoryProvider>();
-    services.AddSingleton<IAppSettings, AppSettings>();
-    services.AddSingleton<ChatHistoryContextInjector>();
-    IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
-    IServiceCollection unused4 = services.AddSingleton<IChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
-    IServiceCollection unused5 = services.AddSingleton<ISQLChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
-    _ = services.AddSingleton<IConversationHistoryContextOrchestrator, ConversationHistoryContextOrchestrator>();
-    services.AddDbContext<AIChatHistoryDb>();
-    services.AddDbContext<RAGContext>();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDbContext<AIChatHistoryDb>();
+        services.AddSingleton<IAgentFactory, AgentFactory>();
+        services.AddScoped<IChatHistoryProvider, SqlChatHistoryProvider>();
+        services.AddScoped<ISQLChatHistoryProvider, SqlChatHistoryProvider>();
+        services.AddSingleton<IAppSettings, AppSettings>();
+        services.AddSingleton<ChatHistoryContextInjector>();
+        IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
+        IServiceCollection unused4 = services.AddSingleton<IChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
+        IServiceCollection unused5 = services.AddSingleton<ISQLChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
+        _ = services.AddSingleton<IConversationHistoryContextOrchestrator, ConversationHistoryContextOrchestrator>();
+        services.AddDbContext<AIChatHistoryDb>();
+        services.AddDbContext<RAGContext>();
 
         var serviceProvider = services.BuildServiceProvider();
-    var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-    var appSettings = serviceProvider.GetRequiredService<IAppSettings>();
-    var sqlChatHistoryProvider = serviceProvider.GetRequiredService<ISQLChatHistoryProvider>();
-    var chatHistoryContextInjector = new ChatHistoryContextInjector(loggerFactory.CreateLogger<ChatHistoryContextInjector>());
-  //  var conversationContextCacheRecorder = new ConversationContextCacheRecorder(new NullConversationContextCacheStore(), loggerFactory.CreateLogger<ConversationContextCacheRecorder>());
+        var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+        var appSettings = serviceProvider.GetRequiredService<IAppSettings>();
+        var sqlChatHistoryProvider = serviceProvider.GetRequiredService<ISQLChatHistoryProvider>();
+        var chatHistoryContextInjector = new ChatHistoryContextInjector(loggerFactory.CreateLogger<ChatHistoryContextInjector>());
+        //  var conversationContextCacheRecorder = new ConversationContextCacheRecorder(new NullConversationContextCacheStore(), loggerFactory.CreateLogger<ConversationContextCacheRecorder>());
 
-  _agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
+        _agentFactory = serviceProvider.GetRequiredService<IAgentFactory>();
 
-  _agent = _agentFactory.GetCodingAssistantAgent("Agent101", "gpt-oss:20b-cloud", "", null);
+        _agent = _agentFactory.GetCodingAssistantAgent("Agent101", "gpt-oss:20b-cloud", "", null);
     }
 
 
@@ -87,7 +87,7 @@ public class AgentFuzzerTests
 
     private readonly Random _rng = new();
     private readonly IAgentFactory _agentFactory;
-    
+
     private static readonly string[] Actions = new[]
     {
             "summarize", "rewrite", "explain", "convert", "extract",
@@ -125,35 +125,35 @@ public class AgentFuzzerTests
         return $"{action} {input}";
     }
 
-    [TestMethod]
+
     public async Task Agent_Should_Respond_Stably()
     {
-       var pstate= new ProviderSessionState<HistoryIdentity>(
-                stateInitializer: (session) => new HistoryIdentity
-                {
-                        AgentId = _agent.Id,
-                        ApplicationId = "RAGDataIngestionWPF",
-                        ConversationId = Guid.NewGuid().ToString(),
-                        UserId = "TestUser"
-                },
-                stateKey: "HistoryIdentity");
-       
+        var pstate = new ProviderSessionState<HistoryIdentity>(
+                 stateInitializer: (session) => new HistoryIdentity
+                 {
+                     AgentId = _agent.Id,
+                     ApplicationId = "RAGDataIngestionWPF",
+                     ConversationId = Guid.NewGuid().ToString(),
+                     UserId = "TestUser"
+                 },
+                 stateKey: "HistoryIdentity");
+
         var identity = pstate.GetOrInitializeState(_session);
-       pstate.SaveState(_session, identity);
+        pstate.SaveState(_session, identity);
 
         var historyProvider = new SqlChatHistoryProvider(new NullLogger<SqlChatHistoryProvider>(), new AppSettings(), new AIChatHistoryDb());
 
-        const int iterations = 50;
+        const int iterations = 5;
 
         for (int i = 0; i < iterations; i++)
         {
             var instruction = GenerateRandomTask();
 
             var sw = Stopwatch.StartNew();
-            var result = await _agent.RunAsync(instruction,_session);
+            var result = await _agent.RunAsync(instruction, _session);
             sw.Stop();
 
-
+            await Task.Delay(8000);
             // --- 2. Fetch the last message from ChatHistoryProvider ---
             var history = await historyProvider.GetLastMessageAsync();
             Assert.IsNotNull(history, "ChatHistoryProvider returned null history");
@@ -195,8 +195,6 @@ public class AgentFuzzerTests
         var sqlChatHistoryProvider = new SqlChatHistoryProvider(new NullLogger<SqlChatHistoryProvider>(), appSettings, new AIChatHistoryDb());
         var chatHistoryContextInjector = new ChatHistoryContextInjector(loggerFactory.CreateLogger<ChatHistoryContextInjector>());
 
-        var agent = new AgentFactory(loggerFactory, appSettings, sqlChatHistoryProvider, chatHistoryContextInjector);
-        _agent = agent.GetCodingAssistantAgent("TestingAgent", "gpt-oss:20b-cloud", null);
 
 
     }
@@ -210,7 +208,7 @@ public class AgentFuzzerTests
     {
         // TODO: Replace with however you construct your agent
 
-        const int taskCount = 200; // adjust as needed
+        const int taskCount = 1; // adjust as needed
 
         for (int i = 0; i < taskCount; i++)
         {

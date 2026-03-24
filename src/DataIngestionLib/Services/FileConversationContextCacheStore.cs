@@ -9,6 +9,7 @@
 
 using System.Collections.Concurrent;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 using DataIngestionLib.Contracts;
@@ -267,7 +268,8 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
             return [];
         }
 
-        await using FileStream stream = File.OpenRead(filePath);
+        FileStream stream = File.OpenRead(filePath);
+        await using ConfiguredAsyncDisposable stream1 = stream.ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<List<ConversationContextCacheEntry>>(stream, SerializerOptions, cancellationToken).ConfigureAwait(false) ?? [];
     }
 
@@ -302,7 +304,8 @@ public sealed class FileConversationContextCacheStore : IConversationContextCach
         _ = Directory.CreateDirectory(_rootDirectory);
         var filePath = GetFilePath(conversationId);
 
-        await using FileStream stream = File.Create(filePath);
+        FileStream stream = File.Create(filePath);
+        await using ConfiguredAsyncDisposable stream1 = stream.ConfigureAwait(false);
         await JsonSerializer.SerializeAsync(stream, entries, SerializerOptions, cancellationToken).ConfigureAwait(false);
     }
 

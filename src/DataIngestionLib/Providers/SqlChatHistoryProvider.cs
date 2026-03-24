@@ -14,6 +14,7 @@ using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Data;
 using DataIngestionLib.History.HistoryModels;
+using DataIngestionLib.HistoryModels;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services.Contracts;
 
@@ -21,6 +22,8 @@ using Microsoft.Agents.AI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+
+using WebDriverBiDi.Script;
 
 
 
@@ -98,7 +101,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     protected async ValueTask InvokedCoreAsync(InvokedContext context, CancellationToken cancellationToken = default)
     {
       
-        await base.InvokedCoreAsync(context, cancellationToken);
+        await base.InvokedCoreAsync(context, cancellationToken).ConfigureAwait(false);
         //override removed to allow StoreChatHistoryAsync to be called by base InvokedCoreAsync implementation, which ensures that messages are stored even if there is an error during storing (as the error handling is also done in the base implementation).
         //If we override InvokedCoreAsync and don't call base.InvokedCoreAsync, then StoreChatHistoryAsync will not be called if there is an error during storing, which would result in lost chat history messages.
 
@@ -213,63 +216,78 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     /// </returns>
     protected override async ValueTask<IEnumerable<ChatMessage>> ProvideChatHistoryAsync(InvokingContext context, CancellationToken cancellationToken = new CancellationToken())
     {
-      
-        
-     var state = _sessionState.GetOrInitializeState(context.Session);
+        var state = _sessionState.GetOrInitializeState(context.Session);
         ArgumentNullException.ThrowIfNull(state);
         
         
         var req = context.RequestMessages.Where(m => m.Role == ChatRole.User);
-        
-  
+        //Search previous chat history based on the current user message and return relevant messages.
+        //This is a lightweight enhancement, but one of the most important to giving the end user a very
+        //human like conversation experience. The agent appears to to remember previous topics of conversation.
+        // The seach pattern here is a multi-stage broad net to a semantically fine-tuned and ranked result set.
+         var res =await SearchChatHistory(req.First().Text).ConfigureAwait(false);
 
-     //   var m= req.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory); // Process each request message if needed
-            
-  //      _logger.LogTrace($"Request messages in providechathistory  {msg.Text}");
-        
-        
+   
+         var msg = res.ToChatMessages();
+         
+         var historyMessages = await GetMessagesAsync(state, cancellationToken).ConfigureAwait(false);
 
-    //    var res = SearchChatHistory(msg.Text);
+         // Filter out messages that are already present in context.RequestMessages
+         var uniqueHistoryMessages = historyMessages.Where(hm => !context.RequestMessages.Any(rm => rm.MessageId == hm.MessageId.ToString("D")));
 
-        await Task.CompletedTask;
-        return req;
+         // Convert to ChatMessage and add source type
+         var chatHistoryMessages = uniqueHistoryMessages.Select(hm =>
+                 {
+                     var chatMessage = hm.ToChatMessage();
+                     // Use the MessageId of the persisted message as the source ID
+                     return chatMessage.WithAgentRequestMessageSource(AgentRequestMessageSourceType.ChatHistory, hm.MessageId.ToString("D"));
+                 })
+                 .ToList();
+
+         // Add the search results to the history
+         chatHistoryMessages.AddRange(msg);
+
+         return chatHistoryMessages.OrderBy(m => m.CreatedAt ?? DateTimeOffset.MinValue);
+         
+
+
+
+
 
     }
 
+    
 
-
-
-
-
-
-
-    internal string SearchChatHistory(string query)
+    internal async Task<List<ChatHistoryMessage>> SearchChatHistory(string query)
     {
-        /*
-
+        var hybrid = new HybridSearch();
         using var db = new AIChatHistoryDb();
+        hybrid.SearchPhrase=query;
+        
+        var task =await Utils.Vectorizer.ToVector(hybrid).ConfigureAwait(false);
+       
 
-        // Example query vector
-        float[] queryVector = new float[] { 0.10f, 0.95f};
-
-        var results = db.Documents
-                .OrderBy(d => EF.Functions.VectorDistance(d.Embedding, queryVector))
-                .Take(5)
-                .ToList();
-
-        foreach (var doc in results)
-        {
-            Console.WriteLine($"{doc.Id}: {doc.Content}");
-        }
-        */
-        return string.Empty;
+       var results= db.ChatHistoryMessages.FromSqlInterpolated($"EXEC sp_Search_Hybrid @Query={hybrid.SearchPhrase}, @Embedding={hybrid.VectorQuery}");
+       
+       return results.ToList();
+       
+        
+     
     }
-    
-    
-    
-    
-    
 
+
+
+
+
+
+
+
+    public class HybridSearch
+    {
+        public string SearchPhrase { get; set; }
+        
+        public string VectorQuery { get; set; }
+    }
 
     
 
@@ -712,7 +730,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         List<ChatMessage> historyContextMessages = [];
 
 
-        List<PersistedChatMessage> persistedMessages = new List<PersistedChatMessage>(); // = await GetMessagesAsync(cancellationToken).ConfigureAwait(false);
+        List<PersistedChatMessage> persistedMessages = new List<PersistedChatMessage>(); 
         if (persistedMessages.Count == 0)
         {
             return historyContextMessages;

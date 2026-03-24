@@ -30,4 +30,6 @@ public record AIModels
 
     /// <summary>MixedBread AI large embedding model (<c>mxbai-embed-large</c>) served through Ollama.</summary>
     public const string MXBAI = "mxbai-embed-large:latest";
+    
+    public const string BGE_RERANKER = "bbjson/bge-reranker-base:latest";
 }

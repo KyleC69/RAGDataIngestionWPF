@@ -8,6 +8,7 @@
 
 
 using Microsoft.Data.SqlTypes;
+using Microsoft.Extensions.AI;
 
 
 
@@ -45,4 +46,13 @@ public class ChatHistoryMessage
     public DateTimeOffset TimestampUtc { get; set; }
 
     public string UserId { get; set; } = null!;
+
+
+
+
+
+
 }
+
+
+    

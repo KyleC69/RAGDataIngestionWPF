@@ -141,7 +141,7 @@ public sealed class ChatHistoryContextInjector : AIContextProvider
 
         _logger.LogTrace("Call from ProvideAIContextAsync in ChatHistoryContextInjector: MessageID {MessageId} ConversationID {ConversationId}", messageId, conversationId);
 
-        return base.ProvideAIContextAsync(context, cancellationToken);
+        return new ValueTask<AIContext>(context.AIContext);
     }
 
 

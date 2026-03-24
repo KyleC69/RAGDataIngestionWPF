@@ -1,71 +1,65 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
-		<RootNamespace>RAGDataIngestionWPF</RootNamespace>
-		<UseWPF>true</UseWPF>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<AnalysisLevel>none</AnalysisLevel>
-		<LangVersion>latest</LangVersion>
-		<RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
-		<EnableNETAnalyzers>False</EnableNETAnalyzers>
-		<RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
-	</PropertyGroup>
-
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<WarningLevel>7</WarningLevel>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<WarningLevel>7</WarningLevel>
-	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="MahApps.Metro" Version="3.0.0-rc0529" />
-		<PackageReference Include="MdXaml" Version="2.0.0-pre202603081301" />
-		<PackageReference Include="MdXaml.Full" Version="2.0.0-pre202603081301" />
-		<PackageReference Include="MdXaml.Plugins" Version="2.0.0-pre202603081301" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />
-		<PackageReference Include="Markdig" Version="1.0.0" />
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\DataIngestionLib\DataIngestionLib.csproj" />
-		<ProjectReference Include="..\RAGDataIngestionWPF.Core\RAGDataIngestionWPF.Core.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-		<Resource Include="Assets\DefaultIcon.png" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Compile Update="Properties\Resources.Designer.cs">
-			<DesignTime>True</DesignTime>
-			<AutoGen>True</AutoGen>
-			<DependentUpon>Resources.resx</DependentUpon>
-		</Compile>
-		<Compile Update="Properties\Settings.Designer.cs">
-			<DesignTimeSharedInput>True</DesignTimeSharedInput>
-			<AutoGen>True</AutoGen>
-			<DependentUpon>Settings.settings</DependentUpon>
-		</Compile>
-	</ItemGroup>
-
-	<ItemGroup>
-		<EmbeddedResource Update="Properties\Resources.resx">
-			<Generator>PublicResXFileCodeGenerator</Generator>
-			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
-		</EmbeddedResource>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="Properties\Settings.settings">
-			<Generator>PublicSettingsSingleFileGenerator</Generator>
-			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
-		</None>
-	</ItemGroup>
-
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <RootNamespace>RAGDataIngestionWPF</RootNamespace>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AnalysisLevel>none</AnalysisLevel>
+    <LangVersion>latest</LangVersion>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+    <EnableNETAnalyzers>False</EnableNETAnalyzers>
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+    <FileUpgradeFlags>40</FileUpgradeFlags>
+    <UpgradeBackupLocation>F:\_dev_drv_root_\Repos\RAGDataIngestionWPF\Backup\src\RAGDataIngestionWPF\</UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>7</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>7</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="MahApps.Metro" Version="3.0.0-rc0529" />
+    <PackageReference Include="MdXaml" Version="2.0.0-pre202603081301" />
+    <PackageReference Include="MdXaml.Full" Version="2.0.0-pre202603081301" />
+    <PackageReference Include="MdXaml.Plugins" Version="2.0.0-pre202603081301" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />
+    <PackageReference Include="Markdig" Version="1.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DataIngestionLib\DataIngestionLib.csproj" />
+    <ProjectReference Include="..\RAGDataIngestionWPF.Core\RAGDataIngestionWPF.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\DefaultIcon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
 </Project>

@@ -8,8 +8,10 @@
 
 
 using DataIngestionLib.Contracts;
+using DataIngestionLib.Models;
 using DataIngestionLib.Providers;
 using DataIngestionLib.ToolFunctions;
+using DataIngestionLib.Utils;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -39,7 +41,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     private readonly SqlChatHistoryProvider _chatHistoryProvider;
     private readonly ConversationContextCacheRecorder _contextCacheRecorder;
     private readonly ChatHistoryContextInjector _contextInjector;
-    private readonly ILoggerFactory _factory;
+    private static  ILoggerFactory _factory;
     private readonly AIContextRAGInjector _ragContextInjector;
 
     /// <summary>
@@ -56,19 +58,19 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
-    public AgentFactory(ILoggerFactory factory, IAppSettings appSettings, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector)
+    public AgentFactory(ILoggerFactory factory, IAppSettings appSettings, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector, ConversationContextCacheRecorder contextCacheRecorder, AIContextRAGInjector ragContextInjector)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(appSettings);
         ArgumentNullException.ThrowIfNull(chatHistoryProvider);
-    //    ArgumentNullException.ThrowIfNull(contextInjector);
-      //  ArgumentNullException.ThrowIfNull(contextCacheRecorder);
-    ////    ArgumentNullException.ThrowIfNull(ragContextInjector);
+        ArgumentNullException.ThrowIfNull(contextInjector);
+        ArgumentNullException.ThrowIfNull(contextCacheRecorder);
+        ArgumentNullException.ThrowIfNull(ragContextInjector);
 
         _factory = factory;
         _contextInjector = contextInjector;
-     //   _contextCacheRecorder = contextCacheRecorder;
-    //    _ragContextInjector = ragContextInjector;
+       _contextCacheRecorder = contextCacheRecorder;
+       _ragContextInjector = ragContextInjector;
         _chatHistoryProvider = chatHistoryProvider;
         _appSettings = appSettings;
     }
@@ -141,6 +143,67 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
+
+
+    /// <summary>
+    /// Creates and configures an instance of <see cref="LoggingEmbeddingGenerator{TInput, TEmbedding}"/> 
+    /// for generating embeddings using the specified embedding model.
+    /// </summary>
+    /// <remarks>
+    /// The method initializes an <see cref="OllamaApiClient"/> with a predefined URI and model, 
+    /// and wraps it with a <see cref="LoggingEmbeddingGenerator{TInput, TEmbedding}"/> to enable logging.
+    /// </remarks>
+    /// <returns>
+    /// A configured instance of <see cref="LoggingEmbeddingGenerator{TInput, TEmbedding}"/> 
+    /// for generating embeddings.
+    /// </returns>
+    /// <exception cref="UriFormatException">
+    /// Thrown if the predefined URI is invalid.
+    /// </exception>
+    public static LoggingEmbeddingGenerator<string, Embedding<float>> GetEmbeddingClient()
+    {
+        Uri ollamaUri = new Uri("http://127.0.0.1:11434");
+        
+    var vector= new OllamaApiClient(ollamaUri, AIModels.MXBAI);
+   var logger = new LoggingEmbeddingGenerator<string,Embedding<float>>(vector,_factory.CreateLogger<LoggingEmbeddingGenerator<string,Embedding<float>>>());
+   return logger;
+   
+    }
+
+
+
+
+
+
+
+
+    public async Task<AIAgent> GetReRankingAgent()
+    {
+
+
+        Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
+        _innerClient = new OllamaApiClient(ollamaUri, AIModels.BGE_RERANKER);
+        _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
+
+        var agent = _innerClient.AsAIAgent(loggerFactory: _factory);
+
+
+        return agent;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     public void Dispose()
     {

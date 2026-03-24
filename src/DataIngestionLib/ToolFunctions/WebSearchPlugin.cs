@@ -74,14 +74,14 @@ public sealed class WebSearchPlugin
             var jsonBody = JsonSerializer.Serialize(body, WriteOptions);
             request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResult<string>.Fail($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {errorBody}");
             }
 
-            var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
+            var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             string jsonNorm;
             try
             {
@@ -168,16 +168,16 @@ public sealed class WebSearchPlugin
             var jsonBody = JsonSerializer.Serialize(body, WriteOptions);
             request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 return ToolResult<string>.Fail($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {errorBody}");
             }
 
-            var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
+            var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-            var rerankedresponse = await ReRankResults(jsonResponse, cancellationToken);
+            var rerankedresponse = await ReRankResults(jsonResponse, cancellationToken).ConfigureAwait(false);
 
             return rerankedresponse;
 

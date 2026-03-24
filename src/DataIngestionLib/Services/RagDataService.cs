@@ -1,4 +1,4 @@
-// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/21
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         RagDataService.cs
@@ -8,6 +8,7 @@
 
 
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Data;
@@ -49,13 +50,15 @@ public class RagDataService(ILogger<RagDataService> logger) : IRagRetrievalServi
         var commandText = query.Mode == RagSearchMode.FullText ? "EXEC sp_Search_FullText @query, @topK" : "EXEC sp_Search_hybrid @query, @topK";
 
         List<RagSearchResult> results = [];
-        await using SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
+        SqlConnection conn = SqlConnectionFactoryRagKb.CreateConnection();
+        await using ConfiguredAsyncDisposable conn1 = conn.ConfigureAwait(false);
         await using SqlCommand cmd = new(commandText, conn);
         _ = cmd.Parameters.AddWithValue("@query", query.Query);
         _ = cmd.Parameters.AddWithValue("@topK", query.TopK);
 
         await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
-        await using SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await using ConfiguredAsyncDisposable reader1 = reader.ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             results.Add(new RagSearchResult(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), reader.GetDouble(4)));
 

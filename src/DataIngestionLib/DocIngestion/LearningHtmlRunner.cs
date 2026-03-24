@@ -175,16 +175,17 @@ public sealed class LearningHtmlRunner
         List<string> existingUrls = [];
         await using (SqlCommand cmd = new(select, conn))
         {
-            conn.Open();
-            await using (SqlDataReader reader = cmd.ExecuteReader())
+            await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+            SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            await using (reader.ConfigureAwait(false))
             {
-                while (reader.Read()) existingUrls.Add(reader["og_url"].ToString() ?? string.Empty);
+                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false)) existingUrls.Add(reader["og_url"].ToString() ?? string.Empty);
             }
         }
 
         // Filter out URLs that already exist in the database
         crawlList = crawlList.Where(url => !existingUrls.Contains(startingUrl + url)).ToList();
-        using RAGContext db = new();
+        await using RAGContext db = new();
 
         foreach (var pg in crawlList)
         {
@@ -205,8 +206,8 @@ public sealed class LearningHtmlRunner
                 var ogUrl = GetRequiredMetaContent(htmlDoc.DocumentNode, "//meta[@property='og:url']", "OG URL meta tag not found.");
 
 
-                AgentResponse? summary = await SummarizeContent(mainContentNode.InnerText);
-                AgentResponse? keywords = await GenerateKeywords(mainContentNode.InnerText);
+                AgentResponse? summary = await SummarizeContent(mainContentNode.InnerText).ConfigureAwait(false);
+                AgentResponse? keywords = await GenerateKeywords(mainContentNode.InnerText).ConfigureAwait(false);
 
                 RemoteRag rag = new()
                 {
@@ -238,7 +239,7 @@ public sealed class LearningHtmlRunner
 
         }
 
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
 
