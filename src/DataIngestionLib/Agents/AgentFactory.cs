@@ -135,6 +135,31 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
+    public AIAgent GetBasicAIAgent()
+    {
+        Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
+        _innerClient = new OllamaApiClient(ollamaUri, AIModels.LLAMA1_B);
+        _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
+
+        AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
+        {
+            Id = "IngestAgent",
+            Name = "IngestAgent",
+            Description = "Basic AI Agent for ingestion tasks",
+            ChatOptions = new ChatOptions { Temperature = 0.7f, MaxOutputTokens = 10000 }
+        }, loggerFactory: _factory).AsBuilder()
+                .UseLogging(_factory)
+                .Build();
+
+
+        return outer;
+    }
+
+
+
+
+
+
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
@@ -254,5 +279,17 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
         return agent;
+    }
+
+
+
+
+
+
+
+
+    public static IChatClient GetChatClient()
+    {
+        throw new NotImplementedException();
     }
 }

@@ -22,6 +22,10 @@
     <WarningLevel>7</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Converters\MarkdownToFlowDocumentConverter.cs" />
+    <Compile Remove="Helpers\MarkdownFlowDocumentFormatter.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="MahApps.Metro" Version="3.0.0-rc0529" />
     <PackageReference Include="MdXaml" Version="2.0.0-pre202603081301" />

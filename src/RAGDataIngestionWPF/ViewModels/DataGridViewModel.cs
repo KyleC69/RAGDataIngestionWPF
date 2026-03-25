@@ -106,7 +106,16 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
     private async Task StartIngestion()
     {
 
-        await _runner.IngestRemoteKnowledgeSource();
+        try
+        {
+            await _runner.IngestRemoteKnowledgeSource();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+
+
+        }
 
 
 

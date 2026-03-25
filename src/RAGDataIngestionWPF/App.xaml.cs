@@ -58,10 +58,10 @@ public sealed partial class App : Application
 
     private LogLevel _loglevel;
 
-internal static new App Current => (App)Application.Current;
+    internal static new App Current => (App)Application.Current;
 
 
-public static IHost AppHost { get; private set; } = null!;
+    public static IHost AppHost { get; private set; } = null!;
 
 
 
@@ -72,31 +72,31 @@ public static IHost AppHost { get; private set; } = null!;
         PresentationTraceSources.AnimationSource.Switch.Level = SourceLevels.All;
 
         _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel) ? configLevel : LogLevel.Trace;
-       return Host.CreateDefaultBuilder()
-                .ConfigureAppConfiguration(c =>
-                {
+        return Host.CreateDefaultBuilder()
+                 .ConfigureAppConfiguration(c =>
+                 {
 
-                    IConfigurationBuilder unused4 = c.SetBasePath(Environment.CurrentDirectory);
-                })
-                .ConfigureServices(ConfigureServices)
-                .ConfigureLogging(logging =>
-                {
-                    ILoggingBuilder unused3 = logging.AddDebug();
-                    ILoggingBuilder unused2 = logging.AddConsole();
-                    // Set the host-level minimum to Trace so every message reaches
-                    // the dynamic filter below. The LoggingLevelSwitch controls the
-                    // effective minimum at runtime and is user-configurable from the
-                    // Settings page.
-                    logging.AddJsonConsole(options => { options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions { Indented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }; });
-                    ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
-                    ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
-                    logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+                     IConfigurationBuilder unused4 = c.SetBasePath(Environment.CurrentDirectory);
+                 })
+                 .ConfigureServices(ConfigureServices)
+                 .ConfigureLogging(logging =>
+                 {
+                     ILoggingBuilder unused3 = logging.AddDebug();
+                     ILoggingBuilder unused2 = logging.AddConsole();
+                     // Set the host-level minimum to Trace so every message reaches
+                     // the dynamic filter below. The LoggingLevelSwitch controls the
+                     // effective minimum at runtime and is user-configurable from the
+                     // Settings page.
+                     logging.AddJsonConsole(options => { options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions { Indented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }; });
+                     ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
+                     ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
+                     logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
 
 
 
-                
-                })
-                .Build();
+
+                 })
+                 .Build();
     }
 
 
@@ -277,7 +277,8 @@ public static IHost AppHost { get; private set; } = null!;
         };
         // For more information about .NET generic host see  https://docs.microsoft.com/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-3.0
 
-        AppHost = BuildHost();
+        _host = BuildHost();
+        AppHost = _host;
 
         if (ToastNotificationManagerCompat.WasCurrentProcessToastActivated())
         {
