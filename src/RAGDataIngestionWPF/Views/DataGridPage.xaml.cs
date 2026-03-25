@@ -7,6 +7,11 @@
 
 
 
+using RAGDataIngestionWPF.ViewModels;
+
+
+
+
 namespace RAGDataIngestionWPF.Views;
 
 
@@ -15,9 +20,9 @@ namespace RAGDataIngestionWPF.Views;
 
 public sealed partial class DataGridPage
 {
-    public DataGridPage()
+    public DataGridPage(DataGridViewModel viewModel)
     {
         InitializeComponent();
-
+        DataContext = viewModel;
     }
 }

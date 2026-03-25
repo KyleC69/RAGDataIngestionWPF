@@ -110,7 +110,24 @@ public sealed class NavigationService : INavigationService
 
 
 
-
+    /// <summary>
+    /// Navigates to the specified page using the provided page key.
+    /// </summary>
+    /// <param name="pageKey">
+    /// The key that identifies the page to navigate to.
+    /// </param>
+    /// <param name="parameter">
+    /// An optional parameter to pass to the target page. Defaults to <c>null</c>.
+    /// </param>
+    /// <param name="clearNavigation">
+    /// A flag indicating whether to clear the navigation stack. Defaults to <c>false</c>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if navigation to the specified page was successful; otherwise, <c>false</c>.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the page key is invalid or the page cannot be resolved.
+    /// </exception>
     public bool NavigateTo(string pageKey, object parameter = null, bool clearNavigation = false)
     {
         Type pageType = _pageService.GetPageType(pageKey);

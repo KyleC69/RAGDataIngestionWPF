@@ -75,7 +75,6 @@ public sealed partial class ShellViewModel : ObservableObject
     public ObservableCollection<HamburgerMenuItem> MenuItems { get; } =
     [
             new HamburgerMenuGlyphItem { Label = Resources.ShellMainPage, Glyph = "\uE80F", TargetPageType = typeof(MainViewModel) },
-            new HamburgerMenuGlyphItem { Label = Resources.ShellBlankPage, Glyph = "\uE7C3", TargetPageType = typeof(BlankViewModel) },
             new HamburgerMenuGlyphItem { Label = Resources.ShellDataGridPage, Glyph = "\uF0E2", TargetPageType = typeof(DataGridViewModel) },
             new HamburgerMenuGlyphItem { Label = Resources.ShellWebViewPage, Glyph = "\uE774", TargetPageType = typeof(WebViewViewModel) }
     ];

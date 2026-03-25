@@ -55,6 +55,7 @@ public sealed partial class App : Application
 {
     private IHost? _host;
     private bool _isHostStarted;
+    private IAppCancellationTokenProvider? _cancellationProvider;
 
     private LogLevel _loglevel;
 
@@ -214,6 +215,9 @@ public sealed partial class App : Application
             LogUnhandledUiException(logger, e.Exception);
         }
 
+        // Cancel all running operations on app crash
+        _cancellationProvider?.CancelAll();
+
         e.Handled = false;
     }
 
@@ -235,6 +239,9 @@ public sealed partial class App : Application
 
         try
         {
+            // Signal cancellation to all running operations on normal exit
+            _cancellationProvider?.CancelAll();
+
             if (_isHostStarted)
             {
                 await _host.StopAsync();
@@ -254,10 +261,15 @@ public sealed partial class App : Application
         }
         finally
         {
+            // Dispose the cancellation provider
+            if (_cancellationProvider is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+
             _host.Dispose();
             _host = null;
             _isHostStarted = false;
-
         }
     }
 
@@ -279,6 +291,9 @@ public sealed partial class App : Application
 
         _host = BuildHost();
         AppHost = _host;
+
+        // Initialize app-wide cancellation provider from the DI container
+        _cancellationProvider = _host.Services.GetRequiredService<IAppCancellationTokenProvider>();
 
         if (ToastNotificationManagerCompat.WasCurrentProcessToastActivated())
         {
@@ -322,6 +337,9 @@ public sealed partial class App : Application
         _ = services.AddSingleton<IConversationProgressLogService, ConversationProgressLogService>();
         _ = services.AddSingleton<IContextCitationFormatter, ContextCitationFormatter>();
         _ = services.AddSingleton<RagDataService>();
+        _ = services.AddSingleton<IChunkMetadataGenerator, ChunkMetadataGenerator>();
+        _ = services.AddSingleton<DocIngestionPipeline>();
+        _ = services.AddSingleton<SqlTableMaint>();
         _ = services.AddSingleton<IRagQueryExpander, RagQueryExpander>();
         _ = services.AddSingleton<IRagRetrievalService>(provider => provider.GetRequiredService<RagDataService>());
         _ = services.AddSingleton<IConversationHistoryContextOrchestrator, ConversationHistoryContextOrchestrator>();
@@ -347,11 +365,11 @@ public sealed partial class App : Application
     private static void RegisterApplicationServices(IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        _ = services.AddSingleton<IAppCancellationTokenProvider, AppCancellationTokenProvider>();
         _ = services.AddSingleton<IToastNotificationsService, ToastNotificationsService>();
         _ = services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
         _ = services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
         _ = services.AddSingleton<ISystemService, SystemService>();
-        _ = services.AddSingleton<LearningHtmlRunner>();
         _ = services.AddSingleton<IAppSettings, AppSettings>();
         _ = services.AddSingleton<IConversationSessionBootstrapper, ConversationSessionBootstrapper>();
         _ = services.AddSingleton<IConversationHistoryLoader, ConversationHistoryLoader>();
@@ -409,8 +427,6 @@ public sealed partial class App : Application
         _ = services.AddTransient<ShellViewModel>();
         _ = services.AddTransient<MainViewModel>();
         _ = services.AddTransient<MainPage>();
-        _ = services.AddTransient<BlankViewModel>();
-        _ = services.AddTransient<BlankPage>();
         _ = services.AddTransient<DataGridViewModel>();
         _ = services.AddTransient<DataGridPage>();
         _ = services.AddTransient<WebViewViewModel>();
@@ -419,5 +435,6 @@ public sealed partial class App : Application
         _ = services.AddTransient<SettingsPage>();
         _ = services.AddTransient<ILogInWindow, LogInWindow>();
         _ = services.AddTransient<LogInViewModel>();
+
     }
 }

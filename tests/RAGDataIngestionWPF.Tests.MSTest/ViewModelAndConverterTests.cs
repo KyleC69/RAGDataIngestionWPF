@@ -9,8 +9,10 @@
 
 using System.Globalization;
 
+using DataIngestionLib.DocIngestion;
 using DataIngestionLib.ToolFunctions;
 
+using Microsoft.Extensions.Logging;
 using Moq;
 
 using RAGDataIngestionWPF.Contracts.Services;
@@ -55,12 +57,35 @@ public class ViewModelAndConverterTests
     [TestMethod]
     public void DataGridViewModelOnNavigatedToClearsSource()
     {
-        DataGridViewModel viewModel = new();
+        // Create mock dependencies for the view model
+        var mockLogger = new Mock<ILogger<DataGridViewModel>>();
+        var mockCancellationProvider = new Mock<IAppCancellationTokenProvider>();
+        var mockLinkedScope = new Mock<LinkedCancellationTokenScope>();
+
+        // Setup the mock cancellation provider to return a linked scope
+        mockCancellationProvider
+            .Setup(x => x.CreateLinkedScope())
+            .Returns(mockLinkedScope.Object);
+
+        mockLinkedScope
+            .Setup(x => x.Token)
+            .Returns(CancellationToken.None);
+
+        // For this test, we only care about OnNavigatedTo clearing the source,
+        // so we can use a test that doesn't require the full pipeline
+        // Create a minimal test instance without full constructor dependencies
+        var viewModel = new DataGridViewModel();
+        if (viewModel.Source == null)
+        {
+            throw new InvalidOperationException("Source collection should not be null");
+        }
+
         viewModel.Source.Add(new DataIngestionLib.RAGModels.RemoteRag { Title = "t", Description = "d", OgUrl = "u" });
+        Assert.AreEqual(1, viewModel.Source.Count, "Should have one item before OnNavigatedTo");
 
+        // Manually test just the clearing behavior for the parameterless constructor
         viewModel.OnNavigatedTo(null);
-
-        Assert.AreEqual(0, viewModel.Source.Count);
+        Assert.AreEqual(0, viewModel.Source.Count, "Source should be cleared after OnNavigatedTo");
     }
 
 

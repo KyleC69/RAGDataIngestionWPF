@@ -40,7 +40,6 @@ public sealed class PageService : IPageService
     {
         _serviceProvider = serviceProvider;
         Configure<MainViewModel, MainPage>();
-        Configure<BlankViewModel, BlankPage>();
         Configure<DataGridViewModel, DataGridPage>();
         Configure<WebViewViewModel, WebViewPage>();
         Configure<SettingsViewModel, SettingsPage>();
