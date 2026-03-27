@@ -1,11 +1,13 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         DataGridPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 140914
+// Build Num: 073039
 
 
+
+using System.Windows;
 
 using RAGDataIngestionWPF.ViewModels;
 
@@ -24,7 +26,7 @@ public sealed partial class DataGridPage
     {
         InitializeComponent();
         DataContext = viewModel;
-        
+
 #if !SQL
         DisableSQL();
 #endif
@@ -36,14 +38,15 @@ public sealed partial class DataGridPage
 
 
 
+
     /// <summary>
-    /// Disables SQL-related functionality in the UI by disabling specific controls
-    /// such as buttons and enabling a message indicating that SQL is disabled.
+    ///     Disables SQL-related functionality in the UI by disabling specific controls
+    ///     such as buttons and enabling a message indicating that SQL is disabled.
     /// </summary>
     /// <remarks>
-    /// This method is typically used in scenarios where SQL functionality is not available
-    /// or supported, ensuring that users are informed and restricted from interacting
-    /// with SQL-dependent features.
+    ///     This method is typically used in scenarios where SQL functionality is not available
+    ///     or supported, ensuring that users are informed and restricted from interacting
+    ///     with SQL-dependent features.
     /// </remarks>
     private void DisableSQL()
     {
@@ -51,7 +54,7 @@ public sealed partial class DataGridPage
         StartIngestionBtn.IsEnabled = false;
         GenerateBtn.IsEnabled = false;
         CancelBtn.IsEnabled = false;
-        noSqlTb.IsEnabled = true;
+        noSqlTb.Visibility = Visibility.Visible;
 
     }
 }

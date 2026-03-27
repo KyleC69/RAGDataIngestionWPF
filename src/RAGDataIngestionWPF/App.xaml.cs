@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         App.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 140919
+// Build Num: 073042
 
 
 
@@ -53,16 +53,23 @@ namespace RAGDataIngestionWPF;
 
 public sealed partial class App : Application
 {
+    private IAppCancellationTokenProvider? _cancellationProvider;
     private IHost? _host;
     private bool _isHostStarted;
-    private IAppCancellationTokenProvider? _cancellationProvider;
 
     private LogLevel _loglevel;
 
-    internal static new App Current => (App)Application.Current;
-
-
     public static IHost AppHost { get; private set; } = null!;
+
+    internal new static App Current
+    {
+        get { return (App)Application.Current; }
+    }
+
+
+
+
+
 
 
 
@@ -74,30 +81,30 @@ public sealed partial class App : Application
 
         _loglevel = SystemConfigurationManager.AppSettings["MinimumLogLevel"] != null && Enum.TryParse(SystemConfigurationManager.AppSettings["MinimumLogLevel"], true, out LogLevel configLevel) ? configLevel : LogLevel.Trace;
         return Host.CreateDefaultBuilder()
-                 .ConfigureAppConfiguration(c =>
-                 {
+                .ConfigureAppConfiguration(c =>
+                {
 
-                     IConfigurationBuilder unused4 = c.SetBasePath(Environment.CurrentDirectory);
-                 })
-                 .ConfigureServices(ConfigureServices)
-                 .ConfigureLogging(logging =>
-                 {
-                     ILoggingBuilder unused3 = logging.AddDebug();
-                     ILoggingBuilder unused2 = logging.AddConsole();
-                     // Set the host-level minimum to Trace so every message reaches
-                     // the dynamic filter below. The LoggingLevelSwitch controls the
-                     // effective minimum at runtime and is user-configurable from the
-                     // Settings page.
-                     logging.AddJsonConsole(options => { options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions { Indented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }; });
-                     ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
-                     ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
-                     logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
-
-
+                    IConfigurationBuilder unused4 = c.SetBasePath(Environment.CurrentDirectory);
+                })
+                .ConfigureServices(ConfigureServices)
+                .ConfigureLogging(logging =>
+                {
+                    ILoggingBuilder unused3 = logging.AddDebug();
+                    ILoggingBuilder unused2 = logging.AddConsole();
+                    // Set the host-level minimum to Trace so every message reaches
+                    // the dynamic filter below. The LoggingLevelSwitch controls the
+                    // effective minimum at runtime and is user-configurable from the
+                    // Settings page.
+                    logging.AddJsonConsole(options => { options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions { Indented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }; });
+                    ILoggingBuilder unused1 = logging.SetMinimumLevel(_loglevel);
+                    ILoggingBuilder unused = logging.AddFilter((_, level) => level >= _loglevel);
+                    logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
 
 
-                 })
-                 .Build();
+
+
+                })
+                .Build();
     }
 
 

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         WebViewViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 140913
+// Build Num: 073038
 
 
 

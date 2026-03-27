@@ -1,9 +1,9 @@
-// Build Date: 2026/03/24
+// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   DataIngestionLib
 // File:         StartupInventoryTool.cs
 // Author: Kyle L. Crowder
-// Build Num: 133617
+// Build Num: 073016
 
 
 

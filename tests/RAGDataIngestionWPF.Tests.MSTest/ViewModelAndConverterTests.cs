@@ -1,18 +1,18 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ViewModelAndConverterTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 140935
+// Build Num: 073108
 
 
 
 using System.Globalization;
 
-using DataIngestionLib.DocIngestion;
 using DataIngestionLib.ToolFunctions;
 
 using Microsoft.Extensions.Logging;
+
 using Moq;
 
 using RAGDataIngestionWPF.Contracts.Services;
@@ -63,18 +63,14 @@ public class ViewModelAndConverterTests
         var mockLinkedScope = new Mock<LinkedCancellationTokenScope>();
 
         // Setup the mock cancellation provider to return a linked scope
-        mockCancellationProvider
-            .Setup(x => x.CreateLinkedScope())
-            .Returns(mockLinkedScope.Object);
+        mockCancellationProvider.Setup(x => x.CreateLinkedScope()).Returns(mockLinkedScope.Object);
 
-        mockLinkedScope
-            .Setup(x => x.Token)
-            .Returns(CancellationToken.None);
+        mockLinkedScope.Setup(x => x.Token).Returns(CancellationToken.None);
 
         // For this test, we only care about OnNavigatedTo clearing the source,
         // so we can use a test that doesn't require the full pipeline
         // Create a minimal test instance without full constructor dependencies
-        var viewModel = new DataGridViewModel();
+        DataGridViewModel viewModel = new DataGridViewModel();
         if (viewModel.Source == null)
         {
             throw new InvalidOperationException("Source collection should not be null");
@@ -98,7 +94,7 @@ public class ViewModelAndConverterTests
     [TestMethod]
     public void EnumToBooleanConverterConvertBackParsesEnum()
     {
-        EnumToBooleanConverter converter = new() { EnumType = typeof(AppTheme) };
+        EnumToBooleanConverter converter = new EnumToBooleanConverter { EnumType = typeof(AppTheme) };
 
         var result = converter.ConvertBack(true, typeof(AppTheme), nameof(AppTheme.Default), CultureInfo.InvariantCulture);
 
@@ -115,7 +111,7 @@ public class ViewModelAndConverterTests
     [TestMethod]
     public void EnumToBooleanConverterConvertMatchesExpectedEnumValue()
     {
-        EnumToBooleanConverter converter = new() { EnumType = typeof(AppTheme) };
+        EnumToBooleanConverter converter = new EnumToBooleanConverter { EnumType = typeof(AppTheme) };
 
         var result = converter.Convert(AppTheme.Dark, typeof(bool), nameof(AppTheme.Dark), CultureInfo.InvariantCulture);
 
@@ -132,7 +128,7 @@ public class ViewModelAndConverterTests
     [TestMethod]
     public void EnumToBooleanConverterConvertReturnsFalseForMismatchedValue()
     {
-        EnumToBooleanConverter converter = new() { EnumType = typeof(AppTheme) };
+        EnumToBooleanConverter converter = new EnumToBooleanConverter { EnumType = typeof(AppTheme) };
 
         var result = converter.Convert(AppTheme.Light, typeof(bool), nameof(AppTheme.Dark), CultureInfo.InvariantCulture);
 
@@ -149,9 +145,9 @@ public class ViewModelAndConverterTests
     [TestMethod]
     public void LogInViewModelLoginCommandReflectsBusyState()
     {
-        Mock<IIdentityService> identity = new();
+        Mock<IIdentityService> identity = new Mock<IIdentityService>();
         identity.Setup(service => service.LoginAsync()).ReturnsAsync(LoginResultType.Success);
-        LogInViewModel viewModel = new(identity.Object) { IsBusy = true };
+        LogInViewModel viewModel = new LogInViewModel(identity.Object) { IsBusy = true };
 
         Assert.IsFalse(viewModel.LoginCommand.CanExecute(null));
     }
@@ -166,9 +162,9 @@ public class ViewModelAndConverterTests
     [TestMethod]
     public void LogInViewModelLoginSetsStatusMessageForUnauthorized()
     {
-        Mock<IIdentityService> identity = new();
+        Mock<IIdentityService> identity = new Mock<IIdentityService>();
         identity.Setup(service => service.LoginAsync()).ReturnsAsync(LoginResultType.Unauthorized);
-        LogInViewModel viewModel = new(identity.Object);
+        LogInViewModel viewModel = new LogInViewModel(identity.Object);
 
         viewModel.LoginCommand.Execute(null);
 
@@ -188,8 +184,8 @@ public class ViewModelAndConverterTests
     [TestMethod]
     public void WebViewViewModelStateAndCommandsWorkWithoutWebView()
     {
-        Mock<ISystemService> systemService = new();
-        WebViewViewModel viewModel = new(systemService.Object) { Source = "https://contoso.test" };
+        Mock<ISystemService> systemService = new Mock<ISystemService>();
+        WebViewViewModel viewModel = new WebViewViewModel(systemService.Object) { Source = "https://contoso.test" };
 
         Assert.AreEqual("https://contoso.test", viewModel.Source);
 

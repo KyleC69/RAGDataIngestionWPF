@@ -1,9 +1,9 @@
-// Build Date: 2026/03/21
+// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         WindowsDiagnosticsIntegrationTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 141009
+// Build Num: 073109
 
 
 
@@ -257,7 +257,7 @@ public class WindowsDiagnosticsIntegrationTests
     public void ToolBuilderGetAiToolsReturnsExpandedDiagnosticsSurface()
     {
         Type toolBuilderType = Type.GetType("DataIngestionLib.ToolFunctions.ToolBuilder, DataIngestionLib")!;
-        MethodInfo getAiTools = toolBuilderType.GetMethod("GetAiTools", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)!;
+        MethodInfo getAiTools = toolBuilderType.GetMethod("GetAiTools", BindingFlags.Public | BindingFlags.Static)!;
 
         var result = getAiTools.Invoke(null, null)!;
 

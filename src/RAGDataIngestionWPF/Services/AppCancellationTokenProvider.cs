@@ -1,8 +1,11 @@
-// Build Date: 2026/03/25
+// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
-// File:      AppCancellationTokenProvider.cs
-// Purpose:   Implementation of application-wide cancellation token provider
+// File:         AppCancellationTokenProvider.cs
+// Author: Kyle L. Crowder
+// Build Num: 073032
+
+
 
 #nullable enable
 
@@ -10,18 +13,32 @@ using Microsoft.Extensions.Logging;
 
 using RAGDataIngestionWPF.Contracts.Services;
 
+
+
+
 namespace RAGDataIngestionWPF.Services;
 
+
+
+
+
 /// <summary>
-/// Manages application-wide cancellation token lifecycle.
-/// Supports nested/linked cancellation scopes for page, operation, and sub-task granularity.
+///     Manages application-wide cancellation token lifecycle.
+///     Supports nested/linked cancellation scopes for page, operation, and sub-task granularity.
 /// </summary>
 internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvider, IDisposable
 {
+    private readonly object _lock = new object();
     private readonly ILogger<AppCancellationTokenProvider> _logger;
     private CancellationTokenSource _cts;
-    private readonly object _lock = new object();
     private bool _disposed;
+
+
+
+
+
+
+
 
     public AppCancellationTokenProvider(ILogger<AppCancellationTokenProvider> logger)
     {
@@ -29,6 +46,13 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
         _cts = new CancellationTokenSource();
         _logger.LogInformation("AppCancellationTokenProvider initialized.");
     }
+
+
+
+
+
+
+
 
     public CancellationToken Token
     {
@@ -42,6 +66,13 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
         }
     }
 
+
+
+
+
+
+
+
     public LinkedCancellationTokenScope CreateLinkedScope()
     {
         lock (_lock)
@@ -50,6 +81,13 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
             return new LinkedScope(_cts.Token, _logger);
         }
     }
+
+
+
+
+
+
+
 
     public void CancelAll()
     {
@@ -69,6 +107,13 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
         }
     }
 
+
+
+
+
+
+
+
     public void Reset()
     {
         lock (_lock)
@@ -83,6 +128,13 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
             }
         }
     }
+
+
+
+
+
+
+
 
     public void Dispose()
     {
@@ -105,6 +157,13 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
         }
     }
 
+
+
+
+
+
+
+
     private void ThrowIfDisposed()
     {
         if (_disposed)
@@ -113,16 +172,30 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
         }
     }
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Internal implementation of LinkedCancellationTokenScope.
-    /// Allows per-operation cancellation while respecting app-level cancellation.
+    ///     Internal implementation of LinkedCancellationTokenScope.
+    ///     Allows per-operation cancellation while respecting app-level cancellation.
     /// </summary>
     private sealed class LinkedScope : LinkedCancellationTokenScope
     {
         private readonly CancellationToken _appToken;
         private readonly ILogger _logger;
-        private CancellationTokenSource? _linkedCts;
         private bool _disposed;
+        private CancellationTokenSource? _linkedCts;
+
+
+
+
+
+
+
 
         public LinkedScope(CancellationToken appToken, ILogger logger)
         {
@@ -130,6 +203,13 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
             _logger = logger;
             _linkedCts = CancellationTokenSource.CreateLinkedTokenSource(appToken);
         }
+
+
+
+
+
+
+
 
         public CancellationToken Token
         {
@@ -140,6 +220,13 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
             }
         }
 
+
+
+
+
+
+
+
         public void Cancel()
         {
             if (_linkedCts != null && !_linkedCts.IsCancellationRequested)
@@ -148,6 +235,13 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
                 _linkedCts.Cancel();
             }
         }
+
+
+
+
+
+
+
 
         public void Dispose()
         {
@@ -167,6 +261,13 @@ internal sealed class AppCancellationTokenProvider : IAppCancellationTokenProvid
             _linkedCts = null;
             _disposed = true;
         }
+
+
+
+
+
+
+
 
         private void ThrowIfDisposed()
         {

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         ConfigurationAndEdgeCaseServiceTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 140943
+// Build Num: 073048
 
 
 
@@ -31,13 +31,6 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 public class ConfigurationAndEdgeCaseServiceTests
 {
 
-
-
-
-
-
-
-
     [TestMethod]
     public void AppSettingsGetTokenBudgetAggregatesConfiguredBudgets()
     {
@@ -59,7 +52,7 @@ public class ConfigurationAndEdgeCaseServiceTests
             settings.MetaBudget = 50;
             settings.MaximumContext = 900;
 
-            var tokenBudget = settings.GetTokenBudget();
+            TokenBudget tokenBudget = settings.GetTokenBudget();
 
 
             Assert.AreEqual(10, tokenBudget.SessionBudget);
@@ -91,7 +84,7 @@ public class ConfigurationAndEdgeCaseServiceTests
     [TestMethod]
     public void AppSettingsStringSettersNormalizeNullToEmpty()
     {
-        AppSettings settings = new();
+        AppSettings settings = new AppSettings();
         var oldChatModel = settings.ChatModel;
         var oldAgentId = settings.AgentId;
 
@@ -202,12 +195,12 @@ public class ConfigurationAndEdgeCaseServiceTests
     {
         StaTestHelper.Run(() =>
         {
-            Mock<ISystemService> system = new();
-            Mock<IApplicationInfoService> appInfo = new();
+            Mock<ISystemService> system = new Mock<ISystemService>();
+            Mock<IApplicationInfoService> appInfo = new Mock<IApplicationInfoService>();
             appInfo.Setup(service => service.GetVersion()).Returns(new Version(1, 2, 3, 4));
-            Mock<IUserDataService> userData = new();
+            Mock<IUserDataService> userData = new Mock<IUserDataService>();
 
-            SettingsViewModel viewModel = new(system.Object, appInfo.Object, userData.Object);
+            SettingsViewModel viewModel = new SettingsViewModel(system.Object, appInfo.Object, userData.Object);
 
             Exception captured = null;
             try
@@ -233,7 +226,7 @@ public class ConfigurationAndEdgeCaseServiceTests
     [TestMethod]
     public void SystemServiceOpenInWebBrowserWithNullUrlThrows()
     {
-        SystemService service = new();
+        SystemService service = new SystemService();
 
         Exception captured = null;
         try

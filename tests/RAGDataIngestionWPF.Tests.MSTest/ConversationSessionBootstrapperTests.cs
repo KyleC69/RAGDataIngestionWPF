@@ -1,6 +1,13 @@
-#nullable enable
+// Build Date: 2026/03/27
+// Solution: RAGDataIngestionWPF
+// Project:   RAGDataIngestionWPF.Tests.MSTest
+// File:         ConversationSessionBootstrapperTests.cs
+// Author: Kyle L. Crowder
+// Build Num: 073050
 
-using System.Runtime.CompilerServices;
+
+
+#nullable enable
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
@@ -31,6 +38,8 @@ public class ConversationSessionBootstrapperTests
 
 
 
+
+
     [TestMethod]
     public void ConstructorWithNullAppSettingsThrowsArgumentNullException()
     {
@@ -38,22 +47,6 @@ public class ConversationSessionBootstrapperTests
     }
 
 
-
-
-
-
-    [TestMethod]
-    public void ResolveApplicationIdReturnsTrimmedConfiguredValue()
-    {
-        var appSettings = new Mock<IAppSettings>();
-        appSettings.SetupGet(x => x.ApplicationId).Returns("  test-app  ");
-
-        ConversationSessionBootstrapper bootstrapper = new(Mock.Of<IAgentFactory>(), appSettings.Object);
-
-        var applicationId = bootstrapper.ResolveApplicationId();
-
-        Assert.AreEqual("test-app", applicationId);
-    }
 
 
 
@@ -81,22 +74,45 @@ public class ConversationSessionBootstrapperTests
 
 
 
+
+
     [TestMethod]
-    public async Task ResolveStartupConversationIdAsyncUsesLatestConversationIdFromProvider()
+    public void ResolveApplicationIdReturnsTrimmedConfiguredValue()
     {
         var appSettings = new Mock<IAppSettings>();
-        appSettings.SetupGet(x => x.LastConversationId).Returns("settings-conversation");
+        appSettings.SetupGet(x => x.ApplicationId).Returns("  test-app  ");
+
+        ConversationSessionBootstrapper bootstrapper = new(Mock.Of<IAgentFactory>(), appSettings.Object);
+
+        var applicationId = bootstrapper.ResolveApplicationId();
+
+        Assert.AreEqual("test-app", applicationId);
+    }
+
+
+
+
+
+
+
+
+    [TestMethod]
+    public async Task ResolveStartupConversationIdAsyncCreatesNewGuidWhenNoExistingConversationExists()
+    {
+        var appSettings = new Mock<IAppSettings>();
+        appSettings.SetupGet(x => x.LastConversationId).Returns("   ");
 
         var sqlChatHistoryProvider = new Mock<ISQLChatHistoryProvider>();
-        sqlChatHistoryProvider.Setup(x => x.GetLatestConversationIdAsync("agent-1", "user-1", "app-1", It.IsAny<CancellationToken>())).ReturnsAsync("  provider-conversation  ");
+        sqlChatHistoryProvider.Setup(x => x.GetLatestConversationIdAsync("agent-1", "user-1", "app-1", It.IsAny<CancellationToken>())).ReturnsAsync(" ");
 
         ConversationSessionBootstrapper bootstrapper = new(Mock.Of<IAgentFactory>(), appSettings.Object, sqlChatHistoryProvider.Object);
 
         var conversationId = await bootstrapper.ResolveStartupConversationIdAsync("agent-1", "app-1", "user-1", CancellationToken.None);
 
-        Assert.AreEqual("provider-conversation", conversationId);
-        sqlChatHistoryProvider.Verify(x => x.GetLatestConversationIdAsync("agent-1", "user-1", "app-1", It.IsAny<CancellationToken>()), Times.Once);
+        Assert.IsTrue(Guid.TryParseExact(conversationId, "N", out _));
     }
+
+
 
 
 
@@ -124,21 +140,27 @@ public class ConversationSessionBootstrapperTests
 
 
 
+
+
     [TestMethod]
-    public async Task ResolveStartupConversationIdAsyncCreatesNewGuidWhenNoExistingConversationExists()
+    public async Task ResolveStartupConversationIdAsyncUsesLatestConversationIdFromProvider()
     {
         var appSettings = new Mock<IAppSettings>();
-        appSettings.SetupGet(x => x.LastConversationId).Returns("   ");
+        appSettings.SetupGet(x => x.LastConversationId).Returns("settings-conversation");
 
         var sqlChatHistoryProvider = new Mock<ISQLChatHistoryProvider>();
-        sqlChatHistoryProvider.Setup(x => x.GetLatestConversationIdAsync("agent-1", "user-1", "app-1", It.IsAny<CancellationToken>())).ReturnsAsync(" ");
+        sqlChatHistoryProvider.Setup(x => x.GetLatestConversationIdAsync("agent-1", "user-1", "app-1", It.IsAny<CancellationToken>())).ReturnsAsync("  provider-conversation  ");
 
         ConversationSessionBootstrapper bootstrapper = new(Mock.Of<IAgentFactory>(), appSettings.Object, sqlChatHistoryProvider.Object);
 
         var conversationId = await bootstrapper.ResolveStartupConversationIdAsync("agent-1", "app-1", "user-1", CancellationToken.None);
 
-        Assert.IsTrue(Guid.TryParseExact(conversationId, "N", out _));
+        Assert.AreEqual("provider-conversation", conversationId);
+        sqlChatHistoryProvider.Verify(x => x.GetLatestConversationIdAsync("agent-1", "user-1", "app-1", It.IsAny<CancellationToken>()), Times.Once);
     }
+
+
+
 
 
 

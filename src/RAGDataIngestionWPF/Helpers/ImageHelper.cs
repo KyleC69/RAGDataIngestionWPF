@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         ImageHelper.cs
 // Author: Kyle L. Crowder
-// Build Num: 140857
+// Build Num: 073026
 
 
 

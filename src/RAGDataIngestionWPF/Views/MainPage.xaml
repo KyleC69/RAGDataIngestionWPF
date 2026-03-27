@@ -97,16 +97,16 @@
                                 </Border.Style>
                                 <StackPanel>
                                     <TextBlock FontStyle="Italic"
-                                        FontWeight="SemiBold" 
-                                        Text="{Binding Role}" />
+                                               FontWeight="SemiBold"
+                                               Text="{Binding Role}" />
                                     <mdxam:MarkdownScrollViewer x:Name="mdScroller"
                                                                 Margin="0,6,0,0"
                                                                 HorizontalAlignment="Stretch"
                                                                 IsSelectionEnabled="True"
                                                                 BorderBrush="BlanchedAlmond" Markdown="{Binding Text}"
-                                                                MarkdownStyleName="HugaStyleProperty" >
+                                                                MarkdownStyleName="HugaStyleProperty">
                                         <mdxam:MarkdownScrollViewer.Background>
-                                            <SolidColorBrush Color="{DynamicResource MahApps.Colors.Gray9}"/>
+                                            <SolidColorBrush Color="{DynamicResource MahApps.Colors.Gray9}" />
                                         </mdxam:MarkdownScrollViewer.Background>
                                     </mdxam:MarkdownScrollViewer>
                                 </StackPanel>
@@ -192,18 +192,21 @@
                     <TextBox x:Name="UserMsg" Grid.Row="0"
                              Grid.Column="0"
                              MinHeight="82"
-                             Margin="12,0,8,0" 
+                             Margin="12,0,8,0"
                              AcceptsReturn="True"
                              VerticalContentAlignment="Top"
                              KeyDown="UIElement_OnKeyDown"
                              TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto"
-                             Text="{Binding MessageInput, UpdateSourceTrigger=PropertyChanged}" BorderThickness="2,2,2,2">
+                             Text="{Binding MessageInput, UpdateSourceTrigger=PropertyChanged}"
+                             BorderThickness="2,2,2,2">
                         <TextBox.BorderBrush>
-                            <SolidColorBrush Color="{DynamicResource MahApps.Colors.SystemBaseHigh}"/>
+                            <SolidColorBrush Color="{DynamicResource MahApps.Colors.SystemBaseHigh}" />
                         </TextBox.BorderBrush>
                         <TextBox.Background>
-                            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveCaptionTextColorKey}}" Opacity="0.335"/>
+                            <SolidColorBrush
+                                Color="{DynamicResource {x:Static SystemColors.ActiveCaptionTextColorKey}}"
+                                Opacity="0.335" />
                         </TextBox.Background>
                     </TextBox>
 
@@ -212,16 +215,16 @@
                                 Orientation="Vertical">
                         <Button
                             x:Name="SendBtn"
-                            
+
                             Margin="8,0,0,8"
                             MinWidth="96"
                             Command="{Binding SendMessageCommand}"
-                            Content="Send" >
+                            Content="Send">
                             <Button.BorderBrush>
-                                <SolidColorBrush Color="{DynamicResource Theme.PrimaryAccentColor}"/>
+                                <SolidColorBrush Color="{DynamicResource Theme.PrimaryAccentColor}" />
                             </Button.BorderBrush>
                             <Button.Background>
-                                <SolidColorBrush Color="{DynamicResource MahApps.Colors.Accent4}"/>
+                                <SolidColorBrush Color="{DynamicResource MahApps.Colors.Accent4}" />
                             </Button.Background>
                         </Button>
                         <Button
@@ -229,12 +232,12 @@
                             MinWidth="96"
                             IsCancel="True"
                             Command="{Binding CancelMessageCommand}"
-                            Content="Cancel" >
+                            Content="Cancel">
                             <Button.BorderBrush>
-                                <SolidColorBrush Color="{DynamicResource Theme.PrimaryAccentColor}"/>
+                                <SolidColorBrush Color="{DynamicResource Theme.PrimaryAccentColor}" />
                             </Button.BorderBrush>
                             <Button.Background>
-                                <SolidColorBrush Color="{DynamicResource MahApps.Colors.Accent4}"/>
+                                <SolidColorBrush Color="{DynamicResource MahApps.Colors.Accent4}" />
                             </Button.Background>
                         </Button>
                     </StackPanel>

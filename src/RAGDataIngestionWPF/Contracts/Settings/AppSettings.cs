@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         AppSettings.cs
 // Author: Kyle L. Crowder
-// Build Num: 140854
+// Build Num: 073025
 
 
 
@@ -180,15 +180,31 @@ public class AppSettings : IAppSettings
     {
         return new TokenBudget
         {
-            SessionBudget = SessionBudget,
-            SystemBudget = SystemBudget,
-            RAGBudget = RAGBudget,
-            ToolBudget = ToolBudget,
-            MetaBudget = MetaBudget,
-            BudgetTotal = SessionBudget + SystemBudget + RAGBudget + ToolBudget + MetaBudget,
-            MaximumContext = MaximumContext
+                SessionBudget = SessionBudget,
+                SystemBudget = SystemBudget,
+                RAGBudget = RAGBudget,
+                ToolBudget = ToolBudget,
+                MetaBudget = MetaBudget,
+                BudgetTotal = SessionBudget + SystemBudget + RAGBudget + ToolBudget + MetaBudget,
+                MaximumContext = MaximumContext
         };
     }
+
+
+
+
+
+
+
+
+    public bool ResumeLast
+    {
+        get { return GetBool(nameof(ResumeLast)); }
+        set { SetBool(nameof(ResumeLast), value); }
+    }
+
+
+
 
 
 
@@ -198,6 +214,12 @@ public class AppSettings : IAppSettings
     {
         return (bool)Properties.Settings.Default[settingName];
     }
+
+
+
+
+
+
 
 
     private static int GetInt(string settingName)
@@ -237,6 +259,18 @@ public class AppSettings : IAppSettings
 
 
 
+    private void SetBool(string settingName, bool value)
+    {
+        SaveSetting(settingName, value);
+    }
+
+
+
+
+
+
+
+
     private static void SetInt(string settingName, int value)
     {
         SaveSetting(settingName, value);
@@ -252,30 +286,5 @@ public class AppSettings : IAppSettings
     private static void SetString(string settingName, string value)
     {
         SaveSetting(settingName, value ?? string.Empty);
-    }
-
-
-
-
-
-
-
-
-    public bool ResumeLast
-    {
-        get { return GetBool(nameof(ResumeLast)); }
-        set { SetBool(nameof(ResumeLast), value); }
-    }
-
-
-
-
-
-
-
-
-    private void SetBool(string settingName, bool value)
-    {
-        SaveSetting(settingName, value);
     }
 }

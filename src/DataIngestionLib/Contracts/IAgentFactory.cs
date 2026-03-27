@@ -1,9 +1,10 @@
-﻿// Build Date: 2026/03/24
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         IAgentFactory.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 133535
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
 
 
 
@@ -20,5 +21,9 @@ namespace DataIngestionLib.Contracts;
 
 public interface IAgentFactory
 {
+
+    AIAgent GetBasicAIAgent();
+
+
     AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null);
 }

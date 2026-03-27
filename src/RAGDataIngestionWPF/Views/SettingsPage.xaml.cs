@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         SettingsPage.xaml.cs
 // Author: Kyle L. Crowder
-// Build Num: 140915
+// Build Num: 073040
 
 
 

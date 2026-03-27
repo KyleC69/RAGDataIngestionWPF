@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF
 // File:         DataGridViewModel.cs
 // Author: Kyle L. Crowder
-// Build Num: 140906
+// Build Num: 073033
 
 
 
@@ -21,6 +21,9 @@ using Microsoft.Extensions.Logging;
 using RAGDataIngestionWPF.Contracts.Services;
 using RAGDataIngestionWPF.Contracts.ViewModels;
 
+
+
+
 namespace RAGDataIngestionWPF.ViewModels;
 
 
@@ -29,14 +32,14 @@ namespace RAGDataIngestionWPF.ViewModels;
 
 public sealed class DataGridViewModel : ObservableObject, INavigationAware
 {
+    private readonly IAppCancellationTokenProvider _appCancellationProvider;
     private readonly ILogger<DataGridViewModel> _logger;
     private readonly DocIngestionPipeline _runner;
     private readonly SqlTableMaint _sqlTableMaint;
-    private readonly IAppCancellationTokenProvider _appCancellationProvider;
+    private AsyncRelayCommand _cancelOperationsCommand;
+    private AsyncRelayCommand _refreshRemoteRagCommand;
     private LinkedCancellationTokenScope? _pageOperationScope;
     private AsyncRelayCommand _startIngestionCommand;
-    private AsyncRelayCommand _cancelOperationsCommand;
-    private AsyncRelayCommand _generateMetaEmbeddingsCommand;
 
 
 
@@ -76,16 +79,41 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
+    public IAsyncRelayCommand CancelOperationsCommand
+    {
+        get { return _cancelOperationsCommand ??= new AsyncRelayCommand(CancelOperations); }
+    }
+
+    public IAsyncRelayCommand GenerateMetaEmbeddingsCommand
+    {
+        get { return _refreshRemoteRagCommand ??= new AsyncRelayCommand(RefreshRemoteRagSource); }
+    }
+
+
+
+
+
+
+
+
+    private Task RefreshRemoteRagSource(CancellationToken arg)
+    {
+        //Refreshes the remote RAG source records in database by checking web for updates in the source documents.
+        return Task.CompletedTask;
+    }
+
+
+
+
+
+
+
+
     public ObservableCollection<RemoteRag> Source { get; } = [];
 
     public IAsyncRelayCommand StartIngestionCommand
     {
         get { return _startIngestionCommand ??= new AsyncRelayCommand(StartIngestion); }
-    }
-
-    public IAsyncRelayCommand CancelOperationsCommand
-    {
-        get { return _cancelOperationsCommand ??= new AsyncRelayCommand(CancelOperations); }
     }
 
 
@@ -134,13 +162,57 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
+    private async Task CancelOperations()
+    {
+        _logger?.LogInformation("User initiated operation cancellation.");
+        _pageOperationScope?.Cancel();
+
+        // Give the operation a moment to handle the cancellation
+        await Task.Delay(100);
+    }
+
+
+
+
+
+
+
+
+    private async Task GenerateMetaEmbeddings()
+    {
+        try
+        {
+            Guard.IsNotNull(_sqlTableMaint);
+
+            // Use the page-scoped cancellation token if available, otherwise use CancellationToken.None
+            CancellationToken token = _pageOperationScope?.Token ?? CancellationToken.None;
+            MetadataUpdateResult result = await _sqlTableMaint.UpdateMetadataAsync(token);
+            _logger.LogInformation("Metadata update completed. Updated {UpdatedCount} chunk(s); {FailedCount} failed.", result.UpdatedCount, result.FailedCount);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Metadata update was cancelled.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Metadata update failed: {Message}", ex.Message);
+        }
+    }
+
+
+
+
+
+
+
+
     private async Task StartIngestion()
     {
 
         try
         {
             Guard.IsNotNull(_runner);
-            
+
             // Use the page-scoped cancellation token if available, otherwise use CancellationToken.None
             CancellationToken token = _pageOperationScope?.Token ?? CancellationToken.None;
             await _runner.DoIngestionAsync(token);
@@ -159,40 +231,5 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-    }
-
-    public IAsyncRelayCommand GenerateMetaEmbeddingsCommand
-    {
-        get { return _generateMetaEmbeddingsCommand ??= new AsyncRelayCommand(GenerateMetaEmbeddings); }
-    }
-
-    private async Task GenerateMetaEmbeddings()
-    {
-        try
-        {
-            Guard.IsNotNull(_sqlTableMaint);
-            
-            // Use the page-scoped cancellation token if available, otherwise use CancellationToken.None
-            CancellationToken token = _pageOperationScope?.Token ?? CancellationToken.None;
-            MetadataUpdateResult result = await _sqlTableMaint.UpdateMetadataAsync(token);
-            _logger.LogInformation("Metadata update completed. Updated {UpdatedCount} chunk(s); {FailedCount} failed.", result.UpdatedCount, result.FailedCount);
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.LogWarning("Metadata update was cancelled.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Metadata update failed: {Message}", ex.Message);
-        }
-    }
-
-    private async Task CancelOperations()
-    {
-        _logger?.LogInformation("User initiated operation cancellation.");
-        _pageOperationScope?.Cancel();
-        
-        // Give the operation a moment to handle the cancellation
-        await Task.Delay(100);
     }
 }

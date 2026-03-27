@@ -1,9 +1,10 @@
-﻿// Build Date: 2026/03/25
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         DocIngestionPipeline.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 233118
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
 
 
 
@@ -14,7 +15,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using DataIngestionLib.Contracts;
+
+using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
 
@@ -28,32 +33,32 @@ namespace DataIngestionLib.DocIngestion;
 
 public sealed class DocIngestionPipeline
 {
-
+    private readonly IChunkMetadataGenerator _generator;
     private readonly ILoggerFactory? _factory;
     private readonly ILogger<DocIngestionPipeline> _logger;
     private const int MaxIncludeDepth = 8;
-    private const string StartFolder = "e:\\IngestionSource\\docs\\docs\\";
-    private static readonly Regex DirectiveAttributeRegex = new Regex("(?<key>[A-Za-z0-9_-]+)\\s*=\\s*\"(?<value>[^\"]*)\"", RegexOptions.Compiled);
-    private static readonly Regex FencedCodeStartRegex = new Regex(@"^```(?<lang>[^\s`]*)", RegexOptions.Compiled);
+    private const string StartFolder = "e:\\IngestionSource\\docs\\docs\\ai";
+    private static readonly Regex DirectiveAttributeRegex = new("(?<key>[A-Za-z0-9_-]+)\\s*=\\s*\"(?<value>[^\"]*)\"", RegexOptions.Compiled);
+    private static readonly Regex FencedCodeStartRegex = new(@"^```(?<lang>[^\s`]*)", RegexOptions.Compiled);
 
-    private static readonly Regex HeadingRegex = new Regex(@"^(#{1,6})\s+(.*)$", RegexOptions.Compiled);
-    private static readonly Regex HtmlLinkRegex = new Regex(@"<(?<url>https?://[^>]+)>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex MarkdownImageRegex = new Regex(@"!\[(?<text>[^\]]*)\]\((?<url>[^\)]+)\)", RegexOptions.Compiled);
-    private static readonly Regex MarkdownLinkRegex = new Regex(@"\[(?<text>[^\]]+)\]\((?<url>[^\)]+)\)", RegexOptions.Compiled);
-    private static readonly Regex XrefRegex = new Regex(@"<xref:(?<xref>[^>]+)>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-
+    private static readonly Regex HeadingRegex = new(@"^(#{1,6})\s+(.*)$", RegexOptions.Compiled);
+    private static readonly Regex HtmlLinkRegex = new(@"<(?<url>https?://[^>]+)>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex MarkdownImageRegex = new(@"!\[(?<text>[^\]]*)\]\((?<url>[^\)]+)\)", RegexOptions.Compiled);
+    private static readonly Regex MarkdownLinkRegex = new(@"\[(?<text>[^\]]+)\]\((?<url>[^\)]+)\)", RegexOptions.Compiled);
+    private static readonly Regex XrefRegex = new(@"<xref:(?<xref>[^>]+)>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 
 
 
 
 
-    public DocIngestionPipeline(ILoggerFactory factory)
+
+
+    public DocIngestionPipeline(ILoggerFactory factory, IChunkMetadataGenerator generator)
     {
         ArgumentNullException.ThrowIfNull(factory);
-
-
+        ArgumentNullException.ThrowIfNull(generator);
+_generator = generator;
         _factory = factory;
         _logger = _factory.CreateLogger<DocIngestionPipeline>();
     }
@@ -65,13 +70,13 @@ public sealed class DocIngestionPipeline
 
 
 
-    private static IReadOnlyList<ChunkPayload> BuildChunks(string markdownBody)
+    internal static IReadOnlyList<ChunkPayload> BuildChunks(string markdownBody)
     {
         List<ChunkPayload> chunks = [];
         List<(int Level, string Heading)> headingStack = [];
 
         var lines = markdownBody.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
-        StringBuilder prose = new StringBuilder();
+        StringBuilder prose = new();
         var chunkIndex = 0;
 
         for (var i = 0; i < lines.Length; i++)
@@ -86,7 +91,10 @@ public sealed class DocIngestionPipeline
                 var level = headingMatch.Groups[1].Value.Length;
                 var heading = headingMatch.Groups[2].Value.Trim();
 
-                while (headingStack.Count > 0 && headingStack[^1].Level >= level) headingStack.RemoveAt(headingStack.Count - 1);
+                while (headingStack.Count > 0 && headingStack[^1].Level >= level)
+                {
+                    headingStack.RemoveAt(headingStack.Count - 1);
+                }
 
                 headingStack.Add((level, heading));
                 continue;
@@ -141,7 +149,7 @@ public sealed class DocIngestionPipeline
 
     private static string BuildCodeFence(string language, string code)
     {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new();
         _ = builder.Append("```");
         if (!string.IsNullOrWhiteSpace(language))
         {
@@ -175,7 +183,7 @@ public sealed class DocIngestionPipeline
 
     private static string CollectDirectiveText(string[] lines, ref int index)
     {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new();
         var firstLine = lines[index];
         _ = builder.AppendLine(firstLine);
 
@@ -249,13 +257,19 @@ public sealed class DocIngestionPipeline
         foreach (var filePath in markdownFiles)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
+            var existingDocumentHash = await this.GetExistingDocumentHashAsync(filePath, cancellationToken).ConfigureAwait(false);
             try
             {
-                ParsedDocumentPayload parsedDocument = await ParseMarkdownDocumentAsync(filePath, cancellationToken).ConfigureAwait(false);
+                ParsedDocumentPayload parsedDocument = await this.ParseMarkdownDocumentAsync(filePath, cancellationToken).ConfigureAwait(false);
 
-                Guid documentId = await SaveDocumentSqlStubAsync(parsedDocument, cancellationToken).ConfigureAwait(false);
-                await SaveChunksSqlStubAsync(documentId, parsedDocument.Chunks, cancellationToken).ConfigureAwait(false);
+                if(ComputeSha256Hex(parsedDocument.NormalizedMarkdown) == existingDocumentHash)
+                {
+                    _logger.LogInformation("Skipping unchanged document: {FilePath}", filePath);
+                    continue;
+                }
+
+                Guid documentId = await this.SaveDocumentSqlStubAsync(parsedDocument, cancellationToken).ConfigureAwait(false);
+                await this.SaveChunksSqlStubAsync(documentId, parsedDocument.Chunks, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -270,16 +284,25 @@ public sealed class DocIngestionPipeline
         _logger.LogInformation("Markdown ingestion completed.");
     }
 
+    private async Task<string?> GetExistingDocumentHashAsync(string filePath, CancellationToken cancellationToken)
+    {
+        await using SqlConnection connection = await OpenRemoteRagConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlCommand command = new(@"SELECT [content_hash] FROM [dbo].[md_documents] WHERE [file_path] = @file_path", connection);
+        command.Parameters.Add("@file_path", SqlDbType.NVarChar, 512).Value = Truncate(Path.GetRelativePath(StartFolder, filePath), 512);
+        await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var hash= reader.GetString(0);
+            return hash;
+        }
 
+        return null;
 
-
-
-
-
+    }
 
     public Task DoIngestionsAsync()
     {
-        return DoIngestionAsync();
+        return this.DoIngestionAsync();
     }
 
 
@@ -405,6 +428,10 @@ public sealed class DocIngestionPipeline
 
 
 
+
+
+
+
     private static async Task<SqlConnection> OpenRemoteRagConnectionAsync(CancellationToken cancellationToken)
     {
         var connectionString = Environment.GetEnvironmentVariable("REMOTE_RAG");
@@ -413,7 +440,7 @@ public sealed class DocIngestionPipeline
             throw new InvalidOperationException("Environment variable 'REMOTE_RAG' is not set.");
         }
 
-        SqlConnection connection = new SqlConnection(connectionString);
+        SqlConnection connection = new(connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         return connection;
     }
@@ -427,16 +454,13 @@ public sealed class DocIngestionPipeline
 
     private static Dictionary<string, string> ParseDirectiveAttributes(string directiveText)
     {
-        Dictionary<string, string> attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> attributes = new(StringComparer.OrdinalIgnoreCase);
         foreach (Match match in DirectiveAttributeRegex.Matches(directiveText))
         {
             var key = match.Groups["key"].Value;
             var value = match.Groups["value"].Value;
 
-            if (!attributes.ContainsKey(key))
-            {
-                attributes.Add(key, value);
-            }
+            _ = attributes.TryAdd(key, value);
         }
 
         return attributes;
@@ -449,17 +473,17 @@ public sealed class DocIngestionPipeline
 
 
 
-    private async Task<ParsedDocumentPayload> ParseMarkdownDocumentAsync(string filePath, CancellationToken cancellationToken)
+    internal async Task<ParsedDocumentPayload> ParseMarkdownDocumentAsync(string filePath, CancellationToken cancellationToken)
     {
         var rawFileContent = await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
-        var (yamlFrontMatter, markdownBody) = ExtractYamlFrontMatter(rawFileContent);
+        (var yamlFrontMatter, var markdownBody) = ExtractYamlFrontMatter(rawFileContent);
 
-        HashSet<string> includeStack = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var resolvedMarkdown = await ResolveDocFxDirectivesAsync(filePath, markdownBody, includeStack, 0, cancellationToken).ConfigureAwait(false);
+        HashSet<string> includeStack = new(StringComparer.OrdinalIgnoreCase);
+        var resolvedMarkdown = await this.ResolveDocFxDirectivesAsync(filePath, markdownBody, includeStack, 0, cancellationToken).ConfigureAwait(false);
         var normalizedMarkdownBody = FlattenHyperlinks(resolvedMarkdown);
         var normalizedDocument = string.IsNullOrWhiteSpace(yamlFrontMatter) ? normalizedMarkdownBody : $"{yamlFrontMatter}{Environment.NewLine}{Environment.NewLine}{normalizedMarkdownBody}";
 
-        var chunks = BuildChunks(normalizedMarkdownBody);
+        IReadOnlyList<ChunkPayload> chunks = BuildChunks(normalizedMarkdownBody);
 
         var relativePath = Path.GetRelativePath(StartFolder, filePath);
 
@@ -473,19 +497,19 @@ public sealed class DocIngestionPipeline
 
 
 
-    private static (string? title, string? description, string? author, DateTime? msDate, string? msTopic) ParseYamlFields(string yamlFrontMatter)
+    internal static (string? title, string? description, string? author, DateTime? msDate, string? msTopic) ParseYamlFields(string yamlFrontMatter)
     {
         if (string.IsNullOrWhiteSpace(yamlFrontMatter))
         {
             return (null, null, null, null, null);
         }
 
-        Dictionary<string, string> fields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> fields = new(StringComparer.OrdinalIgnoreCase);
         var lines = yamlFrontMatter.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
         foreach (var rawLine in lines)
         {
             var line = rawLine.Trim();
-            if (line.Length == 0 || line == "---" || line.StartsWith("#", StringComparison.Ordinal))
+            if (line.Length == 0 || line == "---" || line.StartsWith('#'))
             {
                 continue;
             }
@@ -499,10 +523,7 @@ public sealed class DocIngestionPipeline
             var key = line[..separatorIndex].Trim();
             var value = line[(separatorIndex + 1)..].Trim().Trim('"', '\'');
 
-            if (!fields.ContainsKey(key))
-            {
-                fields.Add(key, value);
-            }
+            _ = fields.TryAdd(key, value);
         }
 
         DateTime? msDate = null;
@@ -529,9 +550,9 @@ public sealed class DocIngestionPipeline
 
 
 
-    private async Task<string> ResolveCodeDirectiveAsync(string owningFilePath, string directiveText, CancellationToken cancellationToken)
+    internal async Task<string> ResolveCodeDirectiveAsync(string owningFilePath, string directiveText, CancellationToken cancellationToken)
     {
-        var attributes = ParseDirectiveAttributes(directiveText);
+        Dictionary<string, string> attributes = ParseDirectiveAttributes(directiveText);
         if (!attributes.TryGetValue("source", out var sourcePath))
         {
             _logger.LogDebug(":::code directive in {FilePath} does not include source= attribute.", owningFilePath);
@@ -568,7 +589,7 @@ public sealed class DocIngestionPipeline
 
 
 
-    private async Task<string> ResolveDocFxDirectivesAsync(string owningFilePath, string markdown, HashSet<string> includeStack, int depth, CancellationToken cancellationToken)
+    internal async Task<string> ResolveDocFxDirectivesAsync(string owningFilePath, string markdown, HashSet<string> includeStack, int depth, CancellationToken cancellationToken)
     {
         if (depth > MaxIncludeDepth)
         {
@@ -585,7 +606,7 @@ public sealed class DocIngestionPipeline
 
         try
         {
-            StringBuilder output = new StringBuilder();
+            StringBuilder output = new();
             var lines = markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
             var index = 0;
 
@@ -599,7 +620,7 @@ public sealed class DocIngestionPipeline
                 if (trimmed.StartsWith(":::code", StringComparison.OrdinalIgnoreCase))
                 {
                     var directiveText = CollectDirectiveText(lines, ref index);
-                    var codeBlock = await ResolveCodeDirectiveAsync(owningFilePath, directiveText, cancellationToken).ConfigureAwait(false);
+                    var codeBlock = await this.ResolveCodeDirectiveAsync(owningFilePath, directiveText, cancellationToken).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(codeBlock))
                     {
                         _ = output.AppendLine(codeBlock);
@@ -611,7 +632,7 @@ public sealed class DocIngestionPipeline
                 if (trimmed.StartsWith(":::include", StringComparison.OrdinalIgnoreCase))
                 {
                     var directiveText = CollectDirectiveText(lines, ref index);
-                    var includeContent = await ResolveIncludeDirectiveAsync(owningFilePath, directiveText, includeStack, depth + 1, cancellationToken).ConfigureAwait(false);
+                    var includeContent = await this.ResolveIncludeDirectiveAsync(owningFilePath, directiveText, includeStack, depth + 1, cancellationToken).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(includeContent))
                     {
                         _ = output.AppendLine(includeContent);
@@ -639,9 +660,9 @@ public sealed class DocIngestionPipeline
 
 
 
-    private async Task<string> ResolveIncludeDirectiveAsync(string owningFilePath, string directiveText, HashSet<string> includeStack, int depth, CancellationToken cancellationToken)
+    internal async Task<string> ResolveIncludeDirectiveAsync(string owningFilePath, string directiveText, HashSet<string> includeStack, int depth, CancellationToken cancellationToken)
     {
-        var attributes = ParseDirectiveAttributes(directiveText);
+        Dictionary<string, string> attributes = ParseDirectiveAttributes(directiveText);
         if (!attributes.TryGetValue("file", out var includePath) && !attributes.TryGetValue("path", out includePath) && !attributes.TryGetValue("source", out includePath))
         {
             _logger.LogDebug(":::include directive in {FilePath} does not declare file/path/source.", owningFilePath);
@@ -656,7 +677,7 @@ public sealed class DocIngestionPipeline
         }
 
         var includeMarkdown = await File.ReadAllTextAsync(includeAbsolutePath, cancellationToken).ConfigureAwait(false);
-        return await ResolveDocFxDirectivesAsync(includeAbsolutePath, includeMarkdown, includeStack, depth, cancellationToken).ConfigureAwait(false);
+        return await this.ResolveDocFxDirectivesAsync(includeAbsolutePath, includeMarkdown, includeStack, depth, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -666,7 +687,7 @@ public sealed class DocIngestionPipeline
 
 
 
-    private static string ResolveRelativePath(string owningFilePath, string path)
+    internal static string ResolveRelativePath(string owningFilePath, string path)
     {
         if (Path.IsPathRooted(path))
         {
@@ -684,7 +705,7 @@ public sealed class DocIngestionPipeline
 
 
 
-    private async Task SaveChunksSqlStubAsync(Guid documentId, IReadOnlyList<ChunkPayload> chunks, CancellationToken cancellationToken)
+    internal async Task SaveChunksSqlStubAsync(Guid documentId, IReadOnlyList<ChunkPayload> chunks, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -693,13 +714,9 @@ public sealed class DocIngestionPipeline
 
         try
         {
-            await using (SqlCommand deleteCommand = new SqlCommand("DELETE FROM [dbo].[md_document_chunks] WHERE [doc_id] = @doc_id;", connection, transaction))
-            {
-                deleteCommand.Parameters.Add("@doc_id", SqlDbType.UniqueIdentifier).Value = documentId;
-                _ = await deleteCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            }
 
-            await using SqlCommand insertCommand = new SqlCommand(@"
+
+            await using SqlCommand insertCommand = new(@"
 INSERT INTO [dbo].[md_document_chunks]
 (
     [doc_id],
@@ -710,7 +727,11 @@ INSERT INTO [dbo].[md_document_chunks]
     [chunk_type],
     [language],
     [content],
-    [token_count]
+    [content_hash],
+    [token_count],
+[summary],
+[keywords],
+[embeddings]
 )
 VALUES
 (
@@ -722,7 +743,11 @@ VALUES
     @chunk_type,
     @language,
     @content,
-    @token_count
+@content_hash,
+    @token_count,
+@summary,
+@keywords,
+CAST(@embeddings AS vector(1024))
 );", connection, transaction);
 
             _ = insertCommand.Parameters.Add("@doc_id", SqlDbType.UniqueIdentifier);
@@ -733,12 +758,16 @@ VALUES
             _ = insertCommand.Parameters.Add("@chunk_type", SqlDbType.NVarChar, 16);
             _ = insertCommand.Parameters.Add("@language", SqlDbType.NVarChar, 64);
             _ = insertCommand.Parameters.Add("@content", SqlDbType.NVarChar);
+            _ = insertCommand.Parameters.Add("@content_hash", SqlDbType.NVarChar, 64);
             _ = insertCommand.Parameters.Add("@token_count", SqlDbType.Int);
+            _ = insertCommand.Parameters.Add("@summary", SqlDbType.NVarChar);
+            _ = insertCommand.Parameters.Add("@keywords", SqlDbType.NVarChar, 400);
+            _ = insertCommand.Parameters.Add("@embeddings", SqlDbType.NVarChar, -1);
 
             foreach (ChunkPayload chunk in chunks)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
+var metadata = await _generator.GenerateAsync(chunk.Content, cancellationToken).ConfigureAwait(false);
                 insertCommand.Parameters["@doc_id"].Value = documentId;
                 insertCommand.Parameters["@chunk_index"].Value = chunk.ChunkIndex;
                 insertCommand.Parameters["@heading_path"].Value = ToDbValue(Truncate(chunk.HeadingPath, 1024));
@@ -747,7 +776,11 @@ VALUES
                 insertCommand.Parameters["@chunk_type"].Value = Truncate(chunk.ChunkType, 16);
                 insertCommand.Parameters["@language"].Value = ToDbValue(Truncate(chunk.Language, 64));
                 insertCommand.Parameters["@content"].Value = chunk.Content;
+                insertCommand.Parameters["@content_hash"].Value = ComputeSha256Hex(chunk.Content);
                 insertCommand.Parameters["@token_count"].Value = chunk.TokenCount;
+                insertCommand.Parameters["@summary"].Value = metadata.Summary;
+                insertCommand.Parameters["@keywords"].Value = metadata.Keywords;
+                insertCommand.Parameters["@embeddings"].Value = await Utils.Vectorizer.ToVector(chunk.Content).ConfigureAwait(false);
 
                 _ = await insertCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -757,7 +790,6 @@ VALUES
         catch
         {
             await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-            throw;
         }
 
         _logger.LogInformation("Saved markdown chunks: DocumentId={DocumentId}, ChunkCount={ChunkCount}", documentId, chunks.Count);
@@ -770,16 +802,16 @@ VALUES
 
 
 
-    private async Task<Guid> SaveDocumentSqlStubAsync(ParsedDocumentPayload document, CancellationToken cancellationToken)
+    internal async Task<Guid> SaveDocumentSqlStubAsync(ParsedDocumentPayload document, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var (title, description, author, msDate, msTopic) = ParseYamlFields(document.YamlFrontMatter);
+        (var title, var description, var author, DateTime? msDate, var msTopic) = ParseYamlFields(document.YamlFrontMatter);
         var contentHash = ComputeSha256Hex(document.NormalizedMarkdown);
         var wordCount = CountWords(document.NormalizedMarkdown);
 
         await using SqlConnection connection = await OpenRemoteRagConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using SqlCommand command = new SqlCommand(@"
+        await using SqlCommand command = new(@"
 SET NOCOUNT ON;
 
 DECLARE @resolved_doc_id UNIQUEIDENTIFIER;
@@ -877,7 +909,10 @@ SELECT @resolved_doc_id;", connection);
 
 
 
-    private static object ToDbValue<T>(T? value)
+
+
+
+    internal static object ToDbValue<T>(T? value)
     {
         return value is null ? DBNull.Value : value is string stringValue && string.IsNullOrWhiteSpace(stringValue) ? DBNull.Value : value;
     }
@@ -889,7 +924,7 @@ SELECT @resolved_doc_id;", connection);
 
 
 
-    private static string Truncate(string? value, int maxLength)
+    internal static string Truncate(string? value, int maxLength)
     {
         return string.IsNullOrEmpty(value) || value.Length <= maxLength ? value ?? string.Empty : value[..maxLength];
     }
@@ -901,11 +936,12 @@ SELECT @resolved_doc_id;", connection);
 
 
 
-    private sealed record ParsedDocumentPayload(Guid DocumentId, string RelativePath, string FileName, string YamlFrontMatter, string RawMarkdown, string NormalizedMarkdown, IReadOnlyList<ChunkPayload> Chunks);
+
+    internal sealed record ParsedDocumentPayload(Guid DocumentId, string RelativePath, string FileName, string YamlFrontMatter, string RawMarkdown, string NormalizedMarkdown, IReadOnlyList<ChunkPayload> Chunks);
 
 
 
 
 
-    private sealed record ChunkPayload(int ChunkIndex, string Heading, int? HeadingLevel, string HeadingPath, string ChunkType, string? Language, string Content, int TokenCount);
+    internal sealed record ChunkPayload(int ChunkIndex, string Heading, int? HeadingLevel, string HeadingPath, string ChunkType, string? Language, string Content, int TokenCount);
 }

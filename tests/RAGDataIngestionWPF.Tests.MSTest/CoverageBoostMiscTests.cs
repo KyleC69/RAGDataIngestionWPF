@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         CoverageBoostMiscTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 140944
+// Build Num: 073052
 
 
 
@@ -83,10 +83,6 @@ public class CoverageBoostMiscTests
 
 
 
-
-
-
-
     [TestMethod]
     public void MenuItemTemplateSelectorReturnsExpectedTemplateByItemType()
     {
@@ -118,46 +114,46 @@ public class CoverageBoostMiscTests
     {
         User user = new()
         {
-            BusinessPhones = ["+1-555-0100"],
-            DisplayName = "Display",
-            GivenName = "Given",
-            Id = "id-1",
-            JobTitle = "Engineer",
-            Mail = "user@example.com",
-            MobilePhone = "+1-555-0101",
-            OfficeLocation = "HQ",
-            Photo = "photo",
-            PreferredLanguage = "en-US",
-            Surname = "Surname",
-            UserPrincipalName = "upn"
+                BusinessPhones = ["+1-555-0100"],
+                DisplayName = "Display",
+                GivenName = "Given",
+                Id = "id-1",
+                JobTitle = "Engineer",
+                Mail = "user@example.com",
+                MobilePhone = "+1-555-0101",
+                OfficeLocation = "HQ",
+                Photo = "photo",
+                PreferredLanguage = "en-US",
+                Surname = "Surname",
+                UserPrincipalName = "upn"
         };
 
         ChatHistoryMessage message = new()
         {
-            AgentId = "agent",
-            ApplicationId = "app",
-            Content = "content",
-            ConversationId = "conv",
-            CreatedAt = DateTime.Now,
-            Enabled = true,
-            MessageId = Guid.NewGuid(),
-            Metadata = "{\"x\":1}",
-            Role = "assistant",
-            Summary = "summary",
-            TimestampUtc = DateTimeOffset.Now,
-            UserId = "user"
+                AgentId = "agent",
+                ApplicationId = "app",
+                Content = "content",
+                ConversationId = "conv",
+                CreatedAt = DateTime.Now,
+                Enabled = true,
+                MessageId = Guid.NewGuid(),
+                Metadata = "{\"x\":1}",
+                Role = "assistant",
+                Summary = "summary",
+                TimestampUtc = DateTimeOffset.Now,
+                UserId = "user"
         };
 
         ChatHistoryTextChunk chunk = new()
         {
-            ChunkLength = 10,
-            ChunkOffset = 20,
-            ChunkOrder = 1,
-            ChunkRecordId = 7,
-            ChunkSetId = 99,
-            ChunkText = "chunk text",
-            CreatedAt = DateTime.Now,
-            MessageId = Guid.NewGuid()
+                ChunkLength = 10,
+                ChunkOffset = 20,
+                ChunkOrder = 1,
+                ChunkRecordId = 7,
+                ChunkSetId = 99,
+                ChunkText = "chunk text",
+                CreatedAt = DateTime.Now,
+                MessageId = Guid.NewGuid()
         };
 
         Assert.AreEqual("Display", user.DisplayName);

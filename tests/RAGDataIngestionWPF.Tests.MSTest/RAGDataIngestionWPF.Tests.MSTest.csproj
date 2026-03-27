@@ -31,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
     <PackageReference Include="Microsoft.Extensions.AI.Evaluation" Version="10.4.0" />
     <PackageReference Include="Microsoft.Extensions.AI.Evaluation.Quality" Version="10.4.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
@@ -48,5 +49,8 @@
     <ProjectReference Include="..\..\src\DataIngestionLib\DataIngestionLib.csproj" />
     <ProjectReference Include="..\..\src\RAGDataIngestionWPF.Core\RAGDataIngestionWPF.Core.csproj" />
     <ProjectReference Include="..\..\src\RAGDataIngestionWPF\RAGDataIngestionWPF.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Providers\" />
   </ItemGroup>
 </Project>

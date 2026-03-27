@@ -57,8 +57,8 @@ Suggested script order by area:
 10. [AIDataRag/dbo.sp_Generate_Embeddings.StoredProcedure.sql](AIDataRag/dbo.sp_Generate_Embeddings.StoredProcedure.sql)
 11. [AIDataRag/dbo.sp_Update_md_Embeddings.StoredProcedure.sql](AIDataRag/dbo.sp_Update_md_Embeddings.StoredProcedure.sql)
 12. [AIDataRag/dbo.sp_GenerateKeywords.StoredProcedure.sql](AIDataRag/dbo.sp_GenerateKeywords.StoredProcedure.sql)
-13. [AIDataRag/dbo.sp_SafeCalculateRAGScores.StoredProcedure.sql](AIDataRag/dbo.sp_SafeCalculateRAGScores.StoredProcedure.sql)
-14. [AIDataRag/dbo.sp_RecalculateRAGScores.StoredProcedure.sql](AIDataRag/dbo.sp_RecalculateRAGScores.StoredProcedure.sql)
+13. [AIDataRag/dbo.sp_RecalculateRAGScores.StoredProcedure.sql](AIDataRag/dbo.sp_RecalculateRAGScores.StoredProcedure.sql)
+14. [AIDataRag/dbo.sp_SafeCalculateRAGScores.StoredProcedure.sql](AIDataRag/dbo.sp_SafeCalculateRAGScores.StoredProcedure.sql)
 15. [AIDataRag/dbo.Search_Vector.StoredProcedure.sql](AIDataRag/dbo.Search_Vector.StoredProcedure.sql)
 16. [AIDataRag/dbo.Search_FullText.StoredProcedure.sql](AIDataRag/dbo.Search_FullText.StoredProcedure.sql)
 17. [AIDataRag/dbo.Search_SemanticKeyPhrases.StoredProcedure.sql](AIDataRag/dbo.Search_SemanticKeyPhrases.StoredProcedure.sql)
@@ -98,6 +98,35 @@ Use these safeguards when running scripts manually:
 - Apply least-privilege SQL permissions for service accounts executing procedures.
 - Validate external model endpoint reachability and TLS requirements before embedding jobs.
 - After deployment, run smoke tests for table access, embedding generation, and search procedures.
+
+## Stored Procedure Optimization Notes (03/27/2026)
+
+The following safe optimizations were applied to procedure scripts in this repo:
+
+- `AIDataRag/dbo.sp_Generate_Embeddings.StoredProcedure.sql`:
+      - fixed `@Query` from `nvarchar` to `nvarchar(MAX)` to prevent silent single-character truncation
+      - added non-empty input guard before embedding generation
+- `AIDataRag/dbo.sp_GenerateKeywords.StoredProcedure.sql`:
+      - switched local inference endpoint to `http://127.0.0.1:11434/api/generate`
+      - removed debug payload/response resultsets to keep procedure output stable
+      - added dual JSON-path handling (`$.response` and legacy `$.result.response`) and empty-response guard
+- `AIDataRag/dbo.Search_Hybrid.StoredProcedure.sql`:
+      - added guard for missing `@QueryEmbedding`
+      - added fallback when tokenized full-text query is empty
+      - normalized vector scoring when row embeddings are `NULL`
+- `ChatHistory/dbo.sp_GetEmbedding.StoredProcedure.sql`:
+      - changed input to `NVARCHAR(MAX)` and added non-empty input guard
+- `ChatHistory/dbo.sp_GetLastConversationId.StoredProcedure.sql`:
+      - made conversation selection deterministic with stable tie-break ordering
+- `ChatHistory/dbo.sp_GenerateTextChunks.StoredProcedure.sql`:
+      - added duplicate prevention logic for reruns
+      - added inserted-row count output (`ChunksInserted`)
+
+Execution impact:
+
+- Procedure behavior is now stricter for empty inputs (procedures fail fast instead of generating low-quality data).
+- Re-running chunk generation is now idempotent for previously generated chunk sets.
+- Hybrid search behavior is more resilient when full-text tokenization yields no terms or stored embeddings are missing.
 
 ## AIDataRag Scripts
 

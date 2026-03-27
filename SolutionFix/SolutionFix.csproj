@@ -24,4 +24,10 @@
 		<None Include="..\sql\**\*" Link="sql\%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
+
+	<ItemGroup>
+	  <None Remove="..\sql\ChatHistory\dbo.sp_GenerateKeywords.StoredProcedure.sql" />
+	  <None Remove="..\sql\ChatHistory\dbo.sp_GenerateSummary.StoredProcedure.sql" />
+	</ItemGroup>
+
 </Project>

@@ -1,9 +1,9 @@
-﻿// Build Date: 2026/03/21
+﻿// Build Date: 2026/03/27
 // Solution: RAGDataIngestionWPF
 // Project:   RAGDataIngestionWPF.Tests.MSTest
 // File:         PageServiceAndUiTests.cs
 // Author: Kyle L. Crowder
-// Build Num: 140939
+// Build Num: 073101
 
 
 
@@ -27,13 +27,6 @@ namespace RAGDataIngestionWPF.Tests.MSTest;
 [TestClass]
 public class PageServiceAndUiTests
 {
-
-
-
-
-
-
-
 
     [TestMethod]
     public void GetPageCanSurfaceXamlParseFailureWhenUiResourcesAreMissing()

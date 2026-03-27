@@ -17,9 +17,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>7</WarningLevel>
+	  <DefineConstants>$(DefineConstants);SQL</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningLevel>7</WarningLevel>
+	  <DefineConstants>$(DefineConstants);SQL</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Converters\MarkdownToFlowDocumentConverter.cs" />

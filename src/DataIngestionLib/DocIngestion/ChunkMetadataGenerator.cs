@@ -1,10 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/27
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ChunkMetadataGenerator.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
+// Build Num: 072948
 
 
 
@@ -80,8 +79,8 @@ public sealed class ChunkMetadataGenerator : IChunkMetadataGenerator
     public async Task<GeneratedChunkMetadata> GenerateAsync(string chunkContent, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(chunkContent);
-        var keywords = NormalizeKeywords(await this.GenerateKeywordsAsync(chunkContent, cancellationToken).ConfigureAwait(false));
-        var summary = NormalizeSummary(await this.GenerateSummaryAsync(chunkContent, cancellationToken).ConfigureAwait(false));
+        var keywords = NormalizeKeywords(await GenerateKeywordsAsync(chunkContent, cancellationToken).ConfigureAwait(false));
+        var summary = NormalizeSummary(await GenerateSummaryAsync(chunkContent, cancellationToken).ConfigureAwait(false));
 
         return new GeneratedChunkMetadata(keywords, summary);
     }
@@ -116,6 +115,7 @@ public sealed class ChunkMetadataGenerator : IChunkMetadataGenerator
 
             _logger.LogWarning("Response from LLM timed out.");
         }
+
         return string.Empty;
     }
 
@@ -126,7 +126,7 @@ public sealed class ChunkMetadataGenerator : IChunkMetadataGenerator
 
 
 
-    private async Task<string> GenerateKeywordsAsync(string chunkContent, CancellationToken cancellationToken)
+    public async Task<string> GenerateKeywordsAsync(string chunkContent, CancellationToken cancellationToken)
     {
         const string systemPrompt = """
                                     You are a keyword extraction engine. Extract the 5-10 most important keywords from the provided text.
@@ -142,7 +142,7 @@ public sealed class ChunkMetadataGenerator : IChunkMetadataGenerator
                                     Return only the comma-separated keywords. No preamble, no labels.
                                     """;
 
-        return await this.GenerateCompletionAsync(systemPrompt, chunkContent, KeywordOptions, cancellationToken).ConfigureAwait(false);
+        return await GenerateCompletionAsync(systemPrompt, chunkContent, KeywordOptions, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -152,7 +152,7 @@ public sealed class ChunkMetadataGenerator : IChunkMetadataGenerator
 
 
 
-    private async Task<string> GenerateSummaryAsync(string chunkContent, CancellationToken cancellationToken)
+    public async Task<string> GenerateSummaryAsync(string chunkContent, CancellationToken cancellationToken)
     {
         const string systemPrompt = """
                                     You are a summarization engine. Your task is to read the provided text and produce a concise, factual summary.
@@ -168,7 +168,7 @@ public sealed class ChunkMetadataGenerator : IChunkMetadataGenerator
                                     Return only the summary text. No preamble, no labels.
                                     """;
 
-        return await this.GenerateCompletionAsync(systemPrompt, chunkContent, SummaryOptions, cancellationToken).ConfigureAwait(false);
+        return await GenerateCompletionAsync(systemPrompt, chunkContent, SummaryOptions, cancellationToken).ConfigureAwait(false);
     }
 
 

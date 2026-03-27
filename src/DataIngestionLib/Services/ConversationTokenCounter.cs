@@ -1,10 +1,9 @@
-﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
-// Solution: ${File.SolutionName}
-// Project:   ${File.ProjectName}
-// File:         ${File.FileName}
+﻿// Build Date: 2026/03/27
+// Solution: RAGDataIngestionWPF
+// Project:   DataIngestionLib
+// File:         ConversationTokenCounter.cs
 // Author: Kyle L. Crowder
-// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
-//
+// Build Num: 073005
 
 
 
@@ -132,13 +131,11 @@ public sealed class ConversationTokenCounter : IConversationTokenCounter
 
         foreach (var key in keys)
         {
-            foreach ((string? countKey, long countValue) in usageDetails.AdditionalCounts)
-            {
+            foreach (var (countKey, countValue) in usageDetails.AdditionalCounts)
                 if (string.Equals(countKey, key, StringComparison.OrdinalIgnoreCase))
                 {
                     return countValue;
                 }
-            }
         }
 
         return fallback;
