@@ -18,14 +18,14 @@ A WPF desktop application and supporting libraries demonstrates creating Agentic
 
 > **Important Constraints:** This projects intent is to create an Agentic AI using local models as if in an air-gapped environment. As of today there are no libraries that fully implement the Agent Framework with the ability to use a local model by file with tools and tool function calling. I tried many when I started this project including ONNXRuntime and connectors in Semantic Kernel. The only library that I found that could work was OllamaSharp, paired with the Ollama local model server and Caddy to act as reverse proxy for SQL operations. This requires the Ollama server to run locally and for the application to set the endpoint to the local Ollama server. This is the only way I found to use a local model with the Agent Framework and tool function calls it would'nt be Agentic without tools, which is a core requirement for this project.
 
-**Additionally** , this project uses preview features within SQL server 2025 for vector search capabilities and internal functions in preview which include BM25-based ranking and full-text search. This means that the project requires a SQL Server 2025 instance with the appropriate preview features enabled to fully utilize the chat history and retrieval components. SQL Server 2025 is currently in preview and available for download from the Microsoft website. I highly recommend using SSMS for SQL Server management and query editing. Some advanced features and the Vector datatype is not recognized in VS2026s SQL Server Object Explorer, so SSMS is the best tool for working with the database components of this project at this time. I have added a "sql" folder to the solution with some of the scripts used to create the stored procedures and triggers used in the server. SQL2025 features an external LLM model integration which allows an LLM to be called from within a SQL query. This integration mandates that an SSL connection be used for the connection endpoint. I have yet to configure Ollama server to accept SSL connections, so another external dependency on the utility Caddy is required as a reverse proxy to handle SSL communication and translation to the Ollama Server. This is currently a blocker for fully local operation of the project, but I am actively investigating solutions to this issue. I will update the documentation and configuration sections of this README as I make progress on this front.
+**Additionally** , this project uses preview features within SQL server 2025 for vector search capabilities and internal functions in preview which include using external LLM's within SQL in stored procedures. This means that the project requires a SQL Server 2025 instance with the appropriate preview features enabled to fully utilize the chat history and retrieval components. SQL Server 2025 is currently in preview and available for download from the Microsoft website. I highly recommend using SSMS for SQL Server management and query editing. Some advanced features and the Vector datatype are not fully recognized in VS2026s SQL Server Object Explorer.
 
 ---
 
 ## Table of Contents
 
 - [Project Purpose](#project-purpose)
-- [Quick Start - Gotta have it now](#quick-start)
+- [Quick Start - Without SQL](#quick-start)
 - [Documentation](#documentation)
 - [Solution Structure](#solution-structure)
 - [Current Implementation Highlights](#current-implementation-highlights)
@@ -49,8 +49,8 @@ The repository is useful as a reference for wiring together a desktop shell, hos
 
 ## Quick Start
 
-Like most developers I always want to push go and see what happens. If that's you, here are the steps to get the WPF app up and running as quickly as possible:
-There is a compiler symbol 'SQL' that gates all of the SQL Server-dependent code in the project. If you want to run the app without SQL Server, simply remove 'SQL' from the defined compiler symbols in the project settings. This will allow the app to run with in-memory history and context management, but keep in mind that this will limit the agent's ability to retrieve relevant historical context across sessions and remove RAG capabilities that depend on SQL-based retrieval.
+I have gated SQL operation behind a compiler directive to allow the project to build and run without SQL Server, but for the full experience including chat history and RAG context management, SQL Server 2025 is required.
+To run the project without SQL Server, simply ensure that the `SQL` compiler directive is not defined in the project settings. This will allow the application to use in-memory implementations for chat history and context management, enabling you to explore the agent's capabilities without setting up a SQL Server instance.
 
 ## Documentation
 
