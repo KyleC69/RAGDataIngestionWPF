@@ -23,10 +23,10 @@
             <StackPanel Margin="{StaticResource SmallLeftRightMargin}" HorizontalAlignment="Left"
                         Orientation="Horizontal">
                 <StackPanel Orientation="Vertical" Width="250">
-                    <Button Margin="3" Content="Start Ingestion" Height="30" Width="175" FontSize="12"
+                    <Button Margin="3" Content="Start Ingestion" Height="30" Width="175" FontSize="12" Name="StartIngestionBtn"
                             Command="{Binding StartIngestionCommand}" />
-                    <Button Margin="3" Content="Generate Meta/Embeddings" Height="30" Width="175" Command="{Binding GenerateMetaEmbeddingsCommand}" />
-                    <Button Margin="3" Content="Cancel Operations" Height="30" Width="175" FontSize="12" Background="#FFCC0000" Foreground="White"
+                    <Button Margin="3" Content="Generate Meta/Embeddings" Height="30" Width="175" Command="{Binding GenerateMetaEmbeddingsCommand}" Name="GenerateBtn" />
+                    <Button Margin="3" Content="Cancel Operations" Height="30" Width="175" FontSize="12" Background="#FFCC0000" Foreground="White" Name="CancelBtn"
                             Command="{Binding CancelOperationsCommand}" />
                 </StackPanel>
                 <StackPanel Orientation="Vertical" Width="300">
@@ -69,13 +69,14 @@
                                      Text="0" FontSize="14" BorderThickness="0,0,0,0" />
                         </StackPanel>
                     </Border>
+                    <TextBlock Name="noSqlTb" Text="SQL is disabled, some features are unavailable." Foreground="#FFA49999" IsEnabled="False" ></TextBlock>
                 </StackPanel>
                 <StackPanel Orientation="Vertical" Width="250" />
             </StackPanel>
 
         </Grid>
         <Grid Grid.Row="2">
-            <DataGrid
+            <DataGrid Name="RagDataGrid"
                 AutoGenerateColumns="False"
                 GridLinesVisibility="Horizontal"
                 CanUserAddRows="False"

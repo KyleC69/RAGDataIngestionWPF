@@ -1,9 +1,10 @@
-﻿// Build Date: 2026/03/24
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         AIModels.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 133548
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
 
 
 
@@ -32,4 +33,6 @@ public record AIModels
 
     /// <summary>MixedBread AI large embedding model (<c>mxbai-embed-large</c>) served through Ollama.</summary>
     public const string MXBAI = "mxbai-embed-large:latest";
+
+    public const string GEMMA3 = "gemma3:4b-cloud";
 }

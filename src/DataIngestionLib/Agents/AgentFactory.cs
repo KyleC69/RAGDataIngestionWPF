@@ -35,8 +35,9 @@ namespace DataIngestionLib.Agents;
 public sealed class AgentFactory : IAgentFactory, IDisposable
 {
 
-    //
+    //keep track of created agents to prevent duplicate IDs, and to manage their lifecycle if needed
     private readonly Dictionary<string, string> _agents = [];
+    
     private readonly IAppSettings _appSettings;
 
     private readonly SqlChatHistoryProvider _chatHistoryProvider;
@@ -57,7 +58,30 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
-
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AgentFactory"/> class.
+    /// </summary>
+    /// <param name="factory">
+    /// The <see cref="ILoggerFactory"/> instance used for logging.
+    /// </param>
+    /// <param name="appSettings">
+    /// The application settings containing configuration values.
+    /// </param>
+    /// <param name="chatHistoryProvider">
+    /// The provider responsible for managing chat history.
+    /// </param>
+    /// <param name="contextInjector">
+    /// The injector responsible for providing chat history context.
+    /// </param>
+    /// <param name="contextCacheRecorder">
+    /// The recorder responsible for caching conversation contexts.
+    /// </param>
+    /// <param name="ragContextInjector">
+    /// The injector responsible for managing RAG (Retrieval-Augmented Generation) context.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when any of the provided parameters is <c>null</c>.
+    /// </exception>
     public AgentFactory(ILoggerFactory factory, IAppSettings appSettings, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector, ConversationContextCacheRecorder contextCacheRecorder, AIContextRAGInjector ragContextInjector)
     {
         ArgumentNullException.ThrowIfNull(factory);
@@ -78,18 +102,20 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
 
-
-
     /// <summary>
-    ///     Factory method to create a coding assistant agent. The defafult agent is a coding assistant. A different agent can
-    ///     be created by providing different instructions and tools.
+    /// Creates and returns a coding assistant agent configured with the specified parameters.
+    /// Unique agent IDs are enforced to prevent conflicts within the system. The agent is designed to assist with
+    /// diagnosing Windows operating system issues, writing C# code targeting .NET 10.0, and aiding in the development
+    /// of the application and its agent framework. It utilizes a set of tools for gathering information about the
+    /// environment, codebase, and development process, and provides troubleshooting information to help users debug problems effectively.
     /// </summary>
-    /// <param name="agentId"></param>
-    /// <param name="model"></param>
-    /// <param name="agentDescription"></param>
-    /// <param name="instructions"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <param name="agentId">The unique identifier for the agent. Cannot be null.</param>
+    /// <param name="model">The model to be used by the agent. Cannot be null.</param>
+    /// <param name="agentDescription">An optional description of the agent.</param>
+    /// <param name="instructions">Optional instructions for the agent's behavior. If not provided, default instructions will be used.</param>
+    /// <returns>An instance of <see cref="AIAgent"/> configured as a coding assistant.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="agentId"/> or <paramref name="model"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if an agent with the specified <paramref name="agentId"/> already exists.</exception>
     public AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null)
     {
 
@@ -104,6 +130,20 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         Uri ollamaUri = new UriBuilder(_appSettings.OllamaHost) { Port = _appSettings.OllamaPort }.Uri;
         _innerClient = new OllamaApiClient(ollamaUri, model);
         _innerClient = new LoggingChatClient(_innerClient, _factory.CreateLogger<LoggingChatClient>());
+        
+#if !SQL
+ AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
+        {
+            Id = agentId,
+            Name = agentId,
+            Description = agentDescription,
+            ChatOptions = new ChatOptions { Instructions = instructions ?? GetModelInstructions(), Temperature = 0.7f, MaxOutputTokens = 10000, Tools = ToolBuilder.GetReadOnlyAiTools() },
+            ThrowOnChatHistoryProviderConflict = true
+        }, loggerFactory: _factory).AsBuilder()
+                .UseLogging(_factory)
+                .Build();
+
+#else
 
         AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
         {
@@ -125,7 +165,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
         return outer;
-
+#endif
     }
 
 

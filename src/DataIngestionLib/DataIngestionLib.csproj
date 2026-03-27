@@ -5,20 +5,23 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AnalysisLevel>preview</AnalysisLevel>
-    <LangVersion>preview</LangVersion>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <LangVersion>15.0</LangVersion>
 	  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	  <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>8</WarningLevel>
     <IsPublishable>False</IsPublishable>
+    <DefineConstants>$(DefineConstants);SQL</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningLevel>8</WarningLevel>
     <IsPublishable>False</IsPublishable>
+    <DefineConstants>$(DefineConstants);SQL</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +34,13 @@
     <Compile Remove="Models\AIChatHistory.cs" />
     <Compile Remove="Models\ChatHistory.cs" />
 		<Compile Remove="Providers\ExampleUsage.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 

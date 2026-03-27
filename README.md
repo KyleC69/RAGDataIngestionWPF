@@ -12,7 +12,7 @@ Last Update: 3/24/26
 
 A WPF desktop application and supporting libraries demonstrates creating Agentic AI's with Microsoft's Agent Framework using local models, including tool function calling. Due to new framework advancements, it now supports RAG-oriented context handling through middleware components that can manage retrieval, history, and context injection in a flexible way. The current implementation includes a SQL Server-based chat history provider and context injector that can leverage new SQL Server 2025 features for vector search and BM25-based ranking to enhance the agent's retrieval capabilities. The project is designed to be extensible and adaptable, allowing for different configurations of context management and retrieval strategies as needed.
 
-**Hard limit to .Net10 due to system limitations and the target of Windows 10 systems.**
+**Hard limit to .Net10 by design to target Windows 10 at minimum.**
 
 *Status: active development. The current solution targets .NET 10 Windows TFMs and `DataIngestionLib` currently references Microsoft Agent Framework `1.0.0-rc4` packages.*
 
@@ -20,46 +20,17 @@ A WPF desktop application and supporting libraries demonstrates creating Agentic
 
 **Additionally** , this project uses preview features within SQL server 2025 for vector search capabilities and internal functions in preview which include BM25-based ranking and full-text search. This means that the project requires a SQL Server 2025 instance with the appropriate preview features enabled to fully utilize the chat history and retrieval components. SQL Server 2025 is currently in preview and available for download from the Microsoft website. I highly recommend using SSMS for SQL Server management and query editing. Some advanced features and the Vector datatype is not recognized in VS2026s SQL Server Object Explorer, so SSMS is the best tool for working with the database components of this project at this time. I have added a "sql" folder to the solution with some of the scripts used to create the stored procedures and triggers used in the server. SQL2025 features an external LLM model integration which allows an LLM to be called from within a SQL query. This integration mandates that an SSL connection be used for the connection endpoint. I have yet to configure Ollama server to accept SSL connections, so another external dependency on the utility Caddy is required as a reverse proxy to handle SSL communication and translation to the Ollama Server. This is currently a blocker for fully local operation of the project, but I am actively investigating solutions to this issue. I will update the documentation and configuration sections of this README as I make progress on this front.
 
-The use of SQL can easily be removed by changing the agent options that are set in AgentFactory.cs it will then use the in-memory history container built in to the framework.
-
-Existing code:
-
-``` AIAgent outer = new ChatClientAgent(_innerClient, new ChatClientAgentOptions
-                {
-                        Id = agentId,
-                        Name = agentId,
-                        Description = agentDescription,
-                        ChatOptions = new ChatOptions
-                        {
-                                Instructions = instructions ?? GetModelInstructions(),
-                                Temperature = 0.7f,
-                                MaxOutputTokens = 10000,
-                                Tools = ToolBuilder.GetReadOnlyAiTools()
-                        },
-                        AIContextProviders =
-                        [
-                               _contextInjector,
-                          //      _ragContextInjector,
-                           //     _contextCacheRecorder
-                        ],
-                        ThrowOnChatHistoryProviderConflict = true,
-                        ChatHistoryProvider = _chatHistoryProvider
-                }, loggerFactory: _factory).AsBuilder()
-                .UseLogging(_factory)
-                .Build();
-```
-
-Removing the AIContextProviders setting and the ChatHistoryProvider line configures the agent to use the in-memory history and context handling, which is not as powerful but allows the agent to operate without SQL dependencies. The tools will still be available for the agent to call, but the history and context management will be limited to the current session and will not have the enhanced retrieval capabilities provided by the SQL-based implementation.
-
 ---
 
 ## Table of Contents
 
 - [Project Purpose](#project-purpose)
+- [Quick Start - Gotta have it now](#quick-start)
 - [Documentation](#documentation)
 - [Solution Structure](#solution-structure)
 - [Current Implementation Highlights](#current-implementation-highlights)
 - [Technology Stack](#technology-stack)
+- [SQL Server 2025 Dependency](#sql-server-2025-dependency)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
@@ -76,6 +47,11 @@ Removing the AIContextProviders setting and the ChatHistoryProvider line configu
 
 The repository is useful as a reference for wiring together a desktop shell, host-based dependency injection, Microsoft Agent Framework integrations, and a growing set of local Windows diagnostics tools.
 
+## Quick Start
+
+Like most developers I always want to push go and see what happens. If that's you, here are the steps to get the WPF app up and running as quickly as possible:
+There is a compiler symbol 'SQL' that gates all of the SQL Server-dependent code in the project. If you want to run the app without SQL Server, simply remove 'SQL' from the defined compiler symbols in the project settings. This will allow the app to run with in-memory history and context management, but keep in mind that this will limit the agent's ability to retrieve relevant historical context across sessions and remove RAG capabilities that depend on SQL-based retrieval.
+
 ## Documentation
 
 The `docs` folder currently contains these developer-facing entry points:
@@ -86,6 +62,10 @@ The `docs` folder currently contains these developer-facing entry points:
 - [`/docs/ContextManagement.md`](/docs/ContextManagement.md) - context, history, and RAG state model
 - [`/docs/ChangeLog.md`](/docs/ChangeLog.md) - narrative change log for notable repository updates
 - [`/docs/RAG Search Strategy.md`](/docs/RAG%20Search%20Strategy.md) - repository notes about retrieval strategy
+
+The `sql` folder contains SQL scripts used to set up the database components of the solution, including stored procedures, triggers, and table definitions.
+
+- [`/sql/README.md`](/sql/README.md) - important notes on SQL database dependencies, setup, and configuration for the project
 
 Start with the manifest if you want the quickest route to the right document.
 
@@ -100,7 +80,7 @@ RAGDataIngestionWPF/
 │   └── RAGDataIngestionWPF.Core/       # Shared UI infrastructure
 ├── tests/
 │   └── RAGDataIngestionWPF.Tests.MSTest/  # MSTest unit and integration coverage
-└── SolutionFix/                        # Small helper project in the repo
+└── SolutionFix/                        # A no-op project to fix Solution Explorer - Maintains proper visual of solution structure without affecting build or dependencies
 ```
 
 ### Current Projects
@@ -141,6 +121,14 @@ The repository currently includes the following observable implementation areas:
 | MVVM Toolkit | CommunityToolkit.Mvvm 8.4.0 |
 | Notifications | Microsoft.Toolkit.Uwp.Notifications 7.1.3 |
 | Testing | MSTest 4.1.0 + Moq 4.20.72 |
+
+## SQL Server 2025 Dependency
+
+The repository's chat history and RAG context management components currently depend on SQL Server 2025 for enhanced retrieval capabilities. This includes the use of vector search features, BM25-based ranking, and full-text search to provide more relevant context to the agent during conversations. The SQL-based implementation allows for persistent chat history storage, advanced retrieval strategies, and the ability to leverage SQL Server's performance optimizations for handling large volumes of conversational data.
+
+SQL Server dependency can be easily removed by removing the SQL-based provider and context injector from the agent configuration, which will cause the agent to fall back to in-memory history and context management. However, this will limit the agent's ability to retrieve relevant historical context across sessions and reduce the overall effectiveness of the RAG strategy. For rapid out of the box operation, the in-memory configuration allows the agent to operate without any external dependencies, but for a more robust and capable implementation, SQL Server 2025 is recommended.
+
+For Data Ingestion SQL Server is mandatory as the ingestion workflows are built around SQL-based storage and retrieval of documents and related metadata. The ingestion processes rely on SQL Server's capabilities to manage and query the ingested data effectively, making it a critical component of the overall solution.
 
 ## Prerequisites
 
