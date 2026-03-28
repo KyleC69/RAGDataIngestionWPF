@@ -11,9 +11,7 @@
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
     <EnableNETAnalyzers>False</EnableNETAnalyzers>
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
-    <FileUpgradeFlags>40</FileUpgradeFlags>
-    <UpgradeBackupLocation>F:\_dev_drv_root_\Repos\RAGDataIngestionWPF\Backup\src\RAGDataIngestionWPF\</UpgradeBackupLocation>
-    <OldToolsVersion>2.0</OldToolsVersion>
+
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>7</WarningLevel>
@@ -34,7 +32,7 @@
     <PackageReference Include="MdXaml.Full" Version="2.0.0-pre202603081301" />
     <PackageReference Include="MdXaml.Plugins" Version="2.0.0-pre202603081301" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataIngestionLib\DataIngestionLib.csproj" />
