@@ -371,3 +371,5 @@ FodyWeavers.xsd
 /src/DataIngestionLib/Utils/.env
 /src/RAGDataIngestionWPF/Helpers/MarkdownFlowDocumentFormatter.cs
 /src/RAGDataIngestionWPF/Helpers/MarkdownFlowDocumentFormatter.cs
+/src/DataIngestionLib/efpt.config.json
+/src/DataIngestionLib/GlobalSuppressions.cs
