@@ -5,72 +5,54 @@
 // Author: Kyle L. Crowder
 // Build Num: 073058
 
-
-
-using DataIngestionLib.Contracts.Services;
-using DataIngestionLib.Models;
 using DataIngestionLib.Providers;
 
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging.Abstractions;
 
-using Moq;
-
-
-
-
 namespace RAGDataIngestionWPF.Tests.MSTest;
-
-
-
-
 
 [TestClass]
 public class LocalRagContextSourceTests
 {
-
     [TestMethod]
-    public async Task GetContextMessagesReturnsEmptyWhenNoSearchResults()
+    public void SearchSqlRagSourceReturnsEmptyWhenConnectionStringMissing()
     {
-        Mock<IRagContextOrchestrator> orchestrator = new();
-        orchestrator.Setup(x => x.BuildContextMessagesAsync(It.IsAny<IReadOnlyList<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        string? original = Environment.GetEnvironmentVariable("REMOTE_RAG");
 
-        LocalRagContextSource source = new(orchestrator.Object, NullLogger<LocalRagContextSource>.Instance);
+        try
+        {
+            Environment.SetEnvironmentVariable("REMOTE_RAG", null);
+            LocalRagContextSource source = new(NullLogger<AIContextRAGInjector>.Instance);
 
-        var contextMessages = await source.GetContextMessagesAsync([new(ChatRole.User, "question")], null, CancellationToken.None);
+            string[] result = source.SearchSqlRagSource("question");
 
-        Assert.AreEqual(0, contextMessages.Count);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Length);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("REMOTE_RAG", original);
+        }
     }
 
-
-
-
-
-
-
-
     [TestMethod]
-    public async Task GetContextMessagesUsesLatestNonEmptyRequestText()
+    public void SearchSqlRagSourceReturnsEmptyWhenConnectionStringInvalid()
     {
-        Mock<IRagContextOrchestrator> orchestrator = new();
-        orchestrator.Setup(x => x.BuildContextMessagesAsync(It.IsAny<IReadOnlyList<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync([
-                        new ChatMessage(new ChatRole(AIChatRole.RAGContext.Value), "context body")
-                ]);
+        string? original = Environment.GetEnvironmentVariable("REMOTE_RAG");
 
-        LocalRagContextSource source = new(orchestrator.Object, NullLogger<LocalRagContextSource>.Instance);
-        List<ChatMessage> requestMessages =
-        [
-                new(ChatRole.User, "first"),
-                new(ChatRole.Assistant, string.Empty),
-                new(ChatRole.User, "latest question")
-        ];
+        try
+        {
+            Environment.SetEnvironmentVariable("REMOTE_RAG", "Server=invalid;Database=missing;Integrated Security=true;");
+            LocalRagContextSource source = new(NullLogger<AIContextRAGInjector>.Instance);
 
-        var contextMessages = await source.GetContextMessagesAsync(requestMessages, null, CancellationToken.None);
+            string[] result = source.SearchSqlRagSource("latest question");
 
-        Assert.AreEqual(1, contextMessages.Count);
-        Assert.AreEqual(AIChatRole.RAGContext.Value, contextMessages[0].Role.Value);
-        Assert.AreEqual("context body", contextMessages[0].Text);
-        orchestrator.Verify(x => x.BuildContextMessagesAsync(It.Is<IReadOnlyList<ChatMessage>>(messages => messages.Count == 3 && messages[2].Text == "latest question"), It.IsAny<CancellationToken>()), Times.Once);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Length);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("REMOTE_RAG", original);
+        }
     }
 }

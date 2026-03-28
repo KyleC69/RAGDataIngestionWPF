@@ -26,6 +26,8 @@
 
 
 	<ItemGroup>
+	  <None Remove="..\docs\DocumentationConflicts.md" />
+	  <None Remove="..\docs\RAG Search Strategy.md" />
 	  <None Remove="..\sql\ChatHistory\dbo.sp_GenerateKeywords.StoredProcedure.sql" />
 	  <None Remove="..\sql\ChatHistory\dbo.sp_GenerateSummary.StoredProcedure.sql" />
 	</ItemGroup>

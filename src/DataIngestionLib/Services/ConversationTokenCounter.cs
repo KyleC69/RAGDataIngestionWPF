@@ -22,7 +22,7 @@ namespace DataIngestionLib.Services;
 
 
 
-public sealed class ConversationTokenCounter : IConversationTokenCounter
+public sealed class ConversationTokenCounter
 {
     public ConversationTokenSnapshot Calculate(IReadOnlyList<ChatMessage> history, TokenBudget budget, UsageDetails? usageDetails)
     {

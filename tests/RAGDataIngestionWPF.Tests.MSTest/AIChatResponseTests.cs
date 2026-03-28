@@ -65,10 +65,10 @@ public class AgentFuzzerTests
         services.AddScoped<ISQLChatHistoryProvider, SqlChatHistoryProvider>();
         services.AddSingleton<IAppSettings, AppSettings>();
         services.AddSingleton<ChatHistoryContextInjector>();
-        IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
-        IServiceCollection unused4 = services.AddSingleton<IChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
-        IServiceCollection unused5 = services.AddSingleton<ISQLChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
-        _ = services.AddSingleton<IConversationHistoryContextOrchestrator, ConversationHistoryContextOrchestrator>();
+        _ = services.AddSingleton<SqlChatHistoryProvider>();
+        _ = services.AddSingleton<IChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
+        _ = services.AddSingleton<ISQLChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
+        _ = services.AddSingleton<ConversationHistoryContextOrchestrator>();
         services.AddDbContext<AIChatHistoryDb>();
         services.AddDbContext<RAGContext>();
 

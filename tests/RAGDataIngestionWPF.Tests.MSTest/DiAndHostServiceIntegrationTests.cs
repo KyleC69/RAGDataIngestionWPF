@@ -13,6 +13,9 @@ using System.Windows.Controls;
 
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.DocIngestion;
+using DataIngestionLib.Providers;
+using DataIngestionLib.Services;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -97,7 +100,7 @@ public class DiAndHostServiceIntegrationTests
         AssertHasSingleton<IPageService>(services);
         AssertHasSingleton<INavigationService>(services);
         AssertHasSingleton<IUserDataService>(services);
-        AssertHasSingleton<IConversationAgentRunner>(services);
+        AssertHasSingleton<IChatConversationService>(services);
 
         Assert.IsTrue(services.Any(d => d.ServiceType == typeof(IShellWindow) && d.Lifetime == ServiceLifetime.Transient));
         Assert.IsTrue(services.Any(d => d.ServiceType == typeof(ViewModels.MainViewModel) && d.Lifetime == ServiceLifetime.Transient));
@@ -146,15 +149,15 @@ public class DiAndHostServiceIntegrationTests
         AssertHasSingleton<IConversationContextCacheStore>(services);
         AssertHasSingleton<IConversationProgressLogStore>(services);
         AssertHasSingleton<IConversationProgressLogService>(services);
-        AssertHasSingleton<IContextCitationFormatter>(services);
+        AssertHasSingleton<ContextCitationFormatter>(services);
+        AssertHasSingleton<ChunkMetadataGenerator>(services);
         AssertHasSingleton<IRagQueryExpander>(services);
         AssertHasSingleton<IRagRetrievalService>(services);
-        AssertHasSingleton<IConversationHistoryContextOrchestrator>(services);
-        AssertHasSingleton<IRagContextMessageAssembler>(services);
-        AssertHasSingleton<IRagContextSource>(services);
-        Assert.AreEqual(3, services.Count(d => d.ServiceType == typeof(IRagContextSource) && d.Lifetime == ServiceLifetime.Singleton));
-        AssertHasSingleton<DataIngestionLib.Providers.AIContextRAGInjector>(services);
-        AssertHasSingleton<DataIngestionLib.Providers.ConversationContextCacheRecorder>(services);
+        AssertHasSingleton<ConversationHistoryContextOrchestrator>(services);
+        AssertHasSingleton<ConversationCacheContextSource>(services);
+        AssertHasSingleton<ConversationHistoryContextSource>(services);
+        AssertHasSingleton<AIContextRAGInjector>(services);
+        AssertHasSingleton<ConversationContextCacheRecorder>(services);
         AssertHasSingleton<IAgentFactory>(services);
     }
 

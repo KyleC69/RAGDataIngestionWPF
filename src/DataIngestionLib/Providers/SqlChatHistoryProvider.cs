@@ -1,9 +1,10 @@
-﻿// Build Date: 2026/03/27
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         SqlChatHistoryProvider.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 072957
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
 
 
 
@@ -67,7 +68,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         if (_appSettings.ResumeLast)
         {
-            ResumeConversation();
+            this.ResumeConversation();
         }
     }
 
@@ -141,18 +142,18 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         //This is a lightweight enhancement, but one of the most important to giving the end user a very
         //human like conversation experience. The agent appears to to remember previous topics of conversation.
         // The seach pattern here is a multi-stage broad net to a semantically fine-tuned and ranked result set.
-        var res = string.IsNullOrWhiteSpace(req) ? [] : await SearchChatHistory(req).ConfigureAwait(false);
+        List<ChatHistoryMessage> res = string.IsNullOrWhiteSpace(req) ? [] : await this.SearchChatHistory(req).ConfigureAwait(false);
 
 
-        var msg = res.ToChatMessages();
+        IReadOnlyList<ChatMessage> msg = res.ToChatMessages();
 
-        var historyMessages = await GetMessagesAsync(state, cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<PersistedChatMessage> historyMessages = await this.GetMessagesAsync(state, cancellationToken).ConfigureAwait(false);
 
         // Filter out messages that are already present in context.RequestMessages
-        var uniqueHistoryMessages = historyMessages.Where(hm => !context.RequestMessages.Any(rm => rm.MessageId == hm.MessageId.ToString("D")));
+        IEnumerable<PersistedChatMessage> uniqueHistoryMessages = historyMessages.Where(hm => !context.RequestMessages.Any(rm => rm.MessageId == hm.MessageId.ToString("D")));
 
         // Convert to ChatMessage and add source type
-        var chatHistoryMessages = uniqueHistoryMessages.Select(hm =>
+        List<ChatMessage> chatHistoryMessages = uniqueHistoryMessages.Select(hm =>
                 {
                     ChatMessage chatMessage = hm.ToChatMessage();
                     // Use the MessageId of the persisted message as the source ID
@@ -258,8 +259,8 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
             HistoryIdentity state = _sessionState.GetOrInitializeState(context.Session);
 
 
-            var requestMessages = FilterRequestMessages(context.RequestMessages);
-            var responseMessages = GetContextMessages(context, "ResponseMessages");
+            IReadOnlyList<ChatMessage> requestMessages = FilterRequestMessages(context.RequestMessages);
+            IReadOnlyList<ChatMessage> responseMessages = GetContextMessages(context, "ResponseMessages");
 
             if (responseMessages.Count == 0)
             {
@@ -271,7 +272,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
                 return;
             }
 
-            await PersistInteractionAsync(state, requestMessages, responseMessages, cancellationToken).ConfigureAwait(false);
+            await this.PersistInteractionAsync(state, requestMessages, responseMessages, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -337,12 +338,12 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         cancellationToken.ThrowIfCancellationRequested();
 
 
-        ChatHistoryMessage entity = ToEntity(message);
+        ChatHistoryMessage entity = this.ToEntity(message);
 
         _ = await _dbContext.ChatHistoryMessages.AddAsync(entity, cancellationToken).ConfigureAwait(false);
         _ = await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        return ToPersisted(entity);
+        return this.ToPersisted(entity);
     }
 
 
@@ -384,7 +385,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
         ChatHistoryMessage? entity = await _dbContext.ChatHistoryMessages.AsNoTracking().FirstOrDefaultAsync(message => message.MessageId == messageId, cancellationToken).ConfigureAwait(false);
 
-        return entity is null ? null : ToPersisted(entity);
+        return entity is null ? null : this.ToPersisted(entity);
     }
 
 
@@ -428,11 +429,11 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-        var entities = await ordered.OrderBy(message => message.TimestampUtc).ThenBy(message => message.CreatedAt).ToListAsync(cancellationToken).ConfigureAwait(false);
+        List<ChatHistoryMessage> entities = await ordered.OrderBy(message => message.TimestampUtc).ThenBy(message => message.CreatedAt).ToListAsync(cancellationToken).ConfigureAwait(false);
 
 
 
-        var messages = entities.ConvertAll(ToPersisted);
+        List<PersistedChatMessage> messages = entities.ConvertAll(this.ToPersisted);
 
         return messages;
     }
@@ -464,7 +465,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
 
 
-        var filteredMessages = requestMessages.Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType()) && !string.IsNullOrWhiteSpace(message.Text)).ToList();
+        List<ChatMessage> filteredMessages = requestMessages.Where(message => !IgnoredRequestSourceTypes.Contains(message.GetAgentRequestMessageSourceType()) && !string.IsNullOrWhiteSpace(message.Text)).ToList();
 
 
         return filteredMessages;
@@ -554,8 +555,8 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     {
 
         List<ChatHistoryMessage> entities = [];
-        entities.AddRange(ToEntities(requestMessages, state.ConversationId, state.AgentId, state.UserId, state.ApplicationId));
-        entities.AddRange(ToEntities(responseMessages, state.ConversationId, state.AgentId, state.UserId, state.ApplicationId));
+        entities.AddRange(this.ToEntities(requestMessages, state.ConversationId, state.AgentId, state.UserId, state.ApplicationId));
+        entities.AddRange(this.ToEntities(responseMessages, state.ConversationId, state.AgentId, state.UserId, state.ApplicationId));
 
         if (entities.Count == 0)
         {
@@ -606,14 +607,22 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         using AIChatHistoryDb db = new();
         hybrid.SearchPhrase = query;
 
-        hybrid = await Utils.Vectorizer.ToVector(hybrid).ConfigureAwait(false);
+
+        try
+        {
 
 
-        var results = db.ChatHistoryMessages.FromSqlInterpolated($"EXEC sp_Search_Hybrid @Query={hybrid.SearchPhrase}, @Embedding={hybrid.VectorQuery}");
+            IQueryable<ChatHistoryMessage> results = db.ChatHistoryMessages.FromSqlInterpolated($"EXEC sp_Search_FreeText @Query={query}, @TopN=5");
 
-        return results.ToList();
+            return results.ToList();
 
+        }
+        catch (Exception)
+        {
+            _logger.LogError("Error occurred while searching chat history.");
+        }
 
+        return new();
 
     }
 
@@ -673,17 +682,17 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
 
                 entities.Add(new ChatHistoryMessage
                 {
-                        MessageId = messageId,
-                        ConversationId = conversationId,
-                        AgentId = agentId,
-                        UserId = userId,
-                        ApplicationId = applicationId,
-                        Role = RoleToString(message.Role),
-                        Content = message.Text.Trim(),
-                        TimestampUtc = message.CreatedAt ?? DateTimeOffset.Now,
-                        Metadata = SerializeMetadata(message.AdditionalProperties),
-                        CreatedAt = DateTime.Now,
-                        Enabled = true
+                    MessageId = messageId,
+                    ConversationId = conversationId,
+                    AgentId = agentId,
+                    UserId = userId,
+                    ApplicationId = applicationId,
+                    Role = RoleToString(message.Role),
+                    Content = message.Text.Trim(),
+                    TimestampUtc = message.CreatedAt ?? DateTimeOffset.Now,
+                    Metadata = this.SerializeMetadata(message.AdditionalProperties),
+                    CreatedAt = DateTime.Now,
+                    Enabled = true
                 });
             }
         }
@@ -707,17 +716,17 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     {
         return new ChatHistoryMessage
         {
-                MessageId = message.MessageId == Guid.Empty ? Guid.NewGuid() : message.MessageId,
-                ConversationId = message.ConversationId,
-                AgentId = message.AgentId,
-                UserId = message.UserId,
-                ApplicationId = message.ApplicationId,
-                Role = message.Role,
-                Content = message.Content,
-                TimestampUtc = message.TimestampUtc == default ? DateTime.Now : message.TimestampUtc,
-                Metadata = message.Metadata?.RootElement.GetRawText(),
-                CreatedAt = DateTime.Now,
-                Enabled = true
+            MessageId = message.MessageId == Guid.Empty ? Guid.NewGuid() : message.MessageId,
+            ConversationId = message.ConversationId,
+            AgentId = message.AgentId,
+            UserId = message.UserId,
+            ApplicationId = message.ApplicationId,
+            Role = message.Role,
+            Content = message.Content,
+            TimestampUtc = message.TimestampUtc == default ? DateTime.Now : message.TimestampUtc,
+            Metadata = message.Metadata?.RootElement.GetRawText(),
+            CreatedAt = DateTime.Now,
+            Enabled = true
         };
     }
 
@@ -732,15 +741,15 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
     {
         return new PersistedChatMessage
         {
-                MessageId = message.MessageId,
-                ConversationId = message.ConversationId,
-                AgentId = message.AgentId,
-                UserId = message.UserId,
-                ApplicationId = message.ApplicationId,
-                Role = message.Role,
-                Content = message.Content,
-                TimestampUtc = message.TimestampUtc,
-                Metadata = ParseMetadata(message.Metadata, message.MessageId)
+            MessageId = message.MessageId,
+            ConversationId = message.ConversationId,
+            AgentId = message.AgentId,
+            UserId = message.UserId,
+            ApplicationId = message.ApplicationId,
+            Role = message.Role,
+            Content = message.Content,
+            TimestampUtc = message.TimestampUtc,
+            Metadata = this.ParseMetadata(message.Metadata, message.MessageId)
         };
     }
 
@@ -783,7 +792,7 @@ public sealed class SqlChatHistoryProvider : ChatHistoryProvider, ISQLChatHistor
         entity.TimestampUtc = timestampUtc;
 
         _ = await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        return ToPersisted(entity);
+        return this.ToPersisted(entity);
     }
 
 

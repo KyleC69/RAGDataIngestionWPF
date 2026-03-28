@@ -19,7 +19,7 @@ namespace DataIngestionLib.Services;
 
 
 
-public sealed class ConversationBudgetEvaluator : IConversationBudgetEvaluator
+public sealed class ConversationBudgetEvaluator
 {
     public ConversationBudgetEvaluation Evaluate(int contextTokenCount, TokenBudget budget)
     {

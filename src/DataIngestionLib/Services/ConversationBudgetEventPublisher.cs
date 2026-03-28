@@ -18,7 +18,7 @@ namespace DataIngestionLib.Services;
 
 
 
-public sealed class ConversationBudgetEventPublisher : IConversationBudgetEventPublisher
+public sealed class ConversationBudgetEventPublisher
 {
     public void Publish(ConversationBudgetEvaluation evaluation, int contextTokenCount, Action onSessionBudgetExceeded, Action onTokenBudgetExceeded, Action<int> onMaximumContextWarning)
     {

@@ -34,8 +34,7 @@
     <PackageReference Include="MdXaml.Full" Version="2.0.0-pre202603081301" />
     <PackageReference Include="MdXaml.Plugins" Version="2.0.0-pre202603081301" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3848-prerelease" />
-    <PackageReference Include="Markdig" Version="1.0.0" />
+
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataIngestionLib\DataIngestionLib.csproj" />

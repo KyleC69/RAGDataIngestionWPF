@@ -18,7 +18,7 @@ namespace DataIngestionLib.Services;
 
 
 
-public sealed class ChatBusyStateScopeFactory : IChatBusyStateScopeFactory
+public sealed class ChatBusyStateScopeFactory
 {
     public IDisposable Enter(Action<bool> busyStateCallback)
     {

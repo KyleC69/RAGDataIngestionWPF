@@ -1,16 +1,14 @@
-// Build Date: 2026/03/27
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         LocalRagContextSource.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 072955
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
 
 
 
-using DataIngestionLib.Contracts.Services;
-
-using Microsoft.Agents.AI;
-using Microsoft.Extensions.AI;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
 
@@ -22,52 +20,51 @@ namespace DataIngestionLib.Providers;
 
 
 
-public sealed class LocalRagContextSource : IRagContextSource
+public sealed class LocalRagContextSource
 {
-    private readonly ILogger<LocalRagContextSource> _logger;
-    private readonly IRagContextOrchestrator _ragContextOrchestrator;
+    private readonly ILogger<AIContextRAGInjector> _logger;
 
 
-
-
-
-
-
-
-    public LocalRagContextSource(IRagContextOrchestrator ragContextOrchestrator, ILogger<LocalRagContextSource> logger)
+    public LocalRagContextSource(ILogger<AIContextRAGInjector> logger)
     {
-        ArgumentNullException.ThrowIfNull(ragContextOrchestrator);
-        ArgumentNullException.ThrowIfNull(logger);
-
-        _ragContextOrchestrator = ragContextOrchestrator;
         _logger = logger;
     }
 
-
-
-
-
-
-
-
-    public async ValueTask<List<ChatMessage>> GetContextMessagesAsync(List<ChatMessage> requestMessages, AgentSession? session, CancellationToken cancellationToken = default)
+    public string[] SearchSqlRagSource(string message)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(requestMessages);
+        _logger.LogInformation("Searching SQL RAG source for message: {Message}", message);
+        SqlConnection connection = new(Environment.GetEnvironmentVariable("REMOTE_RAG"));
 
+        List<string> results = new();
         try
         {
-            var contextMessages = await _ragContextOrchestrator.BuildContextMessagesAsync(requestMessages, cancellationToken).ConfigureAwait(false);
-            return contextMessages.ToList();
+            SqlCommand cmd = new($"EXEC sp_LearnDocs_Search_Vector @QueryText = {message}");
+            cmd.Connection = connection;
+            connection.Open();
+            SqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                results.Add(reader.GetString(0)); // Assuming the first column contains the result string
+            }
+
+
+            _logger.LogInformation("Found {Count} results.", results.Count);
+            return results.ToArray();
+
         }
-        catch (OperationCanceledException)
+        catch (Exception)
         {
-            throw;
+            _logger.LogError("An error occured searching SQL RAG source.");
+
         }
-        catch (Exception exception)
+        finally
         {
-            _logger.LogWarning(exception, "Failed to build local RAG context.");
-            return [];
+            connection.Close();
+
         }
+        return new string[0];
     }
+
+
+
 }

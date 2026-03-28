@@ -30,7 +30,7 @@ public sealed class SqlTableMaint
 
     private readonly Func<string> _connectionStringProvider;
     private readonly ILogger<SqlTableMaint> _logger;
-    private readonly IChunkMetadataGenerator _metadataGenerator;
+    private readonly ChunkMetadataGenerator _metadataGenerator;
     private const int DefaultBatchSize = 5;
     private const int SqlCommandTimeoutSeconds = 120;
 
@@ -41,7 +41,7 @@ public sealed class SqlTableMaint
 
 
 
-    public SqlTableMaint(IAppSettings appSettings, IChunkMetadataGenerator metadataGenerator, ILogger<SqlTableMaint> logger)
+    public SqlTableMaint(IAppSettings appSettings, ChunkMetadataGenerator metadataGenerator, ILogger<SqlTableMaint> logger)
     {
         ArgumentNullException.ThrowIfNull(appSettings);
         ArgumentNullException.ThrowIfNull(metadataGenerator);
@@ -60,7 +60,7 @@ public sealed class SqlTableMaint
 
 
 
-    internal SqlTableMaint(Func<string> connectionStringProvider, IChunkMetadataGenerator metadataGenerator, ILogger<SqlTableMaint> logger, int batchSize = DefaultBatchSize)
+    internal SqlTableMaint(Func<string> connectionStringProvider, ChunkMetadataGenerator metadataGenerator, ILogger<SqlTableMaint> logger, int batchSize = DefaultBatchSize)
     {
         ArgumentNullException.ThrowIfNull(connectionStringProvider);
         ArgumentNullException.ThrowIfNull(metadataGenerator);

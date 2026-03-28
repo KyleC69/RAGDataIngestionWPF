@@ -41,7 +41,7 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     private readonly IAppSettings _appSettings;
 
     private readonly SqlChatHistoryProvider _chatHistoryProvider;
-    private readonly ChatHistoryContextInjector _contextInjector;
+    private readonly ChatHistoryContextInjector _historyContextInjector;
 
     private bool _disposedValue;
 
@@ -49,6 +49,8 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     ///     Base client that will be decorated with additional functionality using the builder pattern.
     /// </summary>
     private IChatClient? _innerClient;
+
+    private readonly AIContextRAGInjector _ragContextInjector;
 
     private static ILoggerFactory _factory = NullLoggerFactory.Instance;
 
@@ -93,9 +95,10 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
         ArgumentNullException.ThrowIfNull(ragContextInjector);
 
         _factory = factory;
-        _contextInjector = contextInjector;
+        _historyContextInjector = contextInjector;
         _chatHistoryProvider = chatHistoryProvider;
         _appSettings = appSettings;
+        _ragContextInjector = ragContextInjector;
     }
 
 
@@ -170,9 +173,8 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
             },
             AIContextProviders =
                         [
-                                _contextInjector
-                                //      _ragContextInjector,
-                                //     _contextCacheRecorder
+                                _historyContextInjector,
+                                _ragContextInjector
                         ],
             ThrowOnChatHistoryProviderConflict = true,
             ChatHistoryProvider = _chatHistoryProvider

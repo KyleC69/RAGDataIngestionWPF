@@ -1,7 +1,7 @@
----
+﻿---
 
 name: Application Components
-description: high level view of components in application
+description: high level view of UI pages in application
 author: Kyle Crowder
 status: Work in progress
 
@@ -18,17 +18,12 @@ status: Work in progress
 
 ### Main page: ChatConversationService
 
-- Agentic Chat capable of system analysis
-- Includes several tool for system monitoring and editing
-- Displays persisted agent task plans for the active conversation, including plan status, current step, and artifact count.
-- Each chat turn now creates and advances a durable task plan automatically so long-running or cancelled work can be inspected and resumed.
+- Agentic Chat capable of system analysis - Read-only for now, but will be editable in the future.
+- Includes several tool for system monitoring - Read-only for now, but will be editable in the future.
+- Visible token usage and cost tracking for agent conversations. - may move or make it selectable in the future.
 - Chat history persisted to SQL server.
-- Previous tool results and context enhancements are saved in file as cache.
-- Cache is searched first for enhancements in next turn to speed searchs
 - AIContextInjector implementation to use chat history from any conversation, can be restricted by ApplicationID, UserId, AgentID and date or time.
-- AIContextInjector for local sql rag context enrichment. SQL stored procs exist for RAG.
-- Long Agent task plans(planning) are saved and tracked for easy resuming of aborted or hung tasks.
-
+- AIContextInjector for local sql rag context enrichment.
 
 ### Settings page: (Appsettings) SettingsPage.xaml
 
@@ -37,5 +32,4 @@ status: Work in progress
 
 ### System Monitoring
 
-- Features full application monitoring - Future
-- Full audit log of all agent activity for easy tracing and restore
+- System monitoring tools currently in the main page, will be moved to their own page in the future.

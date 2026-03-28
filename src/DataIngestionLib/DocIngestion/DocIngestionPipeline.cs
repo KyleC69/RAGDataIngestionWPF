@@ -16,10 +16,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 using DataIngestionLib.Contracts;
+using DataIngestionLib.Utils;
 
-using Microsoft.Agents.AI;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
 
@@ -33,7 +32,7 @@ namespace DataIngestionLib.DocIngestion;
 
 public sealed class DocIngestionPipeline
 {
-    private readonly IChunkMetadataGenerator _generator;
+    private readonly ChunkMetadataGenerator _generator;
     private readonly ILoggerFactory? _factory;
     private readonly ILogger<DocIngestionPipeline> _logger;
     private const int MaxIncludeDepth = 8;
@@ -45,6 +44,9 @@ public sealed class DocIngestionPipeline
     private static readonly Regex HtmlLinkRegex = new(@"<(?<url>https?://[^>]+)>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex MarkdownImageRegex = new(@"!\[(?<text>[^\]]*)\]\((?<url>[^\)]+)\)", RegexOptions.Compiled);
     private static readonly Regex MarkdownLinkRegex = new(@"\[(?<text>[^\]]+)\]\((?<url>[^\)]+)\)", RegexOptions.Compiled);
+    private static readonly Regex MarkdownEscapeRegex = new(@"\\([\\`*_{}\[\]()#+\-.!|>~])", RegexOptions.Compiled);
+    private static readonly Regex ControlCharacterRegex = new("[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F]", RegexOptions.Compiled);
+    private static readonly Regex WhitespaceRegex = new(@"\s+", RegexOptions.Compiled);
     private static readonly Regex XrefRegex = new(@"<xref:(?<xref>[^>]+)>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 
@@ -54,11 +56,11 @@ public sealed class DocIngestionPipeline
 
 
 
-    public DocIngestionPipeline(ILoggerFactory factory, IChunkMetadataGenerator generator)
+    public DocIngestionPipeline(ILoggerFactory factory, ChunkMetadataGenerator generator)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(generator);
-_generator = generator;
+        _generator = generator;
         _factory = factory;
         _logger = _factory.CreateLogger<DocIngestionPipeline>();
     }
@@ -104,30 +106,11 @@ _generator = generator;
             if (fenceMatch.Success)
             {
                 FlushProseChunk(chunks, prose, headingStack, ref chunkIndex);
-
-                var language = fenceMatch.Groups["lang"].Value.Trim();
-                List<string> codeLines = [];
                 i++;
 
                 while (i < lines.Length && !lines[i].StartsWith("```", StringComparison.Ordinal))
                 {
-                    codeLines.Add(lines[i]);
                     i++;
-                }
-
-                if (codeLines.Count > 1)
-                {
-                    var codeBlock = string.Join(Environment.NewLine, codeLines).Trim();
-                    if (!string.IsNullOrWhiteSpace(codeBlock))
-                    {
-                        var headingPath = BuildHeadingPath(headingStack);
-                        var heading = headingStack.Count == 0 ? string.Empty : headingStack[^1].Heading;
-                        int? headingLevel = headingStack.Count == 0 ? null : headingStack[^1].Level;
-
-                        chunks.Add(new ChunkPayload(chunkIndex, heading, headingLevel, headingPath, "code", language, codeBlock, EstimateTokenCount(codeBlock)));
-
-                        chunkIndex++;
-                    }
                 }
 
                 continue;
@@ -262,7 +245,7 @@ _generator = generator;
             {
                 ParsedDocumentPayload parsedDocument = await this.ParseMarkdownDocumentAsync(filePath, cancellationToken).ConfigureAwait(false);
 
-                if(ComputeSha256Hex(parsedDocument.NormalizedMarkdown) == existingDocumentHash)
+                if (ComputeSha256Hex(parsedDocument.NormalizedMarkdown) == existingDocumentHash)
                 {
                     _logger.LogInformation("Skipping unchanged document: {FilePath}", filePath);
                     continue;
@@ -292,7 +275,7 @@ _generator = generator;
         await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            var hash= reader.GetString(0);
+            var hash = reader.GetString(0);
             return hash;
         }
 
@@ -400,6 +383,114 @@ _generator = generator;
 
 
 
+    private static string NormalizeMarkdownForIngestion(string markdown)
+    {
+        var flattened = FlattenHyperlinks(markdown);
+        var withoutCodeBlocks = RemoveFencedCodeBlocks(flattened);
+        var withoutControlChars = RemoveControlCharacters(withoutCodeBlocks);
+        var withoutEscapes = RemoveMarkdownEscapes(withoutControlChars);
+        return NormalizeWhitespace(withoutEscapes);
+    }
+
+
+
+
+
+
+    private static string NormalizeWhitespace(string markdown)
+    {
+        var lines = markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
+        StringBuilder builder = new();
+        var previousLineWasBlank = true;
+
+        foreach (var rawLine in lines)
+        {
+            var line = WhitespaceRegex.Replace(rawLine, " ").Trim();
+            if (line.Length == 0)
+            {
+                if (previousLineWasBlank)
+                {
+                    continue;
+                }
+
+                _ = builder.AppendLine();
+                previousLineWasBlank = true;
+                continue;
+            }
+
+            _ = builder.AppendLine(line);
+            previousLineWasBlank = false;
+        }
+
+        return builder.ToString().Trim();
+    }
+
+
+
+
+
+
+    private static string RemoveControlCharacters(string markdown)
+    {
+        return ControlCharacterRegex.Replace(markdown, string.Empty);
+    }
+
+
+
+
+
+
+    private static string RemoveFencedCodeBlocks(string markdown)
+    {
+        var lines = markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
+        StringBuilder builder = new();
+
+        var inFence = false;
+        string? fenceMarker = null;
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.TrimStart();
+
+            if (!inFence && (trimmed.StartsWith("```", StringComparison.Ordinal) || trimmed.StartsWith("~~~", StringComparison.Ordinal)))
+            {
+                inFence = true;
+                fenceMarker = trimmed[..3];
+                continue;
+            }
+
+            if (inFence)
+            {
+                if (fenceMarker is not null && trimmed.StartsWith(fenceMarker, StringComparison.Ordinal))
+                {
+                    inFence = false;
+                    fenceMarker = null;
+                }
+
+                continue;
+            }
+
+            _ = builder.AppendLine(line);
+        }
+
+        return builder.ToString();
+    }
+
+
+
+
+
+
+    private static string RemoveMarkdownEscapes(string markdown)
+    {
+        return MarkdownEscapeRegex.Replace(markdown, "$1");
+    }
+
+
+
+
+
+
 
 
     private static void FlushProseChunk(ICollection<ChunkPayload> chunks, StringBuilder prose, IReadOnlyList<(int Level, string Heading)> headingStack, ref int chunkIndex)
@@ -476,18 +567,19 @@ _generator = generator;
     internal async Task<ParsedDocumentPayload> ParseMarkdownDocumentAsync(string filePath, CancellationToken cancellationToken)
     {
         var rawFileContent = await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
-        (var yamlFrontMatter, var markdownBody) = ExtractYamlFrontMatter(rawFileContent);
+        var normalizedMarkdown = ParserTools.CleanRawText(rawFileContent);
+        (var yamlFrontMatter, var markdownBody) = ExtractYamlFrontMatter(normalizedMarkdown);
 
         HashSet<string> includeStack = new(StringComparer.OrdinalIgnoreCase);
         var resolvedMarkdown = await this.ResolveDocFxDirectivesAsync(filePath, markdownBody, includeStack, 0, cancellationToken).ConfigureAwait(false);
-        var normalizedMarkdownBody = FlattenHyperlinks(resolvedMarkdown);
+        var normalizedMarkdownBody = NormalizeMarkdownForIngestion(resolvedMarkdown);
         var normalizedDocument = string.IsNullOrWhiteSpace(yamlFrontMatter) ? normalizedMarkdownBody : $"{yamlFrontMatter}{Environment.NewLine}{Environment.NewLine}{normalizedMarkdownBody}";
 
         IReadOnlyList<ChunkPayload> chunks = BuildChunks(normalizedMarkdownBody);
 
         var relativePath = Path.GetRelativePath(StartFolder, filePath);
 
-        return new ParsedDocumentPayload(Guid.NewGuid(), relativePath, Path.GetFileName(filePath), yamlFrontMatter, rawFileContent, normalizedDocument, chunks);
+        return new ParsedDocumentPayload(Guid.NewGuid(), relativePath, Path.GetFileName(filePath), yamlFrontMatter, normalizedMarkdown, normalizedDocument, chunks);
     }
 
 
@@ -549,37 +641,32 @@ _generator = generator;
 
 
 
-
+    /// <summary>
+    /// Resolves a `:::code` directive.
+    /// </summary>
+    /// <param name="owningFilePath">
+    /// The file path of the document that contains the `:::code` directive.
+    /// </param>
+    /// <param name="directiveText">
+    /// The text of the `:::code` directive, including its attributes.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result is always an empty string,
+    /// because code content is intentionally discarded during ingestion normalization.
+    /// </returns>
+    /// <remarks>
+    /// Code content from directives is intentionally skipped so ingestion persists only prose content.
+    /// </remarks>
     internal async Task<string> ResolveCodeDirectiveAsync(string owningFilePath, string directiveText, CancellationToken cancellationToken)
     {
-        Dictionary<string, string> attributes = ParseDirectiveAttributes(directiveText);
-        if (!attributes.TryGetValue("source", out var sourcePath))
-        {
-            _logger.LogDebug(":::code directive in {FilePath} does not include source= attribute.", owningFilePath);
-            return string.Empty;
-        }
-
-        var language = attributes.TryGetValue("language", out var languageValue) ? languageValue : string.Empty;
-
-        var absoluteSourcePath = ResolveRelativePath(owningFilePath, sourcePath);
-        if (!File.Exists(absoluteSourcePath))
-        {
-            _logger.LogWarning("Code source file not found: {SourcePath} referenced by {FilePath}", absoluteSourcePath, owningFilePath);
-            return string.Empty;
-        }
-
-        var code = await File.ReadAllTextAsync(absoluteSourcePath, cancellationToken).ConfigureAwait(false);
-
-        if (attributes.TryGetValue("id", out var snippetId) && !string.IsNullOrWhiteSpace(snippetId))
-        {
-            var snippet = ExtractSnippetById(code, snippetId);
-            if (!string.IsNullOrWhiteSpace(snippet))
-            {
-                code = snippet;
-            }
-        }
-
-        return BuildCodeFence(language, code);
+        _ = directiveText;
+        _ = cancellationToken;
+        _logger.LogDebug("Skipping :::code directive content for {FilePath} during ingestion normalization.", owningFilePath);
+        await Task.CompletedTask.ConfigureAwait(false);
+        return string.Empty;
     }
 
 
@@ -767,7 +854,7 @@ CAST(@embeddings AS vector(1024))
             foreach (ChunkPayload chunk in chunks)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-var metadata = await _generator.GenerateAsync(chunk.Content, cancellationToken).ConfigureAwait(false);
+                GeneratedChunkMetadata metadata = await _generator.GenerateAsync(chunk.Content, cancellationToken).ConfigureAwait(false);
                 insertCommand.Parameters["@doc_id"].Value = documentId;
                 insertCommand.Parameters["@chunk_index"].Value = chunk.ChunkIndex;
                 insertCommand.Parameters["@heading_path"].Value = ToDbValue(Truncate(chunk.HeadingPath, 1024));
@@ -780,7 +867,7 @@ var metadata = await _generator.GenerateAsync(chunk.Content, cancellationToken).
                 insertCommand.Parameters["@token_count"].Value = chunk.TokenCount;
                 insertCommand.Parameters["@summary"].Value = metadata.Summary;
                 insertCommand.Parameters["@keywords"].Value = metadata.Keywords;
-                insertCommand.Parameters["@embeddings"].Value = await Utils.Vectorizer.ToVector(chunk.Content).ConfigureAwait(false);
+                insertCommand.Parameters["@embeddings"].Value = await _generator.GenerateEmbeddingsAsync(chunk.Content, cancellationToken).ConfigureAwait(false);
 
                 _ = await insertCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }

@@ -5,20 +5,10 @@
 // Author: Kyle L. Crowder
 // Build Num: 073049
 
-
-
-using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 using DataIngestionLib.Services;
 
-
-
-
 namespace RAGDataIngestionWPF.Tests.MSTest;
-
-
-
-
 
 [TestClass]
 public class ContextCitationFormatterTests
@@ -26,7 +16,7 @@ public class ContextCitationFormatterTests
     [TestMethod]
     public void FormatSectionIncludesSourceLocatorAndTimestampMetadata()
     {
-        IContextCitationFormatter formatter = new ContextCitationFormatter();
+        ContextCitationFormatter formatter = new();
 
         var text = formatter.FormatSection("Relevant local knowledge", [
                 new ContextCitation
@@ -46,17 +36,10 @@ public class ContextCitationFormatterTests
         StringAssert.Contains(text, "Provider persists and reloads chat history.");
     }
 
-
-
-
-
-
-
-
     [TestMethod]
     public void FormatSectionRespectsCharacterBudget()
     {
-        IContextCitationFormatter formatter = new ContextCitationFormatter();
+        ContextCitationFormatter formatter = new();
         string large = new('x', 400);
 
         var text = formatter.FormatSection("Relevant cached context", [

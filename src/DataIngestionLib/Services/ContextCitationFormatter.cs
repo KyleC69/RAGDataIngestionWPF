@@ -10,7 +10,6 @@
 using System.Globalization;
 using System.Text;
 
-using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
 
@@ -22,7 +21,7 @@ namespace DataIngestionLib.Services;
 
 
 
-public sealed class ContextCitationFormatter : IContextCitationFormatter
+public sealed class ContextCitationFormatter
 {
     public string FormatSection(string heading, IReadOnlyList<ContextCitation> citations, int maxCharacters)
     {

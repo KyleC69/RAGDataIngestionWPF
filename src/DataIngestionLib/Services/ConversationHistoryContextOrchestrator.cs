@@ -21,10 +21,10 @@ namespace DataIngestionLib.Services;
 
 
 
-public sealed class ConversationHistoryContextOrchestrator : IConversationHistoryContextOrchestrator
+public sealed class ConversationHistoryContextOrchestrator
 {
     private readonly IAppSettings _appSettings;
-    private readonly IContextCitationFormatter _citationFormatter;
+    private readonly ContextCitationFormatter _citationFormatter;
     private readonly IConversationHistoryLoader _historyLoader;
 
 
@@ -34,7 +34,7 @@ public sealed class ConversationHistoryContextOrchestrator : IConversationHistor
 
 
 
-    public ConversationHistoryContextOrchestrator(IConversationHistoryLoader historyLoader, IContextCitationFormatter citationFormatter, IAppSettings appSettings)
+    public ConversationHistoryContextOrchestrator(IConversationHistoryLoader historyLoader, ContextCitationFormatter citationFormatter, IAppSettings appSettings)
     {
         ArgumentNullException.ThrowIfNull(historyLoader);
         ArgumentNullException.ThrowIfNull(citationFormatter);

@@ -8,6 +8,7 @@
 
 
 using DataIngestionLib.Contracts.Services;
+using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -22,11 +23,11 @@ namespace DataIngestionLib.Providers;
 
 
 
-public sealed class ConversationHistoryContextSource : IRagContextSource
+public sealed class ConversationHistoryContextSource
 {
 
     private readonly ILogger<ConversationHistoryContextSource> _logger;
-    private readonly IConversationHistoryContextOrchestrator _orchestrator;
+    private readonly ConversationHistoryContextOrchestrator _orchestrator;
     private const string ChatHistoryConversationIdStateKey = "ChatHistoryConversationId";
     private const string ConversationIdStateKey = "ConversationId";
 
@@ -37,7 +38,7 @@ public sealed class ConversationHistoryContextSource : IRagContextSource
 
 
 
-    public ConversationHistoryContextSource(IConversationHistoryContextOrchestrator orchestrator, ILogger<ConversationHistoryContextSource> logger)
+    public ConversationHistoryContextSource(ConversationHistoryContextOrchestrator orchestrator, ILogger<ConversationHistoryContextSource> logger)
     {
         ArgumentNullException.ThrowIfNull(orchestrator);
         ArgumentNullException.ThrowIfNull(logger);

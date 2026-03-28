@@ -11,6 +11,7 @@ using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
 
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -29,16 +30,16 @@ namespace DataIngestionLib.Services;
 /// </summary>
 public sealed class ChatConversationService : IChatConversationService
 {
-    private readonly IConversationAgentRunner _agentRunner;
+    private readonly Func<AIAgent, string, AgentSession, CancellationToken, ValueTask<ConversationAgentRunResult>> _runAgentAsync;
     private readonly IAppSettings _appSettings;
-    private readonly IConversationBudgetEvaluator _budgetEvaluator;
-    private readonly IConversationBudgetEventPublisher _budgetEventPublisher;
-    private readonly IChatBusyStateScopeFactory _busyStateScopeFactory;
+    private readonly ConversationBudgetEvaluator _budgetEvaluator;
+    private readonly ConversationBudgetEventPublisher _budgetEventPublisher;
+    private readonly ChatBusyStateScopeFactory _busyStateScopeFactory;
     private readonly IConversationHistoryLoader _historyLoader;
     private readonly ILogger<ChatConversationService> _logger;
     private readonly IConversationProgressLogService? _progressLogService;
     private readonly IConversationSessionBootstrapper _sessionBootstrapper;
-    private readonly IConversationTokenCounter _tokenCounter;
+    private readonly ConversationTokenCounter _tokenCounter;
     private ConversationSessionContext? _sessionContext;
     private const int AutomaticTaskPlanNameLength = 72;
 
@@ -49,7 +50,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings, IConversationAgentRunner? agentRunner = null, IConversationProgressLogService? progressLogService = null, ISQLChatHistoryProvider? sqlChatHistoryProvider = null) : this(factory, settings, new ConversationSessionBootstrapper(agentFactory, settings, sqlChatHistoryProvider), new ConversationHistoryLoader(settings, sqlChatHistoryProvider), new ConversationTokenCounter(), new ConversationBudgetEvaluator(), new ChatBusyStateScopeFactory(), new ConversationBudgetEventPublisher(), agentRunner ?? new ConversationAgentRunner(), progressLogService)
+    public ChatConversationService(ILoggerFactory factory, IAgentFactory agentFactory, IAppSettings settings, Func<AIAgent, string, AgentSession, CancellationToken, ValueTask<ConversationAgentRunResult>>? runAgentAsync = null, IConversationProgressLogService? progressLogService = null, ISQLChatHistoryProvider? sqlChatHistoryProvider = null) : this(factory, settings, new ConversationSessionBootstrapper(agentFactory, settings, sqlChatHistoryProvider), new ConversationHistoryLoader(settings, sqlChatHistoryProvider), new ConversationTokenCounter(), new ConversationBudgetEvaluator(), new ChatBusyStateScopeFactory(), new ConversationBudgetEventPublisher(), runAgentAsync, progressLogService)
     {
         ArgumentNullException.ThrowIfNull(agentFactory);
     }
@@ -61,7 +62,7 @@ public sealed class ChatConversationService : IChatConversationService
 
 
 
-    public ChatConversationService(ILoggerFactory factory, IAppSettings settings, IConversationSessionBootstrapper sessionBootstrapper, IConversationHistoryLoader historyLoader, IConversationTokenCounter tokenCounter, IConversationBudgetEvaluator budgetEvaluator, IChatBusyStateScopeFactory busyStateScopeFactory, IConversationBudgetEventPublisher budgetEventPublisher, IConversationAgentRunner agentRunner, IConversationProgressLogService? progressLogService = null)
+    public ChatConversationService(ILoggerFactory factory, IAppSettings settings, IConversationSessionBootstrapper sessionBootstrapper, IConversationHistoryLoader historyLoader, ConversationTokenCounter tokenCounter, ConversationBudgetEvaluator budgetEvaluator, ChatBusyStateScopeFactory busyStateScopeFactory, ConversationBudgetEventPublisher budgetEventPublisher, Func<AIAgent, string, AgentSession, CancellationToken, ValueTask<ConversationAgentRunResult>>? runAgentAsync = null, IConversationProgressLogService? progressLogService = null)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(settings);
@@ -71,7 +72,6 @@ public sealed class ChatConversationService : IChatConversationService
         ArgumentNullException.ThrowIfNull(budgetEvaluator);
         ArgumentNullException.ThrowIfNull(busyStateScopeFactory);
         ArgumentNullException.ThrowIfNull(budgetEventPublisher);
-        ArgumentNullException.ThrowIfNull(agentRunner);
 
         _appSettings = settings;
         ConversationTokenBudget = settings.GetTokenBudget();
@@ -81,7 +81,7 @@ public sealed class ChatConversationService : IChatConversationService
         _budgetEvaluator = budgetEvaluator;
         _busyStateScopeFactory = busyStateScopeFactory;
         _budgetEventPublisher = budgetEventPublisher;
-        _agentRunner = agentRunner;
+        _runAgentAsync = runAgentAsync ?? RunAgentAsync;
         _progressLogService = progressLogService;
         _logger = factory.CreateLogger<ChatConversationService>();
     }
@@ -168,7 +168,7 @@ public sealed class ChatConversationService : IChatConversationService
             await TryRecordAutomaticTaskPlanArtifactAsync(planId, "user_request", content, token).ConfigureAwait(false);
             await TryMoveAutomaticTaskPlanToStepAsync(planId, 2, token).ConfigureAwait(false);
 
-            ConversationAgentRunResult response = await _agentRunner.RunAsync(sessionContext.Agent, content, sessionContext.Session, token).ConfigureAwait(false);
+            ConversationAgentRunResult response = await _runAgentAsync(sessionContext.Agent, content, sessionContext.Session, token).ConfigureAwait(false);
 
             usageDetails = response.UsageDetails;
             if (usageDetails is not null)
@@ -553,6 +553,21 @@ public sealed class ChatConversationService : IChatConversationService
             _logger.LogWarning(ex, "Unable to start automatic task plan for chat request.");
             return null;
         }
+    }
+
+
+
+
+
+
+    internal static async ValueTask<ConversationAgentRunResult> RunAgentAsync(AIAgent agent, string content, AgentSession session, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(agent);
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(session);
+
+        AgentResponse response = await agent.RunAsync(content, session, null, cancellationToken).ConfigureAwait(false);
+        return new ConversationAgentRunResult(response.Text?.Trim() ?? string.Empty, response.Usage);
     }
 
 

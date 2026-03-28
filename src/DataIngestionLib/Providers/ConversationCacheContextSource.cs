@@ -10,6 +10,7 @@
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Contracts.Services;
 using DataIngestionLib.Models;
+using DataIngestionLib.Services;
 
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -24,12 +25,12 @@ namespace DataIngestionLib.Providers;
 
 
 
-public sealed class ConversationCacheContextSource : IRagContextSource
+public sealed class ConversationCacheContextSource
 {
 
     private readonly IAppSettings _appSettings;
     private readonly IConversationContextCacheStore _cacheStore;
-    private readonly IContextCitationFormatter _citationFormatter;
+    private readonly ContextCitationFormatter _citationFormatter;
     private readonly ILogger<ConversationCacheContextSource> _logger;
     private const string ChatHistoryConversationIdStateKey = "ChatHistoryConversationId";
     private const string ConversationIdStateKey = "ConversationId";
@@ -41,7 +42,7 @@ public sealed class ConversationCacheContextSource : IRagContextSource
 
 
 
-    public ConversationCacheContextSource(IConversationContextCacheStore cacheStore, IAppSettings appSettings, IContextCitationFormatter citationFormatter, ILogger<ConversationCacheContextSource> logger)
+    public ConversationCacheContextSource(IConversationContextCacheStore cacheStore, IAppSettings appSettings, ContextCitationFormatter citationFormatter, ILogger<ConversationCacheContextSource> logger)
     {
         ArgumentNullException.ThrowIfNull(cacheStore);
         ArgumentNullException.ThrowIfNull(appSettings);

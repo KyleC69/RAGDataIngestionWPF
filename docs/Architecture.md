@@ -1,4 +1,4 @@
----
+﻿---
 title: Architecture
 path: /docs/Architecture.md
 purpose: Explain the major solution layers, responsibilities, and runtime flow for developers new to the repository.
@@ -64,6 +64,7 @@ This project is the main place to look when you want to understand the repositor
 
 `/tests/RAGDataIngestionWPF.Tests.MSTest` validates behavior with MSTest. The tests are the best executable reference for expected behavior around context injection, identity, and tool boundaries.
 
+
 ## Runtime flow
 
 At a high level, the application starts and runs through the following sequence:
@@ -75,6 +76,8 @@ At a high level, the application starts and runs through the following sequence:
 5. `DataIngestionLib` composes the agent pipeline, builds context, executes tools, and persists conversation state.
 
 ## Key architectural themes
+
+* 
 
 ### Dependency injection
 
@@ -95,6 +98,5 @@ The repository is designed for local development with a Windows desktop shell, .
 ## Suggested entry points for new developers
 
 - Start with `/README.md` for setup and repository positioning.
-- Read `/docs/Capabilities.md` for a feature-oriented overview.
 - Explore `/src/RAGDataIngestionWPF/App.xaml.cs` to understand startup and DI wiring.
 - Explore `/src/DataIngestionLib` for the core agent and ingestion implementation.

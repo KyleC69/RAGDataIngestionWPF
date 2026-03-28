@@ -1,4 +1,4 @@
-Context Management Architecture
+﻿Context Management Architecture
 ===============================
 
 This document formalizes the strategies and architectural patterns used to manage context, memory, and retrieval within the system. It defines the lifecycle of conversation data, tool results, reasoning artifacts, and knowledge sources, ensuring deterministic behavior, efficient token usage, and reliable multi‑step agent execution.
@@ -7,15 +7,11 @@ This document formalizes the strategies and architectural patterns used to manag
 
 1. Overview
 
------------
+* * *
 
 Context management is built around a **sliding‑window model with explicit state**, not summarization or message‑count reduction. The system maintains a clean separation between:
 
-* **Permanent conversation history**
-
-* **Semi‑volatile conversation cache**
-
-* **Progress logs for long‑running plans**
+* **Permanent conversation history** gated by compiler constant 'SQL'
 
 * **Durable knowledge sources (RAG)**
 
@@ -27,7 +23,7 @@ This layered approach ensures predictable behavior, efficient retrieval, and hum
 
 2. Conversation History (Permanent Storage)
 
--------------------------------------------
+* * *
 
 Conversation history is stored permanently in SQL using `user` and `assistant` roles. This provides:
 
@@ -39,13 +35,13 @@ Conversation history is stored permanently in SQL using `user` and `assistant` r
 
 * A stable foundation for context injection
 
-Conversation history is **never summarized** and is not subject to token‑window constraints.
+Conversation history is **never summarized** and is the last to fall out of context as conversations grow. This allows model to mantain a rich memory of the users interactions, and provides a reliable source of truth for the conversation state. The history is injected into the model as needed, with the most recent interactions taking priority.
 
 * * *
 
-3. Semi‑Volatile Conversation Cache
+3. Semi‑Volatile File Based Conversation Cache
 
------------------------------------
+* * *
 
 The conversation cache stores all previously injected context and tool results in a structured, searchable format. It acts as the system’s **working memory**.
 
@@ -89,7 +85,7 @@ This reduces token noise and improves retrieval accuracy.
 
 4. Agent Progress Log (Planning State)
 
-----------------------------
+* * *
 
 Long‑running plans require a durable, resumable state object. The progress log captures:
 
@@ -136,7 +132,7 @@ A typical progress log entry includes:
 
 5. Context Injectors (Knowledge Sources)
 
-----------------------------------------
+* * *
 
 Three injectors provide context to the model, ordered by cost and relevance.
 
@@ -168,7 +164,7 @@ Three injectors provide context to the model, ordered by cost and relevance.
 
 6. Retrieval Strategy
 
----------------------
+* * *
 
 Retrieval follows a strict priority order:
 
@@ -194,7 +190,7 @@ This ensures:
 
 7. Cache and Log Maintenance
 
-----------------------------
+* * *
 
 ### 7.1 Cache Reset
 
@@ -222,7 +218,7 @@ This ensures:
 
 8. Design Principles
 
---------------------
+* * *
 
 The system adheres to the following principles:
 
@@ -242,7 +238,7 @@ The system adheres to the following principles:
 
 9. Summary
 
-----------
+* * *
 
 This architecture provides a robust, scalable, and deterministic approach to context management. By combining permanent history, semi‑volatile working memory, durable plan state, and layered knowledge sources, the system achieves:
 
