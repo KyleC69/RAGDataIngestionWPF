@@ -1,15 +1,15 @@
-﻿// Build Date: 2026/03/27
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         LoggingMessages.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 073009
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
 
 
 
 using DataIngestionLib.ToolFunctions;
 
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
 
@@ -83,6 +83,11 @@ public static partial class LoggingMessages
 
 
 
-    [LoggerMessage(LogLevel.Information, "Input tokens: {deetsInputTokenCount}, Cached input tokens: {deetsCachedInputTokenCount}, Output tokens: {deetsOutputTokenCount}, Reasoning tokens: {deetsReasoningTokenCount}, Additional counts: {deetsAdditionalCounts}, Total tokens: {deetsTotalTokenCount}")]
-    public static partial void LogUsages(this ILogger<ChatConversationService> logger, long? deetsInputTokenCount, long? deetsCachedInputTokenCount, long? deetsOutputTokenCount, long? deetsReasoningTokenCount, AdditionalPropertiesDictionary<long>? deetsAdditionalCounts, long? deetsTotalTokenCount);
+
+
+
+
+
+
+
 }

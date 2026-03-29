@@ -1,9 +1,10 @@
-﻿// Build Date: 2026/03/27
-// Solution: RAGDataIngestionWPF
-// Project:   DataIngestionLib
-// File:         SqlTableMaint.cs
+﻿// Build Date: ${CurrentDate.Year}/${CurrentDate.Month}/${CurrentDate.Day}
+// Solution: ${File.SolutionName}
+// Project:   ${File.ProjectName}
+// File:         ${File.FileName}
 // Author: Kyle L. Crowder
-// Build Num: 072949
+// Build Num: ${CurrentDate.Hour}${CurrentDate.Minute}${CurrentDate.Second}
+//
 
 
 
@@ -96,7 +97,7 @@ public sealed class SqlTableMaint
 
         List<PendingChunk> pendingChunks = [];
 
-        await using SqlConnection connection = await OpenRemoteRagConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlConnection connection = await this.OpenRemoteRagConnectionAsync(cancellationToken).ConfigureAwait(false);
         await using SqlCommand command = new(query, connection) { CommandType = CommandType.Text, CommandTimeout = SqlCommandTimeoutSeconds };
 
         _ = command.Parameters.Add("@batchSize", SqlDbType.Int);
@@ -171,7 +172,7 @@ public sealed class SqlTableMaint
                                        WHERE [chunk_id] = @chunk_id;
                                        """;
 
-        await using SqlConnection connection = await OpenRemoteRagConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using SqlConnection connection = await this.OpenRemoteRagConnectionAsync(cancellationToken).ConfigureAwait(false);
         await using SqlCommand command = new(updateStatement, connection) { CommandType = CommandType.Text, CommandTimeout = SqlCommandTimeoutSeconds };
 
         _ = command.Parameters.Add("@chunk_id", SqlDbType.UniqueIdentifier);
@@ -222,7 +223,7 @@ public sealed class SqlTableMaint
             catch (Exception exception)
             {
                 failedCount++;
-                _logger.LogWarning(exception, "Failed to update metadata for chunk {ChunkId} in document {DocumentId} at chunk index {ChunkIndex}. Continuing with the remaining batch.", pendingChunk.ChunkId);
+                _logger.LogWarning(exception, "Failed to update metadata for chunk {ChunkId}Continuing with the remaining batch.", pendingChunk.ChunkId);
 
             }
         }
@@ -264,7 +265,7 @@ public sealed class SqlTableMaint
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var pendingChunks = await FetchPendingChunkBatchAsync(cancellationToken).ConfigureAwait(false);
+                IReadOnlyList<PendingChunk> pendingChunks = await this.FetchPendingChunkBatchAsync(cancellationToken).ConfigureAwait(false);
                 if (pendingChunks.Count == 0)
                 {
                     MetadataUpdateResult completedResult = new(updatedCount, failedCount);
@@ -276,7 +277,7 @@ public sealed class SqlTableMaint
                 batchNumber++;
                 _logger.LogInformation("Processing metadata batch {BatchNumber} containing {ChunkCount} chunk(s).", batchNumber, pendingChunks.Count);
 
-                MetadataUpdateResult batchResult = await ProcessPendingChunksAsync(pendingChunks, PersistChunkMetadataAsync, cancellationToken).ConfigureAwait(false);
+                MetadataUpdateResult batchResult = await this.ProcessPendingChunksAsync(pendingChunks, this.PersistChunkMetadataAsync, cancellationToken).ConfigureAwait(false);
 
                 updatedCount += batchResult.UpdatedCount;
                 failedCount += batchResult.FailedCount;

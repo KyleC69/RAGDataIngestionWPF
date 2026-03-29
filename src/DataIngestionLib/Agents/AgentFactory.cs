@@ -8,6 +8,8 @@
 
 
 
+using CommunityToolkit.Diagnostics;
+
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Models;
 using DataIngestionLib.Providers;
@@ -62,37 +64,33 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
 
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="AgentFactory" /> class.
+    /// Initializes a new instance of the <see cref="AgentFactory"/> class.
     /// </summary>
     /// <param name="factory">
-    ///     The <see cref="ILoggerFactory" /> instance used for logging.
+    /// The <see cref="ILoggerFactory"/> instance used for logging.
     /// </param>
     /// <param name="appSettings">
-    ///     The application settings containing configuration values.
+    /// The application settings containing configuration values.
     /// </param>
     /// <param name="chatHistoryProvider">
-    ///     The provider responsible for managing chat history.
+    /// The provider responsible for managing chat history.
     /// </param>
     /// <param name="contextInjector">
-    ///     The injector responsible for providing chat history context.
-    /// </param>
-    /// <param name="contextCacheRecorder">
-    ///     The recorder responsible for caching conversation contexts.
+    /// The injector responsible for providing chat history context.
     /// </param>
     /// <param name="ragContextInjector">
-    ///     The injector responsible for managing RAG (Retrieval-Augmented Generation) context.
+    /// The injector responsible for managing RAG (Retrieval-Augmented Generation) context.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    ///     Thrown when any of the provided parameters is <c>null</c>.
+    /// Thrown when any of the provided parameters is <c>null</c>.
     /// </exception>
-    public AgentFactory(ILoggerFactory factory, IAppSettings appSettings, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector, ConversationContextCacheRecorder contextCacheRecorder, AIContextRAGInjector ragContextInjector)
+    public AgentFactory(ILoggerFactory factory, IAppSettings appSettings, SqlChatHistoryProvider chatHistoryProvider, ChatHistoryContextInjector contextInjector, AIContextRAGInjector ragContextInjector)
     {
-        ArgumentNullException.ThrowIfNull(factory);
-        ArgumentNullException.ThrowIfNull(appSettings);
-        ArgumentNullException.ThrowIfNull(chatHistoryProvider);
-        ArgumentNullException.ThrowIfNull(contextInjector);
-        ArgumentNullException.ThrowIfNull(contextCacheRecorder);
-        ArgumentNullException.ThrowIfNull(ragContextInjector);
+        Guard.IsNotNull(factory);
+        Guard.IsNotNull(appSettings);
+        Guard.IsNotNull(chatHistoryProvider);
+        Guard.IsNotNull(contextInjector);
+        Guard.IsNotNull(ragContextInjector);
 
         _factory = factory;
         _historyContextInjector = contextInjector;
@@ -132,8 +130,8 @@ public sealed class AgentFactory : IAgentFactory, IDisposable
     public AIAgent GetCodingAssistantAgent(string agentId, string model, string agentDescription = "", string? instructions = null)
     {
 
-        ArgumentNullException.ThrowIfNull(agentId);
-        ArgumentNullException.ThrowIfNull(model);
+        Guard.IsNotNullOrWhiteSpace(agentId);
+        Guard.IsNotNullOrWhiteSpace(model);
         if (_agents.ContainsKey(agentId))
         {
             throw new InvalidOperationException($"An agent with the ID '{agentId}' already exists.");

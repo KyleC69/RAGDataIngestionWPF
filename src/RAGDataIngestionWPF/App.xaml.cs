@@ -332,23 +332,18 @@ public sealed partial class App : Application
         ArgumentNullException.ThrowIfNull(services);
 
 
-        IServiceCollection unused3 = services.AddSingleton<SqlChatHistoryProvider>();
+        services.AddSingleton<SqlChatHistoryProvider>();
         IServiceCollection unused4 = services.AddSingleton<IChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
         IServiceCollection unused5 = services.AddSingleton<ISQLChatHistoryProvider>(provider => provider.GetRequiredService<SqlChatHistoryProvider>());
         _ = services.AddSingleton<RagDataService>();
         _ = services.AddSingleton<ChunkMetadataGenerator>();
         _ = services.AddSingleton<DocIngestionPipeline>();
         _ = services.AddSingleton<SqlTableMaint>();
-        _ = services.AddSingleton<IRagRetrievalService>(provider => provider.GetRequiredService<RagDataService>());
-        _ = services.AddSingleton<ConversationHistoryContextOrchestrator>();
-        _ = services.AddSingleton<ConversationCacheContextSource>();
-        _ = services.AddSingleton<ConversationHistoryContextSource>();
         _ = services.AddSingleton<LocalRagContextSource>();
         IServiceCollection unused2 = services.AddSingleton<AgentFactory>();
 
         IServiceCollection unused1 = services.AddSingleton<ChatHistoryContextInjector>();
         _ = services.AddSingleton<AIContextRAGInjector>();
-        _ = services.AddSingleton<ConversationContextCacheRecorder>();
     }
 
 
@@ -370,9 +365,6 @@ public sealed partial class App : Application
         _ = services.AddSingleton<ConversationSessionBootstrapper>();
         _ = services.AddSingleton<ConversationHistoryLoader>();
         _ = services.AddSingleton<ConversationTokenCounter>();
-        _ = services.AddSingleton<ConversationBudgetEvaluator>();
-        _ = services.AddSingleton<ChatBusyStateScopeFactory>();
-        _ = services.AddSingleton<ConversationBudgetEventPublisher>();
         _ = services.AddSingleton<PageService>();
         _ = services.AddSingleton<NavigationService>();
         _ = services.AddSingleton<UserDataService>();

@@ -8,6 +8,8 @@
 
 
 
+using CommunityToolkit.Diagnostics;
+
 using DataIngestionLib.Agents;
 using DataIngestionLib.Contracts;
 using DataIngestionLib.Models;
@@ -49,9 +51,11 @@ public sealed class ChunkMetadataGenerator
 
 
 
-    public ChunkMetadataGenerator(ILoggerFactory loggerFactory)
+    public ChunkMetadataGenerator(ILoggerFactory loggerFactory, IChatClient client)
     {
-        ArgumentNullException.ThrowIfNull(loggerFactory);
+        Guard.IsNotNull(loggerFactory);
+        Guard.IsNotNull(client);
+
         _logger = loggerFactory.CreateLogger<ChunkMetadataGenerator>();
 
         Uri ollamaUri = new("http://localhost:11434");
@@ -66,23 +70,13 @@ public sealed class ChunkMetadataGenerator
 
 
 
-    internal ChunkMetadataGenerator(IChatClient chatClient)
-    {
-        ArgumentNullException.ThrowIfNull(chatClient);
-
-        _chatClient = chatClient;
-    }
-
-
-
-
 
 
 
 
     public async Task<GeneratedChunkMetadata> GenerateAsync(string chunkContent, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(chunkContent);
+        Guard.IsNotNullOrWhiteSpace(chunkContent);
         var keywords = NormalizeKeywords(await this.GenerateKeywordsAsync(chunkContent, cancellationToken).ConfigureAwait(false));
         var summary = NormalizeSummary(await this.GenerateSummaryAsync(chunkContent, cancellationToken).ConfigureAwait(false));
 

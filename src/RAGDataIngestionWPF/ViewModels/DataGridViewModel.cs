@@ -38,7 +38,7 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
     private readonly SqlTableMaint _sqlTableMaint;
     private AsyncRelayCommand _cancelOperationsCommand;
     private AsyncRelayCommand _refreshRemoteRagCommand;
-    private LinkedCancellationTokenScope? _pageOperationScope;
+    private LinkedCancellationTokenScope _pageOperationScope;
     private AsyncRelayCommand _startIngestionCommand;
 
 
@@ -98,7 +98,7 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
     private Task RefreshRemoteRagSource(CancellationToken arg)
     {
-        //Refreshes the remote RAG source records in database by checking web for updates in the source documents.
+        //Refreshes the remote RAG source records in database by checking web for updates in the source documents. TODO
         return Task.CompletedTask;
     }
 
@@ -175,29 +175,6 @@ public sealed class DataGridViewModel : ObservableObject, INavigationAware
 
 
 
-
-
-
-    private async Task GenerateMetaEmbeddings()
-    {
-        try
-        {
-            Guard.IsNotNull(_sqlTableMaint);
-
-            // Use the page-scoped cancellation token if available, otherwise use CancellationToken.None
-            CancellationToken token = _pageOperationScope?.Token ?? CancellationToken.None;
-            MetadataUpdateResult result = await _sqlTableMaint.UpdateMetadataAsync(token);
-            _logger.LogInformation("Metadata update completed. Updated {UpdatedCount} chunk(s); {FailedCount} failed.", result.UpdatedCount, result.FailedCount);
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.LogWarning("Metadata update was cancelled.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Metadata update failed: {Message}", ex.Message);
-        }
-    }
 
 
 
