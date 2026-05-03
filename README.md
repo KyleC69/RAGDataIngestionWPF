@@ -2,4 +2,4 @@
 
 > ⚠️ **This repository has moved!**
 >
-> Please visit the new repository: **[KyleC69/AgenticAIWPF](https://github.com/KyleC69/Agentic-AI-WPF)**
+> Please visit the new repository: **[KyleC69/Agentic-AI-WPF](https://github.com/KyleC69/Agentic-AI-WPF)**
